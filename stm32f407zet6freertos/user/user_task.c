@@ -8,6 +8,7 @@
 #include "stepper_a4988.h"
 #include "openmv.h"
 #include "servo.h"
+#include "pid.h"
 
 extern SYS_STATE_Data sys_state_data; // 陀螺仪数据
 extern MOTOR_Encoder motor_encoder;   // 电机编码器数据
@@ -192,11 +193,41 @@ void find_line_calibrate_MPU(void)
     for (uint16_t i = 0; i < 3; i++)
     {
 
-        float line_now_angle = Get_find_line_angle_avg();
+        float line_now_angle = Get_find_line_angle_avg(10);
         base_run_angle(line_now_angle * 0.8f, 1);
         calibrateAngleToZero();
     }
 }
+
+pid fine_line_PID;
+void find_line_calibrate_MPU_PID(void)
+{
+    fine_line_PID.Kp = 10.0f;
+    fine_line_PID.Ki = 0.0f;
+    fine_line_PID.Kd = 0.0f;
+    Camera_switch_mode(QR_MODE);
+    osDelay(100);
+    Camera_switch_mode(FIND_LINE_MODE);
+    float error_angle, output;
+    for (;;)
+    {
+        error_angle = Get_find_line_angle_avg(2);
+        output = PID_Control(&fine_line_PID, error_angle);
+        output = clamp(output, -5, 5);
+        base_run_angle(0, 0, output);
+        if (error_angle < 1.0f)
+        {
+            for (uint16_t i = 0; i < 800; i++)
+            {
+                base_control(0, 0, 0);
+                osDelay(1);
+            }
+            motor_stop_all();
+            break;
+        }
+    }
+}
+
 // 原料区任务
 
 void MaterialArea_Task(void)

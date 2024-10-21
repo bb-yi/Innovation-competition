@@ -176,15 +176,15 @@ float Get_find_line_angle(void)
 	return openmv_data.line_angle;
 }
 
-float Get_find_line_angle_avg(void)
+float Get_find_line_angle_avg(uin8_t times)
 {
 	float sum = 0;
-	for (uint8_t i; i < 10; i++)
+	for (uint8_t i; i < times; i++)
 	{
 		sum += Get_find_line_angle();
 		osDelay(10);
 	}
-	return sum / 10;
+	return sum / times;
 }
 
 float Get_find_line_distance(void)

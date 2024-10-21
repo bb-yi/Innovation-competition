@@ -50,7 +50,7 @@ int extract_digit(int number, int position);
 void Camera_SendString(const char *str);
 void Camera_switch_mode(uint8_t mode);
 float Get_find_line_angle(void);
-float Get_find_line_angle_avg(void);
+float Get_find_line_angle_avg(uin8_t times);
 float Get_find_line_distance(void);
 
 #endif
