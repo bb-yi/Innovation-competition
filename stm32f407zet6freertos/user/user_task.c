@@ -107,7 +107,9 @@ void OLED_display_task(void)
 // 二维码区域任务
 void QrCode_Task(void)
 {
-    Camera_SendString("e");
+    // Camera_switch_mode(QR_MODE);
+    openmv_data.object_list[0] = 231;
+    openmv_data.object_list[1] = 132;
 }
 
 pid find_circle_pid;
@@ -117,11 +119,22 @@ void find_circle(uint8_t mode)
 {
     // x 0.5 y 0.42
     float PositionThreshold;
-    PositionThreshold = (mode == 0 ? 0.1f : 0.03f);
-    float clamp_value = 5.0f;
-    find_circle_pid.Kp = 15.0f;
-    find_circle_pid.Ki = 0.001f;
-    find_circle_pid.Kd = 0.0f;
+    PositionThreshold = (mode == 0 ? 0.1f : 0.01f);
+    float clamp_value = 10.0f;
+    if (mode == 0)
+    {
+        find_circle_pid.Kp = 40.0f;
+        find_circle_pid.Ki = 0.001f;
+        find_circle_pid.Kd = 5.0f;
+        clamp_value = 10.0f;
+    }
+    else
+    {
+        find_circle_pid.Kp = 80.0f;
+        find_circle_pid.Ki = 0.01f;
+        find_circle_pid.Kd = 5.0f;
+        clamp_value = 3.5f;
+    }
     // find_circle_pid.Kp = 55.0f;
     // find_circle_pid.Ki = 0.05f;
     // find_circle_pid.Kd = 10.0f;
@@ -132,13 +145,18 @@ void find_circle(uint8_t mode)
     float error_x, error_y, output_x, output_y;
     float start_yaw = Get_IMU_Yaw();
     float error_yaw, output_yaw;
-    float target_x = 0.53f;
+    float target_x = 0.65f;
     float target_y = 0.50f;
+    if (mode == 1)
+    {
+        target_x = 0.66f;
+        target_y = 0.47;
+    }
     osDelay(200);
     for (;;)
     {
-        error_x = (target_x - openmv_data.object_position_y);
-        error_y = -(target_y - openmv_data.object_position_x);
+        error_x = -(target_x - openmv_data.object_position_y);
+        error_y = (target_y - openmv_data.object_position_x);
         error_yaw = start_yaw - Get_IMU_Yaw();
         output_x = PID_Control(&find_circle_pid, error_x);
         output_y = PID_Control(&find_circle_pid, error_y);
@@ -151,23 +169,33 @@ void find_circle(uint8_t mode)
         if (openmv_data.hsa_circle == 1)
         {
             base_control(output_x, output_y, output_yaw);
-            if (Abs(error_x) < PositionThreshold * 0.8f && Abs(error_y) < PositionThreshold)
+            if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
             {
-                for (uint16_t i = 0; i < 800; i++)
+                for (uint16_t i = 0; i < 200; i++)
                 {
                     base_control(0, 0, 0);
                     osDelay(1);
                 }
-                error_x = (0.53f - openmv_data.object_position_y);
-                error_y = -(0.50f - openmv_data.object_position_x);
-                if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
+                if (1)
                 {
-                    for (uint16_t i = 0; i < 500; i++)
+                    error_x = (target_x - openmv_data.object_position_y);
+                    error_y = -(target_y - openmv_data.object_position_x);
+                    if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
                     {
+                        for (uint16_t i = 0; i < 500; i++)
+                        {
 
-                        base_control(0, 0, 0);
+                            base_control(0, 0, 0);
+                            osDelay(1);
+                        }
+                        find_circle_pid.integral = 0.0f;
+                        motor_stop_all();
                         osDelay(1);
+                        break;
                     }
+                }
+                else
+                {
                     find_circle_pid.integral = 0.0f;
                     motor_stop_all();
                     osDelay(1);
@@ -204,27 +232,33 @@ void find_line_calibrate_MPU_PID(void)
 {
     fine_line_PID.Kp = 10.0f;
     fine_line_PID.Ki = 0.0f;
-    fine_line_PID.Kd = 0.0f;
+    fine_line_PID.Kd = 10.0f;
     Camera_switch_mode(QR_MODE);
     osDelay(100);
     Camera_switch_mode(FIND_LINE_MODE);
     float error_angle, output;
     for (;;)
     {
-        error_angle = Get_find_line_angle_avg(2);
+        error_angle = Get_find_line_angle();
+        error_angle = clamp(error_angle, -5, 5);
         output = PID_Control(&fine_line_PID, error_angle);
-        output = clamp(output, -5, 5);
-        base_run_angle(0, 0, output);
-        if (error_angle < 1.0f)
+        output = clamp(output, -10, 10);
+        base_control(0, 0, output);
+        if (Abs(error_angle) < 1.0f)
         {
-            for (uint16_t i = 0; i < 800; i++)
+            for (uint16_t i = 0; i < 200; i++)
             {
                 base_control(0, 0, 0);
                 osDelay(1);
             }
-            motor_stop_all();
-            break;
+            if (Abs(error_angle) < 1.0f)
+            {
+
+                motor_stop_all();
+                break;
+            }
         }
+        osDelay(1);
     }
 }
 
@@ -232,45 +266,58 @@ void find_line_calibrate_MPU_PID(void)
 
 void MaterialArea_Task(void)
 {
-    openmv_data.object_list[0] = 231;
-    openmv_data.object_list[1] = 132;
+
     Camera_switch_mode(CENTER_POSITION_MODE);
     set_Slider_position(150, 7);
     find_circle(0);
     printf("finish\r\n");
+    osDelay(200);
+    // Camera_switch_mode(QR_MODE);
+
     for (;;)
     {
         if (openmv_data.identify_color == extract_digit(openmv_data.object_list[0], 3))
         {
-            break;
+            if (openmv_data.hsa_circle == 1)
+            {
+                break;
+            }
         }
     }
-    osDelay(1000);
     Get_material(openmv_data.last_identify_color - 1);
+    osDelay(200);
+
     for (;;)
     {
         if (openmv_data.identify_color == extract_digit(openmv_data.object_list[0], 2))
         {
-            break;
+            if (openmv_data.hsa_circle == 1)
+            {
+                break;
+            }
         }
     }
-    osDelay(1000);
     Get_material(openmv_data.last_identify_color - 1);
+    osDelay(200);
+
     for (;;)
     {
         if (openmv_data.identify_color == extract_digit(openmv_data.object_list[0], 1))
         {
-            break;
+            if (openmv_data.hsa_circle == 1)
+            {
+                break;
+            }
         }
     }
-    osDelay(1000);
     Get_material(openmv_data.last_identify_color - 1);
 }
 // 粗加工区任务
 void RoughProcessingArea_Task(void)
 {
-    openmv_data.object_list[0] = 231;
-    openmv_data.object_list[1] = 132;
+
+    Camera_switch_mode(CENTER_POSITION_MODE);
+
     float move_distance;
     float sum_distance = 0;
 
@@ -279,27 +326,44 @@ void RoughProcessingArea_Task(void)
         switch (extract_digit(openmv_data.object_list[0], 3 - i))
         {
         case 1:
-            move_distance = -10;
+            move_distance = -14;
             break;
         case 2:
             move_distance = 0;
             break;
         case 3:
-            move_distance = 10;
+            move_distance = 14;
             break;
         default:
             break;
         }
-        base_run_distance(move_distance + sum_distance, 2);
+        base_run_distance(move_distance + sum_distance, 5);
         sum_distance -= move_distance;
         Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
         find_circle(1);
         printf("finish\r\n");
-        osDelay(1000);
+        osDelay(500);
+        if (openmv_data.identify_color != extract_digit(openmv_data.object_list[0], 3 - i))
+        {
+            base_run_distance((extract_digit(openmv_data.object_list[0], 3 - i) - openmv_data.identify_color) * 14, 5);
+            find_circle(1);
+        }
         Put_material(openmv_data.last_identify_color - 1);
         osDelay(1000);
     }
     base_run_distance(sum_distance, 2);
+    base_rotation_world(180, 3);
+    osDelay(1000);
+    base_run_distance(14, 5);
+    Get_material_floor(openmv_data.last_identify_color - 1);
+    osDelay(1000);
+
+    base_run_distance(14, 5);
+    Get_material_floor(openmv_data.last_identify_color - 1);
+    osDelay(1000);
+    base_run_distance(-28, 5);
+    Get_material_floor(openmv_data.last_identify_color - 1);
+    osDelay(1000);
 }
 
 void TemporaryStorageArea_Task(void)
@@ -307,8 +371,8 @@ void TemporaryStorageArea_Task(void)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 1;
-float rot_speed = 1;
+float run_speed = 5;
+float rot_speed = 3;
 
 uint8_t main_task(void)
 {
@@ -319,7 +383,7 @@ uint8_t main_task(void)
     // osDelay(1000);
     // set_Slider_position(150, 7);
 
-    base_Horizontal_run_distance(15, run_speed); // 移出启停区
+    base_Horizontal_run_distance(15, 4); // 移出启停区
     osDelay(200);
     base_run_distance(64, run_speed); // 去往二维码区域
     osDelay(200);
@@ -328,19 +392,26 @@ uint8_t main_task(void)
     osDelay(1000);
     base_run_distance(85, run_speed); // 去往原料区
     osDelay(1000);
+    base_Horizontal_run_distance(-4, run_speed); // 移出启停区
 
-    // MaterialArea_Task(); // 原料区任务
+    osDelay(1000);
+
+    MaterialArea_Task(); // 原料区任务
+    osDelay(1000);
+    // base_run_angle(-Get_IMU_Yaw(), 3);
+    base_run_angle(-Get_IMU_Yaw(), 5);
+
     osDelay(1000);
 
     base_run_distance(-40, run_speed); // 去往粗加工区
     osDelay(200);
     base_run_angle(-90, rot_speed);
     osDelay(200);
-    base_run_distance(175, run_speed);
+    base_run_distance(180, run_speed);
     osDelay(200);
     base_run_angle(-90, rot_speed);
+    RoughProcessingArea_Task(); // 粗加工区任务
 
-    // RoughProcessingArea_Task(); // 粗加工区任务
     osDelay(1000);
 
     base_run_distance(-88, run_speed);
@@ -348,6 +419,7 @@ uint8_t main_task(void)
     base_run_angle(90, rot_speed);
     osDelay(200);
     base_run_distance(-85, run_speed);
+    return 1;
 
     // TemporaryStorageArea_Task(); // 暂存区任务
     osDelay(1000);

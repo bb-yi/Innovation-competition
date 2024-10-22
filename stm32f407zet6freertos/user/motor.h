@@ -102,6 +102,10 @@ void set_motor_speed(uint8_t motor_id, float target_speed);
 uint8_t base_rotation_control_world(float target_angle, float speed);
 void base_run_distance(float distance, float speed);
 void base_Horizontal_run_distance(float distance, float speed);
+void base_run_distance2(float distance, float speed);
+void base_Horizontal_run_distance2(float distance, float speed);
+void base_rotation_world(float angle, float speed);
+
 void base_run_angle(float angle, float speed);
 
 void motor_test(void);

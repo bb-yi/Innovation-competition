@@ -36,6 +36,7 @@ typedef struct
     int last_identify_color; // 上一次识别的颜色
     float line_distance;     // 距离边缘距离
     float line_angle;        // 边缘角度
+    uint16_t edge_diastance;  // 边缘距离
     uint8_t hsa_circle;      // 是否识别到圆
     uint8_t heartbeat;       // 心跳
 } OPENMV_data;
@@ -50,7 +51,7 @@ int extract_digit(int number, int position);
 void Camera_SendString(const char *str);
 void Camera_switch_mode(uint8_t mode);
 float Get_find_line_angle(void);
-float Get_find_line_angle_avg(uin8_t times);
+float Get_find_line_angle_avg(uint8_t times);
 float Get_find_line_distance(void);
 
 #endif

@@ -304,12 +304,12 @@ void PID_Init(void)
     pid_base_init(&motor_C_pid);
     pid_base_init(&motor_D_pid);
     pid_base_init(&base_rotation_pid);
-    // motor_A_pid.Kp = 100.0f;
-    // motor_A_pid.Ki = 0.0f;
-    // motor_A_pid.Kd = 5.0f;
-    motor_A_pid.Kp = 60.0f;
-    motor_A_pid.Ki = 0.05f;
-    motor_A_pid.Kd = 0.0f;
+    motor_A_pid.Kp = 100.0f;
+    motor_A_pid.Ki = 0.0f;
+    motor_A_pid.Kd = 5.0f;
+    // motor_A_pid.Kp = 60.0f;
+    // motor_A_pid.Ki = 0.05f;
+    // motor_A_pid.Kd = 0.0f;
 
     motor_B_pid.Kp = motor_A_pid.Kp;
     motor_B_pid.Ki = motor_A_pid.Ki;
@@ -387,116 +387,7 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
     return Abs(radiansToDegrees(error)) < 2.0f ? 1 : 0;
 }
 
-void base_run_distance(float distance, float speed)
-{
-    uint8_t dir = 0;
-    if (distance < 0)
-    {
-        distance = -distance;
-        dir = 1;
-    }
-    speed = Abs(speed);
-    float start_yaw, error_angle, rotate_speed;
-    float start_distance_A, start_distance_B, start_distance_C, start_distance_D;
-    float now_distance_A, now_distance_B, now_distance_C, now_distance_D;
-    float avg_distance;
-    float smoothed_speed = 0;
-    start_distance_A = motor_encoder.wheel_A_distance;
-    start_distance_B = motor_encoder.wheel_B_distance;
-    start_distance_C = motor_encoder.wheel_C_distance;
-    start_distance_D = motor_encoder.wheel_D_distance;
-
-    start_yaw = Get_IMU_Yaw();
-    uint16_t cycle_time = 0;
-    for (;;)
-    {
-        now_distance_A = Abs(motor_encoder.wheel_A_distance - start_distance_A);
-        now_distance_B = Abs(motor_encoder.wheel_B_distance - start_distance_B);
-        now_distance_C = Abs(motor_encoder.wheel_C_distance - start_distance_C);
-        now_distance_D = Abs(motor_encoder.wheel_D_distance - start_distance_D);
-        avg_distance = (now_distance_A + now_distance_B + now_distance_C + now_distance_D) / 4.0f;
-        error_angle = start_yaw - Get_IMU_Yaw();
-        rotate_speed = error_angle * 10.0f;
-        smoothed_speed = S_Curve_Smoothing(0, speed, 4, cycle_time, 1000, 0.01f);
-        // printf("smoothed_speed=%.2f,cycle_time=%d\n", smoothed_speed, cycle_time);
-        // printf("error_angle=%.2f,smoothed_speed=%.2f,D_A=%.2f,D_B=%.2f,D_C=%.2f,D_D=%.2f,avg_D=%.2f\n", radiansToDegrees(error_angle), smoothed_speed, now_distance_A, now_distance_B, now_distance_C, now_distance_D, avg_distance);
-        base_control(0, (dir == 0 ? 1 : -1) * smoothed_speed, rotate_speed);
-
-        cycle_time++;
-        if (avg_distance >= distance)
-        {
-
-            for (uint16_t i = 0; i < 800; i++)
-            {
-                base_control(0, 0, 0);
-                osDelay(1);
-            }
-            motor_stop_all();
-            base_run_angle(radiansToDegrees(start_yaw - Get_IMU_Yaw()), 3);
-            motor_stop_all();
-            osDelay(1);
-
-            break;
-        }
-    }
-}
-
-// 小车水平运动指定距离
-void base_Horizontal_run_distance(float distance, float speed)
-{
-    uint8_t dir = 0;
-    if (distance < 0)
-    {
-        distance = -distance;
-        dir = 1;
-    }
-    speed = Abs(speed);
-    float start_yaw, error_angle, rotate_speed;
-    float start_distance_A, start_distance_B, start_distance_C, start_distance_D;
-    float now_distance_A, now_distance_B, now_distance_C, now_distance_D;
-    float avg_distance;
-    float smoothed_speed = 0;
-    start_distance_A = motor_encoder.wheel_A_distance;
-    start_distance_B = motor_encoder.wheel_B_distance;
-    start_distance_C = motor_encoder.wheel_C_distance;
-    start_distance_D = motor_encoder.wheel_D_distance;
-
-    start_yaw = Get_IMU_Yaw();
-    uint16_t cycle_time = 0;
-    for (;;)
-    {
-        now_distance_A = Abs(motor_encoder.wheel_A_distance - start_distance_A);
-        now_distance_B = Abs(motor_encoder.wheel_B_distance - start_distance_B);
-        now_distance_C = Abs(motor_encoder.wheel_C_distance - start_distance_C);
-        now_distance_D = Abs(motor_encoder.wheel_D_distance - start_distance_D);
-        avg_distance = (now_distance_A + now_distance_B + now_distance_C + now_distance_D) / 4.0f;
-        error_angle = start_yaw - Get_IMU_Yaw();
-        rotate_speed = error_angle * 10.0f;
-        smoothed_speed = S_Curve_Smoothing(0, speed, 4, cycle_time, 1000, 0.01f);
-        // printf("smoothed_speed=%.2f,cycle_time=%d\n", smoothed_speed, cycle_time);
-        // printf("error_angle=%.2f,smoothed_speed=%.2f,D_A=%.2f,D_B=%.2f,D_C=%.2f,D_D=%.2f,avg_D=%.2f\n", radiansToDegrees(error_angle), smoothed_speed, now_distance_A, now_distance_B, now_distance_C, now_distance_D, avg_distance);
-        base_control((dir == 0 ? 1 : -1) * smoothed_speed, 0, rotate_speed);
-
-        cycle_time++;
-        if (avg_distance >= distance)
-        {
-
-            for (uint16_t i = 0; i < 800; i++)
-            {
-                base_control(0, 0, 0);
-                osDelay(1);
-            }
-            motor_stop_all();
-            base_run_angle(radiansToDegrees(start_yaw - Get_IMU_Yaw()), 3);
-            motor_stop_all();
-            osDelay(1);
-
-            break;
-        }
-    }
-}
-
-void base_run_distance_base(float distance, float speed, uint8_t mode)
+void base_run_distance2_base(float distance, float speed, uint8_t mode)
 {
     uint8_t dir = 0;
     if (distance < 0)
@@ -516,7 +407,7 @@ void base_run_distance_base(float distance, float speed, uint8_t mode)
     start_distance_B = motor_encoder.wheel_B_distance;
     start_distance_C = motor_encoder.wheel_C_distance;
     start_distance_D = motor_encoder.wheel_D_distance;
-
+    float start_time = (float)HAL_GetTick() / 1000.0f;
     start_yaw = Get_IMU_Yaw();
     for (;;)
     {
@@ -527,7 +418,7 @@ void base_run_distance_base(float distance, float speed, uint8_t mode)
         avg_distance = (now_distance_A + now_distance_B + now_distance_C + now_distance_D) / 4.0f;
         error_angle = start_yaw - Get_IMU_Yaw();
         error_distance = distance - avg_distance;
-        rotate_speed = error_angle * 40.0f;
+        rotate_speed = error_angle * 60.0f;
         // printf("error_angle=%.2f,smoothed_speed=%.2f,D_A=%.2f,D_B=%.2f,D_C=%.2f,D_D=%.2f,avg_D=%.2f\n", radiansToDegrees(error_angle), smoothed_speed, now_distance_A, now_distance_B, now_distance_C, now_distance_D, avg_distance);
         if (mode == 0)
         {
@@ -538,7 +429,7 @@ void base_run_distance_base(float distance, float speed, uint8_t mode)
             base_control((dir == 0 ? 1 : -1) * smoothed_speed, 0, rotate_speed);
         }
         // smoothed_speed = smoothed_speed * (1 - alpha) + alpha * speed; // 平滑加速
-        float switch_distance = distance < 50.0f ? 0.3f * distance : 40.0f;
+        float switch_distance = distance < 20.0f ? 0.3f * distance : 40.0f;
         if (error_distance > switch_distance)
         {
             smoothed_speed = smoothed_speed * (1 - alpha) + alpha * speed; // 平滑加速
@@ -559,19 +450,119 @@ void base_run_distance_base(float distance, float speed, uint8_t mode)
             }
 
             osDelay(1);
+            motor_stop_all();
 
+            break;
+        }
+        if (((float)HAL_GetTick() / 1000.0f) - start_time > distance / 10.0f * 2.0f)
+        {
             break;
         }
     }
 }
 void base_run_distance2(float distance, float speed)
 {
-    base_run_distance_base(distance, speed, 0);
+    base_run_distance2_base(distance, speed, 0);
 }
 void base_Horizontal_run_distance2(float distance, float speed)
 {
-    base_run_distance_base(distance, speed, 1);
+    base_run_distance2_base(distance, speed, 1);
 }
+void base_run_distance_base(float distance, float speed, uint8_t mode)
+{
+    uint8_t dir = 0;
+    if (distance < 0)
+    {
+        distance = -distance;
+        dir = 1;
+    }
+    speed = Abs(speed);
+    float start_yaw, error_angle, rotate_speed;
+    float start_distance_A, start_distance_B, start_distance_C, start_distance_D;
+    float now_distance_A, now_distance_B, now_distance_C, now_distance_D;
+    float avg_distance;
+    float smoothed_speed = 0;
+    start_distance_A = motor_encoder.wheel_A_distance;
+    start_distance_B = motor_encoder.wheel_B_distance;
+    start_distance_C = motor_encoder.wheel_C_distance;
+    start_distance_D = motor_encoder.wheel_D_distance;
+
+    start_yaw = Get_IMU_Yaw();
+    uint16_t cycle_time = 0;
+    for (;;)
+    {
+        now_distance_A = Abs(motor_encoder.wheel_A_distance - start_distance_A);
+        now_distance_B = Abs(motor_encoder.wheel_B_distance - start_distance_B);
+        now_distance_C = Abs(motor_encoder.wheel_C_distance - start_distance_C);
+        now_distance_D = Abs(motor_encoder.wheel_D_distance - start_distance_D);
+        avg_distance = (now_distance_A + now_distance_B + now_distance_C + now_distance_D) / 4.0f;
+        error_angle = start_yaw - Get_IMU_Yaw();
+        rotate_speed = error_angle * 60.0f;
+        smoothed_speed = S_Curve_Smoothing(0, speed, 4, cycle_time, 1000, 0.01f);
+        // printf("smoothed_speed=%.2f,cycle_time=%d\n", smoothed_speed, cycle_time);
+        // printf("error_angle=%.2f,smoothed_speed=%.2f,D_A=%.2f,D_B=%.2f,D_C=%.2f,D_D=%.2f,avg_D=%.2f\n", radiansToDegrees(error_angle), smoothed_speed, now_distance_A, now_distance_B, now_distance_C, now_distance_D, avg_distance);
+        if (mode == 0)
+        {
+            base_control(0, (dir == 0 ? 1 : -1) * smoothed_speed, rotate_speed);
+        }
+        else if (mode == 1)
+        {
+            base_control((dir == 0 ? 1 : -1) * smoothed_speed, 0, rotate_speed);
+        }
+
+        cycle_time++;
+        if (avg_distance >= distance)
+        {
+
+            for (uint16_t i = 0; i < 800; i++)
+            {
+                base_control(0, 0, 0);
+                osDelay(1);
+            }
+            motor_stop_all();
+            // base_run_angle(radiansToDegrees(start_yaw - Get_IMU_Yaw()), 3);
+            // motor_stop_all();
+            osDelay(1);
+
+            break;
+        }
+    }
+}
+void base_run_distance(float distance, float speed)
+{
+    base_run_distance2_base(distance, speed, 0);
+}
+
+// 小车水平运动指定距离
+void base_Horizontal_run_distance(float distance, float speed)
+{
+    base_run_distance2_base(distance, speed, 1);
+}
+
+void base_rotation_world(float angle, float speed)
+{
+    float flag = 0;
+
+    for (;;)
+    {
+        flag = base_rotation_control_world(angle, speed);
+        // printf("flag=%d, yaw=%.2f\n", flag, radiansToDegrees(Get_IMU_Yaw_speed()));
+        if ((flag != 0) && (Abs(Get_IMU_Yaw_speed()) < 0.01f))
+        {
+            for (uint8_t i = 0; i < 255; i++)
+            {
+                base_control(0, 0, 0);
+                osDelay(1);
+            }
+            motor_stop_all();
+            osDelay(1);
+            break;
+        }
+
+        osDelay(1);
+    }
+}
+
 /**
  * @brief 小车旋转指定角度
  *  阻塞型函数

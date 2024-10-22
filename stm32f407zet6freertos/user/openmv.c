@@ -43,7 +43,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 			break;
 
 		case 'y': // 识别圆中心位置
-			if (sscanf(buffer, "[y,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color) == 3)
+			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
 			{
 				openmv_data.hsa_circle = 1;
 				if (openmv_data.identify_color == 1 || openmv_data.identify_color == 2 || openmv_data.identify_color == 3)
@@ -55,7 +55,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 			break;
 
 		case 'c': // 高分辨率识别圆中心位置
-			if (sscanf(buffer, "[c,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.last_identify_color) == 3)
+			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
 			{
 				openmv_data.hsa_circle = 1;
 				if (openmv_data.identify_color == 1 || openmv_data.identify_color == 2 || openmv_data.identify_color == 3)
@@ -82,6 +82,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 	}
 	else if (buffer[0] == 'N' && buffer[1] == 'O' && buffer[2] == 'N' && buffer[3] == 'E')
 	{
+
 		openmv_data.hsa_circle = 0;
 	}
 
@@ -155,7 +156,7 @@ void Camera_switch_mode(uint8_t mode)
 		Camera_now_mode = QR_MODE;
 		break;
 	case CENTER_POSITION_MODE:
-		Camera_SendString("y");
+		Camera_SendString("c"); // y
 		Camera_now_mode = CENTER_POSITION_MODE;
 		break;
 	case HIGH_CENTER_POSITION_MODE:
@@ -176,13 +177,13 @@ float Get_find_line_angle(void)
 	return openmv_data.line_angle;
 }
 
-float Get_find_line_angle_avg(uin8_t times)
+float Get_find_line_angle_avg(uint8_t times)
 {
 	float sum = 0;
 	for (uint8_t i; i < times; i++)
 	{
 		sum += Get_find_line_angle();
-		osDelay(10);
+		osDelay(1);
 	}
 	return sum / times;
 }

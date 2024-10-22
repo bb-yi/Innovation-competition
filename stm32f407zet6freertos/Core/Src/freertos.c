@@ -243,6 +243,7 @@ void StartTask03(void *argument)
   stepper_enable(0);
   Set_Table_Pos(0);
   Set_Sliding_table_Pos(0);
+  Release_material();
   Camera_switch_mode(FIND_LINE_MODE);
   // Slider_position_init();
   // osDelay(1000);
@@ -257,21 +258,42 @@ void StartTask03(void *argument)
       break;
     }
   }
-  // Camera_switch_mode(FIND_LINE_MODE);
-  Set_Sliding_table_Pos(0);
+
   osDelay(1000);
   Slider_position_init();
   osDelay(1000);
   set_Slider_position(150, 7);
-  // main_task();
-  // base_run_distance(20, 1.5);
-  // base_run_distance(-20, 1.5);
-  //  base_run_angle(90, 1);
+  QrCode_Task();
+
+  osDelay(1000);
+
+  // Catch_material();
+  main_task();
+  // base_run_angle(3, 5);
+  // Get_material(0);
+  // osDelay(1000);
+  // Get_material(1);
+  // osDelay(1000);
+  // Get_material(2);
+  // osDelay(1000);
+
+  // base_run_distance(20, 2);
+  // osDelay(1000);
+  // base_run_distance(-60, 2);
+  // base_run_angle(90, 1);
 
   // find_line_calibrate_MPU();
-  // MaterialArea_Task();
+  // find_line_calibrate_MPU_PID();
+  // base_control(0, 0, 5);
+  // Set_Sliding_table_Pos(1);
+  // osDelay(2000);
+  // Set_Sliding_table_Pos(0);
+  // osDelay(2000);
 
-  RoughProcessingArea_Task();
+  // MaterialArea_Task();
+  // base_rotation_world(180, 3);
+
+  // RoughProcessingArea_Task();
   // base_control(0, 0, 10);
 
   // // Get_material(0);

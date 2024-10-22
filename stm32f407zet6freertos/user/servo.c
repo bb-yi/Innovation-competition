@@ -48,7 +48,7 @@ void Set_Sliding_table_Pos(uint8_t pos)
     switch (pos)
     {
     case 0:
-        Set_Servo_angle(0, 56);
+        Set_Servo_angle(0, 54);
         break;
     case 1:
         Set_Servo_angle(0, 225);
@@ -92,21 +92,44 @@ void Get_material(uint8_t pos)
     Release_material();
     Set_Sliding_table_Pos(0);
     osDelay(500);
+    set_Slider_position(85, 7);
+    osDelay(1000);
+    Catch_material();
+    osDelay(500);
+    set_Slider_position(145, 7);
+    Set_Table_Pos(pos);
+    Set_Sliding_table_Pos(1);
+    osDelay(1500);
+    set_Slider_position(100, 7);
+    osDelay(800);
+    Release_material();
+    osDelay(500);
+    set_Slider_position(145, 7);
+    osDelay(200);
+    Set_Sliding_table_Pos(0);
+    stepper_enable(0);
+}
+
+void Get_material_floor(uint8_t pos)
+{
+    stepper_enable(1);
+    Release_material();
+    Set_Sliding_table_Pos(0);
+    osDelay(500);
     set_Slider_position(0, 7);
     osDelay(1000);
     Catch_material();
     osDelay(500);
     set_Slider_position(145, 7);
     Set_Table_Pos(pos);
-    osDelay(1000);
     Set_Sliding_table_Pos(1);
-    osDelay(800);
+    osDelay(1500);
     set_Slider_position(100, 7);
     osDelay(800);
     Release_material();
     osDelay(500);
     set_Slider_position(145, 7);
-    osDelay(1000);
+    osDelay(200);
     Set_Sliding_table_Pos(0);
     stepper_enable(0);
 }
