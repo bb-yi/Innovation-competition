@@ -29,11 +29,11 @@
 #include "adc_data.h"
 #include "MecanumMotionControl.h"
 #include "mpu.h"
-#include "stepper_a4988.h"
+#include "SliderElevatorControl.h"
 #include "openmv.h"
 #include "user_task.h"
 #include "servo.h"
-
+#include "ZDT_Stepper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -231,87 +231,47 @@ extern int stepper_count;
 void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
-  // for (;;)
-  // {
-  //   if (Get_IMU_Is_Working())
-  //   {
-  //     break;
-  //   }
-  // }
-  stepper_enable(0);
-  Set_Table_Pos(0);
-  Set_Sliding_table_Pos(0);
-  Release_material();
-  Camera_switch_mode(FIND_LINE_MODE);
+  osDelay(500);
+  uint8_t delay_time = 5;
+  ZDT_Stepper_Read_version(1);
+  osDelay(delay_time);
+  ZDT_Stepper_Read_version(2);
+  osDelay(delay_time);
+  ZDT_Stepper_Read_version(3);
+  osDelay(delay_time);
+  ZDT_Stepper_Read_version(4);
+  osDelay(delay_time);
+  // ZDT_Stepper_stop(0, SYNC_DISABLE);
+  // ZDT_Stepper_Set_T_position(1, CW, 200, 200, 200, 120, REL_POS_MODE, SYNC_DISABLE);
+
+  // Set_Table_Pos(0);
+  // Set_Sliding_table_Pos(0);
+  // Release_material();
+  // Camera_switch_mode(FIND_LINE_MODE);
   // Slider_position_init();
   // osDelay(1000);
   // set_Slider_position(150, 7);
 
-  osDelay(1000);
-  for (;;)
-  {
+  // osDelay(1000);
+  // for (;;)
+  // {
 
-    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
-    {
-      break;
-    }
-  }
+  //   if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+  //   {
+  //     break;
+  //   }
+  // }
 
-  osDelay(1000);
-  Slider_position_init();
-  osDelay(1000);
-  set_Slider_position(150, 7);
-  QrCode_Task();
+  // osDelay(1000);
+  // Slider_position_init();
+  // osDelay(1000);
+  // set_Slider_position(150, 7);
+  // QrCode_Task();
 
-  osDelay(1000);
+  // osDelay(1000);
 
   // Catch_material();
-  main_task();
-  // base_run_angle(3, 5);
-  // Get_material(0);
-  // osDelay(1000);
-  // Get_material(1);
-  // osDelay(1000);
-  // Get_material(2);
-  // osDelay(1000);
-
-  // base_run_distance(20, 2);
-  // osDelay(1000);
-  // base_run_distance(-60, 2);
-  // base_run_angle(90, 1);
-
-  // find_line_calibrate_MPU();
-  // find_line_calibrate_MPU_PID();
-  // base_control(0, 0, 5);
-  // Set_Sliding_table_Pos(1);
-  // osDelay(2000);
-  // Set_Sliding_table_Pos(0);
-  // osDelay(2000);
-
-  // MaterialArea_Task();
-  // base_rotation_world(180, 3);
-
-  // RoughProcessingArea_Task();
-  // base_control(0, 0, 10);
-
-  // // Get_material(0);
-  // // osDelay(1000);
-  // Put_material(2);
-  // osDelay(1000);
-
-  // base_run_distance(1, 2);
-  // osDelay(1000);
-  // base_run_distance(-1, 2);
-  // osDelay(1000);
-
-  // base_Horizontal_run_distance(20, 2);
-  // osDelay(1000);
-  // base_Horizontal_run_distance(-20, 2);
-  // osDelay(1000);
-  // osDelay(1000);
-  // base_run_angle(3, 3);
-
-  // osDelay(1000);
+  // main_task();
   /* Infinite loop */
   float test_speed;
   float temp = 2.5;
@@ -326,15 +286,7 @@ void StartTask03(void *argument)
     {
       test_speed = -temp;
     }
-    // set_motor_speed(0, test_speed);
-    // set_motor_speed(1, test_speed);
-    // set_motor_speed(2, test_speed);
-    // set_motor_speed(3, test_speed);
-    // base_control(0, test_speed, 0);
-    // Catch_material();
-    // osDelay(1000);
-    // Release_material();
-    // osDelay(1000);
+
     osDelay(1);
   }
   /* USER CODE END StartTask03 */
@@ -353,7 +305,6 @@ void StartTask04(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    // RemoteControl_Task();
     osDelay(1);
   }
   /* USER CODE END StartTask04 */

@@ -1,7 +1,7 @@
 #include "servo.h"
 #include "tim.h"
 #include "tool.h"
-#include "stepper_a4988.h"
+#include "SliderElevatorControl.h"
 
 /*
 20000个计数归零
@@ -88,7 +88,6 @@ void Release_material(void)
 
 void Get_material(uint8_t pos)
 {
-    stepper_enable(1);
     Release_material();
     Set_Sliding_table_Pos(0);
     osDelay(500);
@@ -107,12 +106,10 @@ void Get_material(uint8_t pos)
     set_Slider_position(145, 7);
     osDelay(200);
     Set_Sliding_table_Pos(0);
-    stepper_enable(0);
 }
 
 void Get_material_floor(uint8_t pos)
 {
-    stepper_enable(1);
     Release_material();
     Set_Sliding_table_Pos(0);
     osDelay(500);
@@ -131,12 +128,10 @@ void Get_material_floor(uint8_t pos)
     set_Slider_position(145, 7);
     osDelay(200);
     Set_Sliding_table_Pos(0);
-    stepper_enable(0);
 }
 
 void Put_material(uint8_t pos)
 {
-    stepper_enable(1);
     set_Slider_position(150, 7);
     osDelay(1000);
     Set_Table_Pos(pos);
@@ -156,5 +151,4 @@ void Put_material(uint8_t pos)
     osDelay(1000);
     set_Slider_position(150, 7);
     osDelay(1500);
-    stepper_enable(0);
 }

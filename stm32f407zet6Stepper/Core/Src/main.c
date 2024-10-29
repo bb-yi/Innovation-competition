@@ -31,8 +31,9 @@
 #include "MecanumMotionControl.h"
 #include "mpu.h"
 #include "openmv.h"
-#include "stepper_a4988.h"
+#include "SliderElevatorControl.h"
 #include "servo.h"
+#include "ZDT_Stepper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -86,7 +87,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   {
 
     strcpy(received_string, (char *)Rx_data);
-    fprintf(stdout, "%s\r\n", received_string); // 将串?????????????????????1接收到的数据返回到串?????????????????????1
+    HAL_UART_Transmit(&huart3, Rx_data, Size, HAL_MAX_DELAY);
+
+    // fprintf(stdout, "%s\r\n", received_string); // 将串?????????????????????1接收到的数据返回到串?????????????????????1
     // HAL_UART_Transmit(&huart5, Rx_data, Size, HAL_MAX_DELAY);
     memset(Rx_data, 0, sizeof(Rx_data));
     HAL_UARTEx_ReceiveToIdle_DMA(huart, Rx_data, sizeof(Rx_data) - 1);
@@ -109,6 +112,11 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     openmv_rx_flag = 1 - openmv_rx_flag;
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
   }
+  else if (huart == &huart3)
+  {
+    ZDT_Stepper_USRT_RX_callback(Size);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
+  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -118,32 +126,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     calibrateAngleToZero();
     calibrateDistanceToZero();
   }
-  else if (GPIO_Pin == GPIO_PIN_15) // PC3中断 滑台初始化位???????
-  {
-    uint16_t delay_time = 300;
-    while (delay_time > 1)
-    {
-      delay_time--;
-    }
-    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_15) == GPIO_PIN_RESET)
-    {
-      Slider_position_init_Callback();
-    }
-  }
 }
 
-// 定时???????????8pwm输出回调函数
-void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == TIM12) // 判断定时器是 TIM8
-  {
-    if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) // 判断通道??????????? Channel 1
-    {
-      // printf("PWM1\r\n");
-      stepper_pwm_Callback();
-    }
-  }
-}
 /* USER CODE END 0 */
 
 /**
@@ -182,7 +166,6 @@ int main(void)
   MX_UART4_Init();
   MX_USART2_UART_Init();
   MX_TIM8_Init();
-  MX_TIM12_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   MPU_Init();
@@ -191,11 +174,14 @@ int main(void)
   Servo_Init();
   HAL_UARTEx_ReceiveToIdle_DMA(&huart1, Rx_data, 200 - 1); // 启用空闲中断接收
   __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);        // 关闭DMA传输过半中断
+  ZDT_Stepper_init();
+
+  HAL_Delay(50);
 
   openmv_uart_init();
-  HAL_Delay(100);
+  HAL_Delay(50);
   openmv2_uart_init();
-  HAL_Delay(100);
+  HAL_Delay(50);
   calibrateAngleToZero();
   /* USER CODE END 2 */
 

@@ -12,15 +12,6 @@
 void motor_stop_all(void)
 {
 }
-/**
- * @brief 设置电机电压
- *
- * @param motor_id 电机编号，0~3 — —> A,B,C,D
- * @param speed 范围为-100~100
- */
-void set_motor_Voltage(uint8_t motor_id, float speed)
-{
-}
 
 /**
  * @brief 初始化电机和编码器
@@ -29,7 +20,6 @@ void set_motor_Voltage(uint8_t motor_id, float speed)
 void motor_init(void)
 {
 }
-MOTOR_Encoder motor_encoder;
 
 void calibrateDistanceToZero(void)
 {
@@ -41,7 +31,6 @@ void calibrateDistanceToZero(void)
  * @param motor_id
  * @param speed 单位，转/s
  */
-float last_error = 0.0f;
 void set_motor_speed(uint8_t motor_id, float target_speed)
 {
 }

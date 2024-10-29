@@ -5,13 +5,12 @@
 #include "adc_data.h"
 #include "MecanumMotionControl.h"
 #include "mpu.h"
-#include "stepper_a4988.h"
+#include "SliderElevatorControl.h"
 #include "openmv.h"
 #include "servo.h"
 #include "pid.h"
 
 extern SYS_STATE_Data sys_state_data; // 陀螺仪数据
-extern MOTOR_Encoder motor_encoder;   // 电机编码器数据
 extern OPENMV_data openmv_data;       // 摄像头OpenMV数据
 extern uint8_t MPU_RX_flag;           // 陀螺仪接收标志位
 extern uint8_t openmv_rx_flag;        // OpenMV接收标志位
@@ -419,7 +418,6 @@ uint8_t main_task(void)
     base_run_angle(90, rot_speed);
     osDelay(200);
     base_run_distance(-85, run_speed);
-    return 1;
 
     // TemporaryStorageArea_Task(); // 暂存区任务
     osDelay(1000);

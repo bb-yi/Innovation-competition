@@ -4,11 +4,11 @@
 /*
 1  2  3
 R  G  B
-ºì ÂÌ À¶
-[e,321,132] Ê¶±ğ¶şÎ¬Âë
-[y,0.5348,0.5076,1] Ê¶±ğÖĞĞÄÎ»ÖÃºÍÑÕÉ«
-[c,0.5348,0.5076,1] ¸ß·Ö±æÂÊÊ¶±ğÖĞĞÄÎ»ÖÃºÍÑÕÉ«
-[l£¬0.6500£¬-14] Ö±Ïß¾àÀëºÍ½Ç¶È
+çº¢ ç»¿ è“
+[e,321,132] è¯†åˆ«äºŒç»´ç 
+[y,0.5348,0.5076,1] è¯†åˆ«ä¸­å¿ƒä½ç½®å’Œé¢œè‰²
+[c,0.5348,0.5076,1] é«˜åˆ†è¾¨ç‡è¯†åˆ«ä¸­å¿ƒä½ç½®å’Œé¢œè‰²
+[lï¼Œ0.6500ï¼Œ-14] ç›´çº¿è·ç¦»å’Œè§’åº¦
 */
 OPENMV_data openmv_data;
 uint8_t openmv_rx_data[50] = {0};
@@ -27,12 +27,12 @@ void openmv2_uart_init(void)
 void openmv_uart_rx_callback(uint16_t Size)
 {
 	// HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
-	char buffer[100]; // ÓÃÓÚ´æ´¢×ª»»ºóµÄ×Ö·û´®
+	char buffer[100]; // ç”¨äºå­˜å‚¨è½¬æ¢åçš„å­—ç¬¦ä¸²
 	strncpy(buffer, (char *)openmv_rx_data, sizeof(buffer) - 1);
 
 	if (buffer[0] == '[')
 	{
-		char type = buffer[1]; // »ñÈ¡Êı¾İÀàĞÍ±êÊ¶·û
+		char type = buffer[1]; // è·å–æ•°æ®ç±»å‹æ ‡è¯†ç¬¦
 		switch (type)
 		{
 		case 'e':
@@ -42,7 +42,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 			}
 			break;
 
-		case 'y': // Ê¶±ğÔ²ÖĞĞÄÎ»ÖÃ
+		case 'y': // è¯†åˆ«åœ†ä¸­å¿ƒä½ç½®
 			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
 			{
 				openmv_data.hsa_circle = 1;
@@ -54,7 +54,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 			}
 			break;
 
-		case 'c': // ¸ß·Ö±æÂÊÊ¶±ğÔ²ÖĞĞÄÎ»ÖÃ
+		case 'c': // é«˜åˆ†è¾¨ç‡è¯†åˆ«åœ†ä¸­å¿ƒä½ç½®
 			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
 			{
 				openmv_data.hsa_circle = 1;
@@ -91,12 +91,12 @@ void openmv_uart_rx_callback(uint16_t Size)
 void openmv2_uart_rx_callback(uint16_t Size)
 {
 	// HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
-	char buffer[100]; // ÓÃÓÚ´æ´¢×ª»»ºóµÄ×Ö·û´®
+	char buffer[100]; // ç”¨äºå­˜å‚¨è½¬æ¢åçš„å­—ç¬¦ä¸²
 	strncpy(buffer, (char *)openmv2_rx_data, sizeof(buffer) - 1);
 
 	if (buffer[0] == '[')
 	{
-		char type = buffer[1]; // »ñÈ¡Êı¾İÀàĞÍ±êÊ¶·û
+		char type = buffer[1]; // è·å–æ•°æ®ç±»å‹æ ‡è¯†ç¬¦
 		switch (type)
 		{
 		case 'e':
@@ -112,40 +112,40 @@ void openmv2_uart_rx_callback(uint16_t Size)
 	openmv2_uart_init();
 }
 
-// »ñÈ¡ÈıÎ»ÊıµÄµÚ¼¸Î»
+// è·å–ä¸‰ä½æ•°çš„ç¬¬å‡ ä½
 int extract_digit(int number, int position)
 {
 	if (position < 1 || position > 3)
 	{
-		// Èç¹ûÎ»ÖÃ²»ÔÚ 1 µ½ 3 Ö®¼ä£¬·µ»Ø -1 ±íÊ¾´íÎó
+		// å¦‚æœä½ç½®ä¸åœ¨ 1 åˆ° 3 ä¹‹é—´ï¼Œè¿”å› -1 è¡¨ç¤ºé”™è¯¯
 		return -1;
 	}
 
 	switch (position)
 	{
-	case 1: // ¸öÎ»
+	case 1: // ä¸ªä½
 		return number % 10;
-	case 2: // Ê®Î»
+	case 2: // åä½
 		return (number / 10) % 10;
-	case 3: // °ÙÎ»
+	case 3: // ç™¾ä½
 		return number / 100;
 	default:
-		return -1; // ²»Ó¦µ½´ïÕâÀï
+		return -1; // ä¸åº”åˆ°è¾¾è¿™é‡Œ
 	}
 }
 
-// ·¢ËÍ×Ö·û´®
+// å‘é€å­—ç¬¦ä¸²
 void Camera_SendString(const char *str)
 {
 	HAL_UART_Transmit(&OPENMV_UART_HANDLE, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 }
-uint8_t Camera_now_mode = QR_MODE; // µ±Ç°Ä£Ê½
+uint8_t Camera_now_mode = QR_MODE; // å½“å‰æ¨¡å¼
 /*
-ÇĞ»»Ä£Ê½
-0£ºe ¶şÎ¬ÂëÊ¶±ğÄ£Ê½
-1£ºy Ê¶±ğÔ²ÖĞĞÄÎ»ÖÃ
-2£ºc ÑÕÉ«Ê¶±ğÄ£Ê½
-3£ºl Ö±Ïß¾àÀëºÍ½Ç¶ÈÊ¶±ğÄ£Ê½
+åˆ‡æ¢æ¨¡å¼
+0ï¼še äºŒç»´ç è¯†åˆ«æ¨¡å¼
+1ï¼šy è¯†åˆ«åœ†ä¸­å¿ƒä½ç½®
+2ï¼šc é¢œè‰²è¯†åˆ«æ¨¡å¼
+3ï¼šl ç›´çº¿è·ç¦»å’Œè§’åº¦è¯†åˆ«æ¨¡å¼
  */
 void Camera_switch_mode(uint8_t mode)
 {
