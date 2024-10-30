@@ -41,6 +41,10 @@
 
 extern SYS_STATE_Data sys_state_data;
 extern OPENMV_data openmv_data;
+extern ZDTStepperData stepperdata_1;
+extern ZDTStepperData stepperdata_2;
+extern ZDTStepperData stepperdata_3;
+extern ZDTStepperData stepperdata_4;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -75,14 +79,14 @@ const osThreadAttr_t myTask02_attributes = {
 osThreadId_t myTask03Handle;
 const osThreadAttr_t myTask03_attributes = {
     .name = "myTask03",
-    .stack_size = 256 * 4,
-    .priority = (osPriority_t)osPriorityLow,
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityLow2,
 };
 /* Definitions for myTask04 */
 osThreadId_t myTask04Handle;
 const osThreadAttr_t myTask04_attributes = {
     .name = "myTask04",
-    .stack_size = 256 * 4,
+    .stack_size = 128 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 
@@ -241,8 +245,24 @@ void StartTask03(void *argument)
   osDelay(delay_time);
   ZDT_Stepper_Read_version(4);
   osDelay(delay_time);
-  // ZDT_Stepper_stop(0, SYNC_DISABLE);
-  // ZDT_Stepper_Set_T_position(1, CW, 200, 200, 200, 120, REL_POS_MODE, SYNC_DISABLE);
+  osDelay(1000);
+  ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+  for (;;)
+  {
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+    {
+      break;
+    }
+  }
+  float speed = 240;
+  ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+  osDelay(1000);
+  // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
+
+  // base_run_distance_base(200, 600, 90, speed, 0);
+  // osDelay(1000);
+  // base_run_distance_base(-200, -600, -90, speed, 0);
+  // osDelay(1000);
 
   // Set_Table_Pos(0);
   // Set_Sliding_table_Pos(0);
@@ -273,20 +293,16 @@ void StartTask03(void *argument)
   // Catch_material();
   // main_task();
   /* Infinite loop */
-  float test_speed;
-  float temp = 2.5;
   for (;;)
   {
-    // set_motor_speed(1, 4);
-    if (fmod(get_time(), 5.0) < 2.5)
+    for (uint16_t i = 0; i < 360; i++)
     {
-      test_speed = temp;
+      set_Stepper_speed(1, 600, 200 * sin(degreesToRadians(i)), SYNC_DISABLE);
+      osDelay(5);
     }
-    else
-    {
-      test_speed = -temp;
-    }
-
+    motor_stop_all();
+    osDelay(1000);
+    osDelay(delay_time);
     osDelay(1);
   }
   /* USER CODE END StartTask03 */
@@ -305,6 +321,7 @@ void StartTask04(void *argument)
   /* Infinite loop */
   for (;;)
   {
+
     osDelay(1);
   }
   /* USER CODE END StartTask04 */

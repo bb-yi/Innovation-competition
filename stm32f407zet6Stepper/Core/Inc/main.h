@@ -49,18 +49,6 @@ extern "C" {
   typedef int32_t s32;
 #define CPU_MainFrequency 168000000 // 主频
 
-// 编码器的倍数
-#define EncoderMultiples 4
-// 编码器精�???????
-#define Hall_13 13
-// 轮胎直径 单位cm
-#define Mecanum_75 7.5f
-// 减�?�器的�?�数
-#define HALL_30F 30
-// 轴距 单位cm
-#define MEC_axlespacing 8.5
-// 轮距 单位cm
-#define MEC_wheelspacing 9.30
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

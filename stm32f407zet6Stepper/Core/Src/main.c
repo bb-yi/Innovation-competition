@@ -88,6 +88,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
     strcpy(received_string, (char *)Rx_data);
     HAL_UART_Transmit(&huart3, Rx_data, Size, HAL_MAX_DELAY);
+    // HAL_UART_Transmit(&huart1, Rx_data, Size, HAL_MAX_DELAY);
 
     // fprintf(stdout, "%s\r\n", received_string); // 将串?????????????????????1接收到的数据返回到串?????????????????????1
     // HAL_UART_Transmit(&huart5, Rx_data, Size, HAL_MAX_DELAY);
@@ -125,6 +126,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   {
     calibrateAngleToZero();
     calibrateDistanceToZero();
+  }
+  else if (GPIO_Pin == GPIO_PIN_3)
+  {
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+    {
+      printf("on");
+      ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+    }
+    else
+    {
+      printf("off");
+      ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+    }
   }
 }
 
@@ -198,11 +212,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  ZDT_Stepper_Set_T_position(1, CW, 200, 200, 200, 120, REL_POS_MODE, SYNC_DISABLE);
+
+  // uint8_t send_data[16] = {0x01, 0xFD, 0x01, 0x01, 0xFF, 0x01, 0xFA, 0x27, 0x10, 0x00, 0x00, 0x8C, 0xA0, 0x00, 0x00, 0x6B};
+  // HAL_UART_Transmit(&Stepper_Uart_Handle, send_data, 16, HAL_MAX_DELAY);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
+    HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }

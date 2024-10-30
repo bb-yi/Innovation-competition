@@ -1,4 +1,5 @@
 ﻿#include "ZDT_Stepper.h"
+#include "cmsis_os.h"
 
 extern DMA_HandleTypeDef hdma_usart3_rx;
 uint8_t UART_Rx_data[50] = {0};
@@ -11,13 +12,23 @@ void print_hex_array(const uint8_t *data)
     }
     printf("\n");
 }
+uint16_t delaytime = 5;
+void ZDT_Stepper_Ddelay(uint32_t delay)
+{
+    osDelay(delay);
+    // HAL_Delay(delay);
+}
 
 void ZDT_Stepper_USRT_Init(void)
 {
     HAL_UARTEx_ReceiveToIdle_DMA(&Stepper_Uart_Handle, UART_Rx_data, sizeof(UART_Rx_data));
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
 }
-ZDTStepperData stepperdata;
+ZDTStepperData stepperdata_1;
+ZDTStepperData stepperdata_2;
+ZDTStepperData stepperdata_3;
+ZDTStepperData stepperdata_4;
+
 // 根据指令标识赋值的函数
 void assign_message_based_on_command(uint8_t command_id, char *message, size_t message_size)
 {
@@ -69,6 +80,8 @@ void receive_motor_status(uint8_t *data, uint16_t size)
 {
     char message[50];       // 字符串缓冲区
     char statu_message[13]; // 状态字符串缓冲区
+    // printf("接收到指令: ");
+
     if (data == NULL)
         return; // 检查输入是否为空
     if (size == 4 && data[1] != 0x3A)
@@ -98,85 +111,105 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             printf("校验失败!\n");
             return; // 校验失败，返回
         }
-
+        ZDTStepperData *stepperdata_temp = NULL; // 定义指针
+        // 根据 data[0] 选择不同的结构体
+        switch (data[0])
+        {
+        case 0x01: // 第一个电机
+            stepperdata_temp = &stepperdata_1;
+            break;
+        case 0x02: // 第二个电机
+            stepperdata_temp = &stepperdata_2;
+            break;
+        case 0x03: // 第三个电机
+            stepperdata_temp = &stepperdata_3;
+            break;
+        case 0x04: // 第四个电机
+            stepperdata_temp = &stepperdata_4;
+            break;
+        default:
+            snprintf(message, sizeof(message), "未知电机");
+            printf("%s\n", message);
+            return; // 退出
+        }
         // 清空消息
         snprintf(message, sizeof(message), "电机 %d: ", motor_id);
 
         switch (command_id)
         {
         case 0x1F:
-            stepperdata.firmware_version = (data[2] << 8) | data[3]; // 固件版本
-            stepperdata.hardware_version = (data[4] << 8) | data[5]; // 硬件版本
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "固件版本: %d, 硬件版本: %d", stepperdata.firmware_version, stepperdata.hardware_version);
+            stepperdata_temp->firmware_version = (data[2] << 8) | data[3]; // 固件版本
+            stepperdata_temp->hardware_version = (data[4] << 8) | data[5]; // 硬件版本
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "固件版本: %d, 硬件版本: %d", stepperdata_temp->firmware_version, stepperdata_temp->hardware_version);
             break;
 
         case 0x20:
-            stepperdata.phase_resistance = (data[2] << 8) | data[3]; // 相电阻
-            stepperdata.phase_inductance = (data[4] << 8) | data[5]; // 相电感
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电阻: %d mΩ, 相电感: %d µH", stepperdata.phase_resistance, stepperdata.phase_inductance);
+            stepperdata_temp->phase_resistance = (data[2] << 8) | data[3]; // 相电阻
+            stepperdata_temp->phase_inductance = (data[4] << 8) | data[5]; // 相电感
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电阻: %d mΩ, 相电感: %d µH", stepperdata_temp->phase_resistance, stepperdata_temp->phase_inductance);
             break;
 
         case 0x24:
-            stepperdata.bus_voltage = (data[2] << 8) | data[3];
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线电压: %d mV", stepperdata.bus_voltage);
+            stepperdata_temp->bus_voltage = (data[2] << 8) | data[3];
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线电压: %d mV", stepperdata_temp->bus_voltage);
             break;
 
         case 0x26:
-            stepperdata.bus_average_current = (data[2] << 8) | data[3];
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线平均电流: %d mA", stepperdata.bus_average_current);
+            stepperdata_temp->bus_average_current = (data[2] << 8) | data[3];
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线平均电流: %d mA", stepperdata_temp->bus_average_current);
             break;
 
         case 0x27:
-            stepperdata.phase_current = (data[2] << 8) | data[3];
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电流: %d mA", stepperdata.phase_current);
+            stepperdata_temp->phase_current = (data[2] << 8) | data[3];
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电流: %d mA", stepperdata_temp->phase_current);
             break;
 
         case 0x29:
-            stepperdata.encoder_raw_value = (data[2] << 8) | data[3];
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "编码器原始值: %d", stepperdata.encoder_raw_value);
+            stepperdata_temp->encoder_raw_value = (data[2] << 8) | data[3];
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "编码器原始值: %d", stepperdata_temp->encoder_raw_value);
             break;
 
         case 0x31:
-            stepperdata.encoder_calibrated_value = (data[2] << 8) | data[3];
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "经过线性化校准后的编码器值: %d", stepperdata.encoder_calibrated_value);
+            stepperdata_temp->encoder_calibrated_value = (data[2] << 8) | data[3];
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "经过线性化校准后的编码器值: %d", stepperdata_temp->encoder_calibrated_value);
             break;
 
         case 0x33:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
-            stepperdata.target_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "目标位置: %.1f °", stepperdata.target_position);
+            stepperdata_temp->target_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "目标位置: %.1f °", stepperdata_temp->target_position);
             break;
 
         case 0x35:
             temp = (data[3] << 8) | data[4]; // 组合两个字节
-            stepperdata.current_speed = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时转速: %.1f RPM", stepperdata.current_speed);
+            stepperdata_temp->current_speed = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时转速: %.1f RPM", stepperdata_temp->current_speed);
             break;
 
         case 0x36:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
-            stepperdata.current_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时位置: %.1f °", stepperdata.current_position);
+            stepperdata_temp->current_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时位置: %.1f °", stepperdata_temp->current_position);
             break;
 
         case 0x37:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
-            stepperdata.position_error = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "位置误差: %.1f °", stepperdata.position_error);
+            stepperdata_temp->position_error = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "位置误差: %.1f °", stepperdata_temp->position_error);
             break;
 
         case 0x39:
-            stepperdata.driver_temperature = (data[2] == 0x01) ? -((int8_t)data[3]) : ((int8_t)data[3]);
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "驱动器实时温度: %.d °C", stepperdata.driver_temperature);
+            stepperdata_temp->driver_temperature = (data[2] == 0x01) ? -((int8_t)data[3]) : ((int8_t)data[3]);
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "驱动器实时温度: %.d °C", stepperdata_temp->driver_temperature);
             break;
 
         case 0x3A:
-            stepperdata.motor_status_flags = data[2];
-            stepperdata.motor_enabled = (data[2] & 0x01);
-            stepperdata.motor_position_reached = (data[2] & 0x02) >> 1;
-            stepperdata.motor_stall = (data[2] & 0x04) >> 2;
-            stepperdata.motor_stall_protection = (data[2] & 0x08) >> 3;
-            snprintf(message + strlen(message), sizeof(message) - strlen(message), "使能 %d, 位置到位 %d, 电机堵转 %d, 堵转保护 %d", stepperdata.motor_enabled, stepperdata.motor_position_reached, stepperdata.motor_stall, stepperdata.motor_stall_protection);
+            stepperdata_temp->motor_status_flags = data[2];
+            stepperdata_temp->motor_enabled = (data[2] & 0x01);
+            stepperdata_temp->motor_position_reached = (data[2] & 0x02) >> 1;
+            stepperdata_temp->motor_stall = (data[2] & 0x04) >> 2;
+            stepperdata_temp->motor_stall_protection = (data[2] & 0x08) >> 3;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "使能 %d, 位置到位 %d, 电机堵转 %d, 堵转保护 %d", stepperdata_temp->motor_enabled, stepperdata_temp->motor_position_reached, stepperdata_temp->motor_stall, stepperdata_temp->motor_stall_protection);
             break;
 
         default:
@@ -185,7 +218,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
         }
 
         // 最后统一打印
-        printf("%s\n", message);
+        // printf("%s\n", message);
     }
 }
 void ZDT_Stepper_USRT_RX_callback(uint16_t Size)
@@ -195,12 +228,15 @@ void ZDT_Stepper_USRT_RX_callback(uint16_t Size)
     // print_hex_array(UART_Rx_data);
     ZDT_Stepper_USRT_Init();
     receive_motor_status(UART_Rx_data, Size);
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
 }
 
 void ZDT_Stepper_UART_Send_Data(uint8_t *data, size_t length)
 {
-    HAL_UART_Transmit(&Stepper_Uart_Handle, data, length, HAL_MAX_DELAY);
+    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+    {
+        HAL_UART_Transmit(&Stepper_Uart_Handle, data, length, HAL_MAX_DELAY);
+    }
+    // HAL_UART_Transmit(&huart1, data, length, HAL_MAX_DELAY);
 }
 
 void ZDT_Stepper_Enable(uint8_t id, uint8_t enable, uint8_t sync_flag)
@@ -212,8 +248,10 @@ void ZDT_Stepper_Enable(uint8_t id, uint8_t enable, uint8_t sync_flag)
     command[3] = enable;    // 使能状态 (1: 使能, 0: 不使能)
     command[4] = sync_flag; // 多机同步标志位 (0: 不同步, 1: 同步)
     command[5] = 0x6B;      // 校验字节
+    HAL_UART_Transmit(&Stepper_Uart_Handle, command, 6, HAL_MAX_DELAY);
 
-    ZDT_Stepper_UART_Send_Data(command, 6);
+    // ZDT_Stepper_UART_Send_Data(command, 6);
+    // ZDT_Stepper_Ddelay(delaytime);
 }
 
 /**
@@ -241,6 +279,9 @@ void ZDT_Stepper_Set_Speed(uint8_t id, uint8_t dir, uint16_t speed_rate, float s
     command[8] = 0x6B;                     // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 9);
+    // print_hex_array(command);
+
+    ZDT_Stepper_Ddelay(delaytime);
 }
 
 /**
@@ -277,6 +318,7 @@ void ZDT_Stepper_Set_position(uint8_t id, uint8_t dir, float speed_f, float posi
     command[11] = 0x6B;                         // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 12);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 设置步进电机梯形加减速位置
@@ -317,6 +359,8 @@ void ZDT_Stepper_Set_T_position(uint8_t id, uint8_t dir, uint16_t accel_accel, u
     command[15] = 0x6B;                          // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 16);
+    // print_hex_array(command);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 力矩控制模式
@@ -342,6 +386,7 @@ void ZDT_Stepper_torque_control(uint8_t id, uint8_t dir, uint16_t current_rate, 
     command[8] = 0x6B;                       // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 9);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 
 /**
@@ -359,6 +404,7 @@ void ZDT_Stepper_start_sync_motion(uint8_t id)
     command[3] = 0x6B; // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 4);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 立即停止
@@ -376,6 +422,7 @@ void ZDT_Stepper_stop(uint8_t id, uint8_t sync_flag)
     command[3] = sync_flag; // 多机同步标志位
     command[4] = 0x6B;      // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 5);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 角度清零
@@ -391,6 +438,7 @@ void ZDT_Stepper_clear_current_position(uint8_t id)
     command[2] = 0x6D; // 固定字节
     command[3] = 0x6B; // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 4);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 触发回零
@@ -409,6 +457,7 @@ void ZDT_Stepper_trigger_zero_return(uint8_t id, uint8_t return_mode, uint8_t sy
     command[3] = sync_flag;   // 多机同步标志
     command[3] = 0x6B;        // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 5);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 解除堵转保护
@@ -424,6 +473,7 @@ void ZDT_Stepper_release_stall_protection(uint8_t id)
     command[2] = 0x52; // 固定字节
     command[3] = 0x6B; // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 4);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 触发编码器校准
@@ -440,6 +490,7 @@ void ZDT_Stepper_trigger_encoder_calibration(uint8_t id)
     command[3] = 0x6B; // 校验字节
 
     ZDT_Stepper_UART_Send_Data(command, 4);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_set_microstepping(uint8_t motor_id, uint8_t store_flag, uint8_t microstepping_value)
 {
@@ -459,6 +510,7 @@ void ZDT_Stepper_set_microstepping(uint8_t motor_id, uint8_t store_flag, uint8_t
     command[4] = microstepping_value; // 细分值
     command[5] = 0x6B;                // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 6);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 
 /**
@@ -474,6 +526,7 @@ void ZDT_Stepper_Read_version(uint8_t id)
     command[1] = 0x1F; // 命令头
     command[2] = 0x6B; // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 读取相电阻和相电感
@@ -487,6 +540,7 @@ void ZDT_Stepper_Read_resistance_and_inductance(uint8_t id)
     command[1] = 0x20;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_bus_voltage(uint8_t id)
 {
@@ -495,6 +549,7 @@ void ZDT_Stepper_Read_bus_voltage(uint8_t id)
     command[1] = 0x24;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_bus_average_current(uint8_t id)
 {
@@ -503,6 +558,7 @@ void ZDT_Stepper_Read_bus_average_current(uint8_t id)
     command[1] = 0x26;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_phase_current(uint8_t id)
 {
@@ -511,6 +567,7 @@ void ZDT_Stepper_Read_phase_current(uint8_t id)
     command[1] = 0x27;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 读取编码器原始值
@@ -524,6 +581,7 @@ void ZDT_Stepper_Read_encoder_raw_value(uint8_t id)
     command[1] = 0x29;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 /**
  * @brief 经过线性化校准后的编码器值
@@ -537,6 +595,7 @@ void ZDT_Stepper_Read_encoder_calibrated_value(uint8_t id)
     command[1] = 0x31;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_target_position(uint8_t id)
 {
@@ -545,6 +604,7 @@ void ZDT_Stepper_Read_target_position(uint8_t id)
     command[1] = 0x33;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_current_speed(uint8_t id)
 {
@@ -553,6 +613,7 @@ void ZDT_Stepper_Read_current_speed(uint8_t id)
     command[1] = 0x35;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_current_position(uint8_t id)
 {
@@ -561,6 +622,7 @@ void ZDT_Stepper_Read_current_position(uint8_t id)
     command[1] = 0x36;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_position_error(uint8_t id)
 {
@@ -569,6 +631,7 @@ void ZDT_Stepper_Read_position_error(uint8_t id)
     command[1] = 0x37;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_driver_temperature(uint8_t id)
 {
@@ -577,6 +640,7 @@ void ZDT_Stepper_Read_driver_temperature(uint8_t id)
     command[1] = 0x39;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_Read_motor_status_flags(uint8_t id)
 {
@@ -585,9 +649,10 @@ void ZDT_Stepper_Read_motor_status_flags(uint8_t id)
     command[1] = 0x3A;  // 命令头
     command[2] = 0x6B;  // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
 }
 void ZDT_Stepper_init(void)
 {
     ZDT_Stepper_USRT_Init();
-    ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+    // ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
 }
