@@ -30,7 +30,7 @@ float cos2sin(float cos_val);
 
 float degreesToRadians(float degrees);
 float radiansToDegrees(float radians);
-
+void rotate_vector(float *vector, float angle, float *result);
 #if 1
 void set_pwm_param(TIM_HandleTypeDef htim, uint32_t Channel, uint32_t freq, float duty);
 #endif

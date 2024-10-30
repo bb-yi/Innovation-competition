@@ -9,9 +9,9 @@
 #include "cmsis_os.h"
 #include "pid.h"
 
-#define HORIZONTAL_HALF_LENGTH 96.4 // 横向半轴长（L）单位mm
-#define VERTICAL_HALF_LENGTH 85.0   // 纵向半轴长（W）单位mm
-#define WHEEL_RADIUS 40.0           // 轮半径（R）单位mm
+#define HORIZONTAL_HALF_LENGTH 96.4f // 横向半轴长（L）单位mm
+#define VERTICAL_HALF_LENGTH 85.0f   // 纵向半轴长（W）单位mm
+#define WHEEL_RADIUS 40.0f           // 轮半径（R）单位mm
 /*
         前
     +---------+
@@ -38,11 +38,11 @@ https://blog.csdn.net/liuerin/article/details/104175981?utm_medium=distribute.pc
 #define MOTORD 4
 void motor_init(void);
 void motor_stop_all(void);
-void base_control(float x_speed, float y_speed, float rot_speed);
-void calibrateDistanceToZero(void);
+void base_speed_control(float x_speed, float y_speed, float rot_speed);
 void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed, uint8_t sync_flag);
+uint8_t CheckMotorsAtTargetPosition(void);
 uint8_t base_rotation_control_world(float target_angle, float speed);
-void base_run_distance_base(float distance_x, float distance_y, float angle, float speed, uint8_t mode);
+void base_run_distance_base(float distance_x, float distance_y, float angle, float speed);
 void base_run_distance(float distance, float speed);
 void base_Horizontal_run_distance(float distance, float speed);
 void base_rotation_world(float angle, float speed);

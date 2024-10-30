@@ -167,12 +167,10 @@ void find_circle(uint8_t mode)
         output_y = clamp(output_y, -clamp_value, clamp_value);
         if (openmv_data.hsa_circle == 1)
         {
-            base_control(output_x, output_y, output_yaw);
             if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
             {
                 for (uint16_t i = 0; i < 200; i++)
                 {
-                    base_control(0, 0, 0);
                     osDelay(1);
                 }
                 if (1)
@@ -184,7 +182,6 @@ void find_circle(uint8_t mode)
                         for (uint16_t i = 0; i < 500; i++)
                         {
 
-                            base_control(0, 0, 0);
                             osDelay(1);
                         }
                         find_circle_pid.integral = 0.0f;
@@ -204,7 +201,6 @@ void find_circle(uint8_t mode)
         }
         else
         {
-            base_control(0, 0, output_yaw);
         }
 
         osDelay(1);
@@ -242,12 +238,10 @@ void find_line_calibrate_MPU_PID(void)
         error_angle = clamp(error_angle, -5, 5);
         output = PID_Control(&fine_line_PID, error_angle);
         output = clamp(output, -10, 10);
-        base_control(0, 0, output);
         if (Abs(error_angle) < 1.0f)
         {
             for (uint16_t i = 0; i < 200; i++)
             {
-                base_control(0, 0, 0);
                 osDelay(1);
             }
             if (Abs(error_angle) < 1.0f)

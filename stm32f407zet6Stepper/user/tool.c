@@ -218,7 +218,12 @@ float radiansToDegrees(float radians)
 {
     return radians * (180.0f / PI);
 }
-
+void rotate_vector(float *vector, float angle, float *result)
+{
+    float rad = angle * (PI / 180.0);                        // 将角度转换为弧度
+    result[0] = vector[0] * cos(rad) - vector[1] * sin(rad); // 计算x'
+    result[1] = vector[0] * sin(rad) + vector[1] * cos(rad); // 计算y'
+}
 #if 1
 /**
  * @brief 通用接口，主频80MHz，预分频值为80-1，设置PWM的脉冲频率freq(0.16-10kHz)、占空比参数 pulse (0-100)

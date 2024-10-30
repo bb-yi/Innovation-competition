@@ -257,13 +257,26 @@ void StartTask03(void *argument)
   float speed = 240;
   ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
   osDelay(1000);
+
   // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
 
-  // base_run_distance_base(200, 600, 90, speed, 0);
+  base_run_distance_base(100, 100, 0, speed);
+  osDelay(1000);
+  base_run_distance_base(-100, -100, 0, speed);
+  osDelay(1000);
+  base_run_distance_base(0, 0, 1, speed);
+  osDelay(1000);
+  base_run_distance_base(0, 0, -1, speed);
+  osDelay(1000);
+  for (uint16_t i = 0; i < 60; i++)
+  {
+    base_run_distance_base(0, 0, 6, speed);
+    // osDelay(10);
+  }
+  // base_run_distance_base(0, 0, 90, speed, 0);
   // osDelay(1000);
-  // base_run_distance_base(-200, -600, -90, speed, 0);
+  // base_run_distance_base(0, 0, -90, speed, 0);
   // osDelay(1000);
-
   // Set_Table_Pos(0);
   // Set_Sliding_table_Pos(0);
   // Release_material();
@@ -295,11 +308,7 @@ void StartTask03(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    for (uint16_t i = 0; i < 360; i++)
-    {
-      set_Stepper_speed(1, 600, 200 * sin(degreesToRadians(i)), SYNC_DISABLE);
-      osDelay(5);
-    }
+
     motor_stop_all();
     osDelay(1000);
     osDelay(delay_time);

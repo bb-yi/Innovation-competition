@@ -125,7 +125,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   if (GPIO_Pin == GPIO_PIN_0) // 用户按键 按下归零???????螺仪和轮子编码器
   {
     calibrateAngleToZero();
-    calibrateDistanceToZero();
   }
   else if (GPIO_Pin == GPIO_PIN_3)
   {

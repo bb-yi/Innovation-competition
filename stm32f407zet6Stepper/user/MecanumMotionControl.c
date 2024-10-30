@@ -1,8 +1,8 @@
 #include "MecanumMotionControl.h"
 #include "mpu.h"
 #include "ZDT_Stepper.h"
-uint16_t accel_accel = 240; // 加速度 单位RPM/s
-float max_speed_f = 300.0f; // 最大速度 单位RPM
+uint16_t accel_accel_max = 240; // 加速度 单位RPM/s
+float max_speed_f = 300.0f;     // 最大速度 单位RPM
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
 extern ZDTStepperData stepperdata_3;
@@ -25,14 +25,10 @@ void motor_stop_all(void)
 }
 
 /**
- * @brief 初始化电机和编码器
+ * @brief 初始化电机
  *
  */
 void motor_init(void)
-{
-}
-
-void calibrateDistanceToZero(void)
 {
 }
 
@@ -40,7 +36,7 @@ void calibrateDistanceToZero(void)
  * @brief 设置电机速度
  *
  * @param motor_id
- * @param speed 单位，转/s
+ * @param speed 单位，RPM
  */
 void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed, uint8_t sync_flag)
 {
@@ -79,27 +75,35 @@ float find_max_angle(float angle_A, float angle_B, float angle_C, float angle_D)
     }
     return max_angle;
 }
-void Set_all_stepper_angle(float angle_A, float angle_B, float angle_C, float angle_D, float max_speed)
+void Set_all_stepper_angle(float *angles, float max_speed)
 {
-    float speed_A, speed_B, speed_C, speed_D;
-    float accel_accel_A, accel_accel_B, accel_accel_C, accel_accel_D;
-    float max_angle = find_max_angle(Abs(angle_A), Abs(angle_B), Abs(angle_C), Abs(angle_D));
-    speed_A = Abs(angle_A * max_speed_f / max_angle);
-    speed_B = Abs(angle_B * max_speed_f / max_angle);
-    speed_C = Abs(angle_C * max_speed_f / max_angle);
-    speed_D = Abs(angle_D * max_speed_f / max_angle);
-    accel_accel_A = Abs(angle_A * accel_accel / max_angle);
-    accel_accel_B = Abs(angle_B * accel_accel / max_angle);
-    accel_accel_C = Abs(angle_C * accel_accel / max_angle);
-    accel_accel_D = Abs(angle_D * accel_accel / max_angle);
+    float speed[4];
+    float accel_accel[4];
+    float max_angle = find_max_angle(Abs(angles[0]), Abs(angles[1]), Abs(angles[2]), Abs(angles[3]));
+    speed[0] = Abs(angles[0] * max_speed_f / max_angle);
+    speed[1] = Abs(angles[1] * max_speed_f / max_angle);
+    speed[2] = Abs(angles[2] * max_speed_f / max_angle);
+    speed[3] = Abs(angles[3] * max_speed_f / max_angle);
+    accel_accel[0] = Abs(angles[0] * accel_accel_max / max_angle);
+    accel_accel[1] = Abs(angles[1] * accel_accel_max / max_angle);
+    accel_accel[2] = Abs(angles[2] * accel_accel_max / max_angle);
+    accel_accel[3] = Abs(angles[3] * accel_accel_max / max_angle);
 
-    Set_Stepper_run_T_angle(1, accel_accel_A, speed_A, angle_A, SYNC_ENABLE);
-    Set_Stepper_run_T_angle(2, accel_accel_B, speed_B, angle_B, SYNC_ENABLE);
-    Set_Stepper_run_T_angle(3, accel_accel_C, speed_C, angle_C, SYNC_ENABLE);
-    Set_Stepper_run_T_angle(4, accel_accel_D, speed_D, angle_D, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(1, accel_accel[0], speed[0], angles[0], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], SYNC_ENABLE);
+
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
-
+void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
+{
+    set_Stepper_speed(1, accel_accel, speeds[0], SYNC_ENABLE);
+    set_Stepper_speed(2, accel_accel, speeds[1], SYNC_ENABLE);
+    set_Stepper_speed(3, accel_accel, speeds[2], SYNC_ENABLE);
+    set_Stepper_speed(4, accel_accel, speeds[3], SYNC_ENABLE);
+    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+}
 /**
  * @brief PID控制句柄初始化
  *
@@ -118,21 +122,35 @@ void pid_base_init(pid *p)
     p->Output = 0.0f;
 }
 
-void MecanumWheelIK(float S_x, float S_y, float angle, float *wheel_A_angle, float *wheel_B_angle, float *wheel_C_angle, float *wheel_D_angle)
+// 逆运动学解算
+void MecanumWheelIK(float S_x, float S_y, float angle, float *wheel_angles)
 {
-    *wheel_A_angle = radiansToDegrees((-S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
-    *wheel_B_angle = radiansToDegrees((S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
-    *wheel_C_angle = radiansToDegrees((-S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
-    *wheel_D_angle = radiansToDegrees((S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[0] = radiansToDegrees((-S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[1] = radiansToDegrees((S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[2] = radiansToDegrees((-S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[3] = radiansToDegrees((S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
 }
 
+// 正运动学解算
+void MecanumWheelFK(float wheel_angles[4], float *S_x, float *S_y, float *angle)
+{
+    *angle = WHEEL_RADIUS * (wheel_angles[2] + wheel_angles[3] - wheel_angles[0] - wheel_angles[1]) / (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) / 4.0f;
+    *S_x = WHEEL_RADIUS * (wheel_angles[1] + wheel_angles[3] - wheel_angles[0] - wheel_angles[2]) / 4.0f;
+    *S_y = WHEEL_RADIUS * (wheel_angles[0] + wheel_angles[1] + wheel_angles[2] + wheel_angles[3]) / 4.0f;
+}
+
+/**
+ * @brief 检查电机是否到达目标位置
+ *
+ * @return uint8_t 到达目标位置返回1，否则返回0
+ */
 uint8_t CheckMotorsAtTargetPosition(void)
 {
     ZDT_Stepper_Read_motor_status_flags(1);
     ZDT_Stepper_Read_motor_status_flags(2);
     ZDT_Stepper_Read_motor_status_flags(3);
     ZDT_Stepper_Read_motor_status_flags(4);
-    printf("1:%d, 2:%d, 3:%d, 4:%d\r\n", stepperdata_1.motor_position_reached, stepperdata_2.motor_position_reached, stepperdata_3.motor_position_reached, stepperdata_4.motor_position_reached);
+    printf("A:%d, B:%d, C:%d, D:%d\r\n", stepperdata_1.motor_position_reached, stepperdata_2.motor_position_reached, stepperdata_3.motor_position_reached, stepperdata_4.motor_position_reached);
     if (stepperdata_1.motor_position_reached == 1 && stepperdata_2.motor_position_reached == 1 && stepperdata_3.motor_position_reached == 1 && stepperdata_4.motor_position_reached == 1)
     {
         return 1;
@@ -144,14 +162,18 @@ uint8_t CheckMotorsAtTargetPosition(void)
 }
 
 /**
- * @brief 小车底盘运动
+ * @brief 控制小车速度
  *s
- * @param x_speed x方向速度，单位，cm/s
- * @param y_speed y方向速度，单位，cm/s
+ * @param x_speed x方向速度，单位，RPM
+ * @param y_speed y方向速度，单位，RPM
  * @param rot_speed 旋转速度，1左右就可以
  */
-void base_control(float x_speed, float y_speed, float rot_speed)
+void base_speed_control(float x_speed, float y_speed, float rot_speed)
 {
+    float wheel_speeds[4];
+    MecanumWheelIK(x_speed, y_speed, rot_speed, wheel_speeds);
+    // printf("wheel_speeds:%f,%f,%f,%f,x_speed:%f,y_speed:%f,rot_speed:%f\r\n", wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3], x_speed, y_speed, rot_speed);
+    Set_all_stepper_speed(wheel_speeds, accel_accel_max);
 }
 
 /**
@@ -165,17 +187,34 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
     return 0;
 }
 
-void base_run_distance_base(float distance_x, float distance_y, float angle, float speed, uint8_t mode)
+/**
+ * @brief 小车底盘控制
+ *
+ * @param distance_x x 方向距离
+ * @param distance_y y 方向距离
+ * @param angle 旋转角度 逆时针为正，顺时针为负 单位 度
+ * @param speed 速度 一般值 150
+ */
+void base_run_distance_base(float distance_x, float distance_y, float angle, float speed)
 {
-    float wheel_A_angle, wheel_B_angle, wheel_C_angle, wheel_D_angle;
-    MecanumWheelIK(distance_x, distance_y, angle, &wheel_A_angle, &wheel_B_angle, &wheel_C_angle, &wheel_D_angle);
-    Set_all_stepper_angle(wheel_A_angle, wheel_B_angle, wheel_C_angle, wheel_D_angle, speed);
+    distance_x = distance_x / 10.0f; // 将函数的单位转化为cm
+    distance_y = distance_y / 10.0f;
+    float wheel_angles[4];
+    MecanumWheelIK(distance_x, distance_y, angle, wheel_angles);
+    Set_all_stepper_angle(wheel_angles, speed);
+    uint32_t start_time = HAL_GetTick();
+    uint32_t max_time = (uint32_t)((distance_x + distance_y) / 50);
     for (;;)
     {
-
+        uint32_t current_time = HAL_GetTick();
         if (CheckMotorsAtTargetPosition() == 1)
         {
             printf("到达目标位置\n");
+            break;
+        }
+        if (current_time - start_time > 10000)
+        {
+            printf("超时,max_time:%d\n", max_time);
             break;
         }
         osDelay(1);
@@ -183,13 +222,13 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
 }
 void base_run_distance(float distance, float speed)
 {
-    // base_run_distance_base(distance, speed, 0);
+    base_run_distance_base(0, distance, 0, speed);
 }
 
 // 小车水平运动指定距离
 void base_Horizontal_run_distance(float distance, float speed)
 {
-    // base_run_distance_base(distance, speed, 1);
+    base_run_distance_base(distance, 0, 0, speed);
 }
 
 void base_rotation_world(float angle, float speed)
@@ -199,11 +238,24 @@ void base_rotation_world(float angle, float speed)
 /**
  * @brief 小车旋转指定角度
  *  阻塞型函数
- * @param angle 角度 顺时针为正，单位 度
+ * @param angle 角度 逆时针为正，顺时针为负
  * @param speed
  */
 void base_run_angle(float angle, float speed)
 {
+    base_run_distance_base(0, 0, angle, speed);
+}
+
+void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float speed)
+{
+    float target_speed[2] = {distance_x * speed / (distance_x + distance_y), distance_y * speed / (distance_x + distance_y)};
+    float wheel_speeds[4];
+    MecanumWheelIK(target_speed[0], target_speed[1], rot_speed, wheel_speeds);
+    // printf("wheel_speeds:%f,%f,%f,%f,x_speed:%f,y_speed:%f,rot_speed:%f\r\n", wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3], x_speed, y_speed, rot_speed);
+    Set_all_stepper_speed(wheel_speeds, accel_accel_max);
+    for (uint8_t i = 0; i < 100; i++)
+    {
+    }
 }
 
 /**
@@ -212,44 +264,4 @@ void base_run_angle(float angle, float speed)
  */
 void motor_test(void)
 {
-
-    // for (int i = 0; i < 4; i++)
-    // {
-    //     for (uint8_t j = 0; j < 200; j++)
-    //     {
-    //         float now_sp = j < 100 ? j : j - 200;
-    //         encoders_read();
-    //         set_motor_Voltage(i, now_sp);
-    //         HAL_Delay(50);
-    //     }
-    //     OLED_ShowNumber(0, 12, i, 1, 12);
-    //     OLED_Refresh_Gram();
-    //     HAL_Delay(1000);
-    //     motor_stop_all();
-    //     HAL_Delay(1000);
-    // }
-    base_control(70, 0, 0);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
-    base_control(-70, 0, 0);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
-    base_control(0, 70, 0);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
-    base_control(0, -70, 0);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
-    base_control(0, 0, 600);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
-    base_control(0, 0, -600);
-    osDelay(500);
-    motor_stop_all();
-    osDelay(2000);
 }
