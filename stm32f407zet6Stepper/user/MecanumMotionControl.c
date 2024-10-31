@@ -197,13 +197,13 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
  */
 void base_run_distance_base(float distance_x, float distance_y, float angle, float speed)
 {
-    distance_x = distance_x / 10.0f; // 将函数的单位转化为cm
-    distance_y = distance_y / 10.0f;
+    distance_x = distance_x * 10.0f; // 将函数的单位转化为cm
+    distance_y = distance_y * 10.0f;
     float wheel_angles[4];
     MecanumWheelIK(distance_x, distance_y, angle, wheel_angles);
     Set_all_stepper_angle(wheel_angles, speed);
     uint32_t start_time = HAL_GetTick();
-    uint32_t max_time = (uint32_t)((distance_x + distance_y) / 50);
+    float max_time = angle == 0 ? Abs((distance_x + distance_y) / 50) : 3;
     for (;;)
     {
         uint32_t current_time = HAL_GetTick();
@@ -212,9 +212,9 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
             printf("到达目标位置\n");
             break;
         }
-        if (current_time - start_time > 10000)
+        if (current_time - start_time > (uint32_t)(max_time * 1000))
         {
-            printf("超时,max_time:%d\n", max_time);
+            printf("机身运动超时,max_time:%f\n", max_time);
             break;
         }
         osDelay(1);
@@ -250,7 +250,7 @@ void base_run_distance_and_rotation(float distance_x, float distance_y, float an
 {
     float target_speed[2] = {distance_x * speed / (distance_x + distance_y), distance_y * speed / (distance_x + distance_y)};
     float wheel_speeds[4];
-    MecanumWheelIK(target_speed[0], target_speed[1], rot_speed, wheel_speeds);
+    MecanumWheelIK(target_speed[0], target_speed[1], 0, wheel_speeds);
     // printf("wheel_speeds:%f,%f,%f,%f,x_speed:%f,y_speed:%f,rot_speed:%f\r\n", wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3], x_speed, y_speed, rot_speed);
     Set_all_stepper_speed(wheel_speeds, accel_accel_max);
     for (uint8_t i = 0; i < 100; i++)

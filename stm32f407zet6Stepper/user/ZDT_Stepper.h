@@ -38,6 +38,11 @@ typedef struct
     uint8_t motor_position_reached;    // 电机位置到位标志位
     uint8_t motor_stall;               // 电机堵转标志位
     uint8_t motor_stall_protection;    // 电机编码器校准标志位
+    uint8_t motor_Zero_Status_flags;   // 电机回零标志位
+    uint8_t motor_encoder_ready;       // 编码器就绪状态标志位
+    uint8_t motor_calibration_ready;   // 校准表就绪状态标志位
+    uint8_t motor_zeroing_in_progress; // 正在回零标志位
+    uint8_t motor_zeroing_failed;      // 回零失败标志位
 } ZDTStepperData;
 
 void ZDT_Stepper_USRT_Init(void);
@@ -69,5 +74,6 @@ void ZDT_Stepper_Read_current_position(uint8_t id);
 void ZDT_Stepper_Read_position_error(uint8_t id);
 void ZDT_Stepper_Read_driver_temperature(uint8_t id);
 void ZDT_Stepper_Read_motor_status_flags(uint8_t id);
+void ZDT_Stepper_Read_Zero_Status_flags(uint8_t id);
 void ZDT_Stepper_init(void);
 #endif

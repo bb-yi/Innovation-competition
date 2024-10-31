@@ -45,6 +45,7 @@ extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
 extern ZDTStepperData stepperdata_3;
 extern ZDTStepperData stepperdata_4;
+extern ZDTStepperData stepperdata_5;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -245,6 +246,8 @@ void StartTask03(void *argument)
   osDelay(delay_time);
   ZDT_Stepper_Read_version(4);
   osDelay(delay_time);
+  ZDT_Stepper_Read_version(5);
+  osDelay(delay_time);
   osDelay(1000);
   ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
   for (;;)
@@ -257,20 +260,33 @@ void StartTask03(void *argument)
   float speed = 240;
   ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
   osDelay(1000);
+  // uint8_t data[] = {0x05, 0x9A, 0x02, 0x00, 0x6B};               // ??????
+  // HAL_UART_Transmit(&huart3, data, sizeof(data), HAL_MAX_DELAY); // ????
+  // Slider_position_init();
+  // osDelay(1000);
+  // set_Slider_position(0, 1500);
+  // osDelay(1000);
+  // set_Slider_position(40, 800);
+  // osDelay(1000);
+  // set_Slider_position(150, 600);
+  // osDelay(1000);
+  // set_Slider_position(80, 200);
+  // osDelay(1000);
 
+  // ZDT_Stepper_Set_T_position(5, CCW, 1500, 1500, 1500, 1310, REL_POS_MODE, SYNC_DISABLE);
   // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
 
-  base_run_distance_base(100, 100, 0, speed);
+  base_run_distance_base(10, 10, 0, speed);
   osDelay(1000);
-  base_run_distance_base(-100, -100, 0, speed);
+  base_run_distance_base(-10, -10, 0, speed);
   osDelay(1000);
-  base_run_distance_base(0, 0, 1, speed);
+  base_run_distance_base(0, 0, 90, speed);
   osDelay(1000);
-  base_run_distance_base(0, 0, -1, speed);
+  base_run_distance_base(0, 0, -90, speed);
   osDelay(1000);
   for (uint16_t i = 0; i < 60; i++)
   {
-    base_run_distance_base(0, 0, 6, speed);
+    // base_run_distance_base(0, 0, 6, speed);
     // osDelay(10);
   }
   // base_run_distance_base(0, 0, 90, speed, 0);

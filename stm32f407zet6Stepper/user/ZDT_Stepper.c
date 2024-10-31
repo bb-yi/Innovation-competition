@@ -28,7 +28,7 @@ ZDTStepperData stepperdata_1;
 ZDTStepperData stepperdata_2;
 ZDTStepperData stepperdata_3;
 ZDTStepperData stepperdata_4;
-
+ZDTStepperData stepperdata_5;
 // 根据指令标识赋值的函数
 void assign_message_based_on_command(uint8_t command_id, char *message, size_t message_size)
 {
@@ -84,7 +84,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
 
     if (data == NULL)
         return; // 检查输入是否为空
-    if (size == 4 && data[1] != 0x3A)
+    if (size == 4 && data[1] != 0x3A && data[1] != 0x3B)
     {
         uint8_t motor_id = data[0];   // 电机地址
         uint8_t command_id = data[1]; // 指令标识
@@ -126,6 +126,9 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             break;
         case 0x04: // 第四个电机
             stepperdata_temp = &stepperdata_4;
+            break;
+        case 0x05: // 第五个电机
+            stepperdata_temp = &stepperdata_5;
             break;
         default:
             snprintf(message, sizeof(message), "未知电机");
@@ -211,7 +214,14 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->motor_stall_protection = (data[2] & 0x08) >> 3;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "使能 %d, 位置到位 %d, 电机堵转 %d, 堵转保护 %d", stepperdata_temp->motor_enabled, stepperdata_temp->motor_position_reached, stepperdata_temp->motor_stall, stepperdata_temp->motor_stall_protection);
             break;
-
+        case 0x3B:
+            stepperdata_temp->motor_Zero_Status_flags = data[2];
+            stepperdata_temp->motor_encoder_ready = (data[2] & 0x01);
+            stepperdata_temp->motor_calibration_ready = (data[2] & 0x02) >> 1;
+            stepperdata_temp->motor_zeroing_in_progress = (data[2] & 0x04) >> 2;
+            stepperdata_temp->motor_zeroing_failed = (data[2] & 0x08) >> 3;
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "正在回零 %d, 回零失败 %d", stepperdata_temp->motor_zeroing_in_progress, stepperdata_temp->motor_zeroing_failed);
+            break;
         default:
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "未知命令");
             print_hex_array(data);
@@ -219,7 +229,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
         }
 
         // 最后统一打印
-        // printf("%s\n", message);
+        printf("%s\n", message);
     }
 }
 void ZDT_Stepper_USRT_RX_callback(uint16_t Size)
@@ -456,7 +466,7 @@ void ZDT_Stepper_trigger_zero_return(uint8_t id, uint8_t return_mode, uint8_t sy
     command[1] = 0x9A;        // 命令头
     command[2] = return_mode; // 回零模式
     command[3] = sync_flag;   // 多机同步标志
-    command[3] = 0x6B;        // 校验字节
+    command[4] = 0x6B;        // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 5);
     ZDT_Stepper_Ddelay(delaytime);
 }
@@ -652,6 +662,16 @@ void ZDT_Stepper_Read_motor_status_flags(uint8_t id)
     ZDT_Stepper_UART_Send_Data(command, 3);
     ZDT_Stepper_Ddelay(delaytime);
 }
+void ZDT_Stepper_Read_Zero_Status_flags(uint8_t id)
+{
+    uint8_t command[3]; // 包含地址、命令和校验字节
+    command[0] = id;    // 电机地址
+    command[1] = 0x3B;  // 命令头
+    command[2] = 0x6B;  // 校验字节
+    ZDT_Stepper_UART_Send_Data(command, 3);
+    ZDT_Stepper_Ddelay(delaytime);
+}
+
 void ZDT_Stepper_init(void)
 {
     ZDT_Stepper_USRT_Init();
