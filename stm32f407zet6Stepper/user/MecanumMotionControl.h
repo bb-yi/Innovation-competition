@@ -31,6 +31,7 @@
 /*
 运动解算
 https://blog.csdn.net/liuerin/article/details/104175981?utm_medium=distribute.pc_relevant.none-task-blog-2~default~baidujs_utm_term~default-5-104175981-blog-120140997.235^v43^control&spm=1001.2101.3001.4242.4&utm_relevant_index=7
+https://blog.csdn.net/weixin_47702917/article/details/138448444
 */
 #define MOTORA 1
 #define MOTORB 2
@@ -47,6 +48,7 @@ void base_run_distance(float distance, float speed);
 void base_Horizontal_run_distance(float distance, float speed);
 void base_rotation_world(float angle, float speed);
 void base_run_angle(float angle, float speed);
+void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float speed);
 void motor_test(void);
 
 #endif

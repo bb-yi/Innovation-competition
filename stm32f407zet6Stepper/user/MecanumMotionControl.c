@@ -130,6 +130,17 @@ void MecanumWheelIK(float S_x, float S_y, float angle, float *wheel_angles)
     wheel_angles[2] = radiansToDegrees((-S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
     wheel_angles[3] = radiansToDegrees((S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
 }
+// 逆运动学解算
+void MecanumWheel_Speed_IK(float S_x, float S_y, float angle, float *wheel_angles)
+{
+    S_x = S_x * 10.0f / 5.729f; // 将函数的单位转化为cm/s
+    S_y = S_y * 10.0f / 5.729f;
+    angle = angle / 6.0f; // 将函数的单位转化为度/s
+    wheel_angles[0] = radiansToDegrees((-S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[1] = radiansToDegrees((S_x + S_y - (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[2] = radiansToDegrees((-S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+    wheel_angles[3] = radiansToDegrees((S_x + S_y + (HORIZONTAL_HALF_LENGTH + VERTICAL_HALF_LENGTH) * degreesToRadians(angle)) / WHEEL_RADIUS);
+}
 
 // 正运动学解算
 void MecanumWheelFK(float wheel_angles[4], float *S_x, float *S_y, float *angle)
@@ -246,15 +257,25 @@ void base_run_angle(float angle, float speed)
     base_run_distance_base(0, 0, angle, speed);
 }
 
-void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float speed)
+void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float time)
 {
-    float target_speed[2] = {distance_x * speed / (distance_x + distance_y), distance_y * speed / (distance_x + distance_y)};
+    float target_speed[2] = {distance_x / time, distance_y / time};
     float wheel_speeds[4];
-    MecanumWheelIK(target_speed[0], target_speed[1], 0, wheel_speeds);
-    // printf("wheel_speeds:%f,%f,%f,%f,x_speed:%f,y_speed:%f,rot_speed:%f\r\n", wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3], x_speed, y_speed, rot_speed);
-    Set_all_stepper_speed(wheel_speeds, accel_accel_max);
-    for (uint8_t i = 0; i < 100; i++)
+    float rot_speed[2];
+    uint32_t time_start = HAL_GetTick();
+
+    for (;;)
     {
+        uint32_t time_now = HAL_GetTick();
+        uint32_t delta_time = time_now - time_start;
+        float alpha = delta_time / time / 1000.0f;
+        rotate_vector(target_speed, -angle * alpha, rot_speed);
+        MecanumWheel_Speed_IK(rot_speed[0], rot_speed[1], angle / time, wheel_speeds); // 角度6度每秒
+        Set_all_stepper_speed(wheel_speeds, 1200);
+        if (delta_time > time * 1000)
+        {
+            break;
+        }
     }
 }
 
@@ -264,4 +285,5 @@ void base_run_distance_and_rotation(float distance_x, float distance_y, float an
  */
 void motor_test(void)
 {
+    base_run_distance_and_rotation(0, 100, 360, 3);
 }

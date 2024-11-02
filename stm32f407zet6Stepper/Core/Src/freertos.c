@@ -275,15 +275,16 @@ void StartTask03(void *argument)
 
   // ZDT_Stepper_Set_T_position(5, CCW, 1500, 1500, 1500, 1310, REL_POS_MODE, SYNC_DISABLE);
   // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
-
-  base_run_distance_base(10, 10, 0, speed);
-  osDelay(1000);
-  base_run_distance_base(-10, -10, 0, speed);
-  osDelay(1000);
-  base_run_distance_base(0, 0, 90, speed);
-  osDelay(1000);
-  base_run_distance_base(0, 0, -90, speed);
-  osDelay(1000);
+  motor_test();
+  // base_run_distance_and_rotation(0, 100, 180, 30);
+  // base_run_distance_base(10, 10, 0, speed);
+  // osDelay(1000);
+  // base_run_distance_base(-10, -10, 0, speed);
+  // osDelay(1000);
+  // base_run_distance_base(0, 0, 90, speed);
+  // osDelay(1000);
+  // base_run_distance_base(0, 0, -90, speed);
+  // osDelay(1000);
   for (uint16_t i = 0; i < 60; i++)
   {
     // base_run_distance_base(0, 0, 6, speed);
