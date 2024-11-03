@@ -275,7 +275,7 @@ void StartTask03(void *argument)
 
   // ZDT_Stepper_Set_T_position(5, CCW, 1500, 1500, 1500, 1310, REL_POS_MODE, SYNC_DISABLE);
   // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
-  motor_test();
+  // motor_test();
   // base_run_distance_and_rotation(0, 100, 180, 30);
   // base_run_distance_base(10, 10, 0, speed);
   // osDelay(1000);
@@ -325,10 +325,13 @@ void StartTask03(void *argument)
   /* Infinite loop */
   for (;;)
   {
-
-    motor_stop_all();
-    osDelay(1000);
-    osDelay(delay_time);
+    // Set_Sliding_table_Pos(0);
+    osDelay(2000);
+    // Set_Sliding_table_Pos(1);
+    osDelay(2000);
+    // motor_stop_all();
+    // osDelay(1000);
+    // osDelay(delay_time);
     osDelay(1);
   }
   /* USER CODE END StartTask03 */

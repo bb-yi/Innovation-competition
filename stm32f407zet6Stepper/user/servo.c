@@ -34,24 +34,15 @@ void Set_Servo_angle(uint8_t servo, uint16_t angle)
     }
 }
 
-void Servo_Init(void)
-{
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
-    Set_Servo_angle(0, 180);
-    Set_Servo_angle(1, 15);
-    Set_Servo_angle(2, 30);
-}
 void Set_Sliding_table_Pos(uint8_t pos)
 {
     switch (pos)
     {
     case 0:
-        Set_Servo_angle(0, 54);
+        Set_Servo_angle(0, 51);
         break;
     case 1:
-        Set_Servo_angle(0, 225);
+        Set_Servo_angle(0, 222);
         break;
     default:
         break;
@@ -63,13 +54,13 @@ void Set_Table_Pos(uint8_t pos)
     switch (pos)
     {
     case 0:
-        Set_Servo_angle(1, 15);
+        Set_Servo_angle(1, 20);
         break;
     case 1:
-        Set_Servo_angle(1, 135);
+        Set_Servo_angle(1, 138);
         break;
     case 2:
-        Set_Servo_angle(1, 255);
+        Set_Servo_angle(1, 258);
         break;
     default:
         break;
@@ -78,14 +69,22 @@ void Set_Table_Pos(uint8_t pos)
 
 void Catch_material(void)
 {
-    Set_Servo_angle(catch, 130);
+    Set_Servo_angle(catch, 133);
 }
 
 void Release_material(void)
 {
     Set_Servo_angle(catch, 30);
 }
-
+void Servo_Init(void)
+{
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
+    Set_Sliding_table_Pos(0); // 滑台舵机
+    Set_Table_Pos(0);         // 物料盘舵机
+    Catch_material();         // 爪子舵机
+}
 void Get_material(uint8_t pos)
 {
     Release_material();
