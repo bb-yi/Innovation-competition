@@ -364,8 +364,8 @@ void TemporaryStorageArea_Task(void)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 5;
-float rot_speed = 3;
+float run_speed = 80;
+float rot_speed = 60;
 
 uint8_t main_task(void)
 {
@@ -375,10 +375,17 @@ uint8_t main_task(void)
     // Slider_position_init();
     // osDelay(1000);
     // set_Slider_position(150, 7);
+    // base_run_distance_base(0, 0, 90, run_speed);
 
-    base_Horizontal_run_distance(15, 4); // 移出启停区
+    // base_run_distance_base(float distance_x, float distance_y, float angle, float speed);
+    // base_run_distance(float distance, float speed);
+    // base_Horizontal_run_distance(float distance, float speed);
+    // base_run_angle(float angle, float speed);
+
+    base_run_distance_base(15, 15, 0, run_speed);
+    // base_Horizontal_run_distance(15, 4); // 移出启停区
     osDelay(200);
-    base_run_distance(64, run_speed); // 去往二维码区域
+    base_run_distance(49, run_speed); // 去往二维码区域
     osDelay(200);
     // QrCode_Task();
 
@@ -387,32 +394,32 @@ uint8_t main_task(void)
     osDelay(1000);
     base_Horizontal_run_distance(-4, run_speed); // 移出启停区
 
-    osDelay(1000);
+    // osDelay(1000);
 
-    MaterialArea_Task(); // 原料区任务
-    osDelay(1000);
+    // MaterialArea_Task(); // 原料区任务
+    // osDelay(1000);
     // base_run_angle(-Get_IMU_Yaw(), 3);
-    base_run_angle(-Get_IMU_Yaw(), 5);
+    // base_run_angle(-Get_IMU_Yaw(), 5);
 
     osDelay(1000);
 
     base_run_distance(-40, run_speed); // 去往粗加工区
     osDelay(200);
-    base_run_angle(-90, rot_speed);
+    base_run_angle(90, rot_speed);
     osDelay(200);
     base_run_distance(180, run_speed);
     osDelay(200);
-    base_run_angle(-90, rot_speed);
-    RoughProcessingArea_Task(); // 粗加工区任务
+    base_run_angle(90, rot_speed);
+    // RoughProcessingArea_Task(); // 粗加工区任务
+    return 1;
 
     osDelay(1000);
 
     base_run_distance(-88, run_speed);
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_run_angle(-90, rot_speed);
     osDelay(200);
     base_run_distance(-85, run_speed);
-
     // TemporaryStorageArea_Task(); // 暂存区任务
     osDelay(1000);
 
@@ -426,11 +433,11 @@ uint8_t main_task(void)
     osDelay(1000);
 
     base_run_distance(-40, run_speed); // 去往粗加工区
-    osDelay(200);
+    osDelay(1000);
     base_run_angle(-90, rot_speed);
-    osDelay(200);
+    osDelay(1000);
     base_run_distance(175, run_speed);
-    osDelay(200);
+    osDelay(1000);
     base_run_angle(-90, rot_speed);
 
     // RoughProcessingArea_Task(); // 粗加工区任务

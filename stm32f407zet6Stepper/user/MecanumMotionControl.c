@@ -1,8 +1,8 @@
 #include "MecanumMotionControl.h"
 #include "mpu.h"
 #include "ZDT_Stepper.h"
-uint16_t accel_accel_max = 240; // 加速度 单位RPM/s
-float max_speed_f = 300.0f;     // 最大速度 单位RPM
+uint16_t accel_accel_max = 120; // 加速度 单位RPM/s
+float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
 extern ZDTStepperData stepperdata_3;
@@ -208,7 +208,7 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
  */
 void base_run_distance_base(float distance_x, float distance_y, float angle, float speed)
 {
-    distance_x = distance_x * 10.0f; // 将函数的单位转化为cm
+    distance_x = -distance_x * 10.0f; // 将函数的单位转化为cm
     distance_y = distance_y * 10.0f;
     float wheel_angles[4];
     MecanumWheelIK(distance_x, distance_y, angle, wheel_angles);
@@ -223,7 +223,7 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
             printf("到达目标位置\n");
             break;
         }
-        if (current_time - start_time > (uint32_t)(max_time * 1000))
+        if (current_time - start_time > (uint32_t)(7 * 1000))
         {
             printf("机身运动超时,max_time:%f\n", max_time);
             break;
@@ -285,5 +285,6 @@ void base_run_distance_and_rotation(float distance_x, float distance_y, float an
  */
 void motor_test(void)
 {
-    base_run_distance_and_rotation(0, 100, 360, 3);
+    // base_run_distance_and_rotation(0, 100, 360, 3);
+    base_run_distance(60, 240);
 }

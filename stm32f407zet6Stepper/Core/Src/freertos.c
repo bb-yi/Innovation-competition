@@ -248,7 +248,7 @@ void StartTask03(void *argument)
   osDelay(delay_time);
   ZDT_Stepper_Read_version(5);
   osDelay(delay_time);
-  osDelay(1000);
+  // osDelay(1000);
   ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
   for (;;)
   {
@@ -259,6 +259,8 @@ void StartTask03(void *argument)
   }
   float speed = 240;
   ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+  ZDT_Stepper_Enable(5, Disable, SYNC_DISABLE);
+
   osDelay(1000);
   // uint8_t data[] = {0x05, 0x9A, 0x02, 0x00, 0x6B};               // ??????
   // HAL_UART_Transmit(&huart3, data, sizeof(data), HAL_MAX_DELAY); // ????
@@ -275,7 +277,7 @@ void StartTask03(void *argument)
 
   // ZDT_Stepper_Set_T_position(5, CCW, 1500, 1500, 1500, 1310, REL_POS_MODE, SYNC_DISABLE);
   // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
-  motor_test();
+  // motor_test();
   // base_run_distance_and_rotation(0, 100, 180, 30);
   // base_run_distance_base(10, 10, 0, speed);
   // osDelay(1000);
@@ -285,11 +287,7 @@ void StartTask03(void *argument)
   // osDelay(1000);
   // base_run_distance_base(0, 0, -90, speed);
   // osDelay(1000);
-  for (uint16_t i = 0; i < 60; i++)
-  {
-    // base_run_distance_base(0, 0, 6, speed);
-    // osDelay(10);
-  }
+
   // base_run_distance_base(0, 0, 90, speed, 0);
   // osDelay(1000);
   // base_run_distance_base(0, 0, -90, speed, 0);
@@ -321,12 +319,14 @@ void StartTask03(void *argument)
   // osDelay(1000);
 
   // Catch_material();
-  // main_task();
+  main_task();
   /* Infinite loop */
   for (;;)
   {
 
     motor_stop_all();
+    // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+
     osDelay(1000);
     osDelay(delay_time);
     osDelay(1);
