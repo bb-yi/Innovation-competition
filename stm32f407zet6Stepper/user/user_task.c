@@ -157,9 +157,9 @@ void find_circle(uint8_t mode)
         error_x = -(target_x - openmv_data.object_position_y);
         error_y = (target_y - openmv_data.object_position_x);
         error_yaw = start_yaw - Get_IMU_Yaw();
-        output_x = PID_Control(&find_circle_pid, error_x);
-        output_y = PID_Control(&find_circle_pid, error_y);
-        output_yaw = PID_Control(&find_circle_yaw_pid, error_yaw);
+        output_x = PID_Control(&find_circle_pid, error_x, 1000);
+        output_y = PID_Control(&find_circle_pid, error_y, 1000);
+        output_yaw = PID_Control(&find_circle_yaw_pid, error_yaw, 1000);
         // find_circle_pid.Ki = (error_x < 0.1f) && (error_y < 0.1f) ? 0.05f : 0.07f;
         // printf("error_x=%.2f,error_y=%.2f,output_x=%.2f,output_y=%.2f\r\n", error_x, error_y, output_x, output_y);
         // printf("error_yaw=%.2f,output_yaw=%.2f\r\n", error_yaw, output_yaw);
@@ -236,7 +236,7 @@ void find_line_calibrate_MPU_PID(void)
     {
         error_angle = Get_find_line_angle();
         error_angle = clamp(error_angle, -5, 5);
-        output = PID_Control(&fine_line_PID, error_angle);
+        output = PID_Control(&fine_line_PID, error_angle, 1000);
         output = clamp(output, -10, 10);
         if (Abs(error_angle) < 1.0f)
         {

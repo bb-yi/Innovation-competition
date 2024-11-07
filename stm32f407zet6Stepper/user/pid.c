@@ -1,6 +1,6 @@
 #include "pid.h"
 #include "filtering.h"
-float PID_Control(pid *pid_ctrl, float Angle_Err)
+float PID_Control(pid *pid_ctrl, float Angle_Err, float i_max)
 {
     float PID_Out;
     // 更新当前误差
@@ -15,13 +15,13 @@ float PID_Control(pid *pid_ctrl, float Angle_Err)
               pid_ctrl->Kd * (pid_ctrl->err - pid_ctrl->err_last);
 
     // 防止积分项过大（积分饱和）
-    if (pid_ctrl->integral > 2000)
+    if (pid_ctrl->integral > i_max)
     {
-        pid_ctrl->integral = 2000;
+        pid_ctrl->integral = i_max;
     }
-    else if (pid_ctrl->integral < -2000)
+    else if (pid_ctrl->integral < -i_max)
     {
-        pid_ctrl->integral = -2000;
+        pid_ctrl->integral = -i_max;
     }
 
     // 更新上一次误差

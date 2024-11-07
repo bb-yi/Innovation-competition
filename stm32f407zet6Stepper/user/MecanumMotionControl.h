@@ -39,7 +39,8 @@ https://blog.csdn.net/weixin_47702917/article/details/138448444
 #define MOTORD 4
 void motor_init(void);
 void motor_stop_all(void);
-void base_speed_control(float x_speed, float y_speed, float rot_speed);
+uint8_t check_motor_is_enable(void);
+void base_speed_control(float x_speed, float y_speed, float rot_speed, float accel_accel);
 void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed, uint8_t sync_flag);
 uint8_t CheckMotorsAtTargetPosition(void);
 uint8_t base_rotation_control_world(float target_angle, float speed);
@@ -50,5 +51,5 @@ void base_rotation_world(float angle, float speed);
 void base_run_angle(float angle, float speed);
 void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float speed);
 void motor_test(void);
-
+void motor_rotation_test(void);
 #endif

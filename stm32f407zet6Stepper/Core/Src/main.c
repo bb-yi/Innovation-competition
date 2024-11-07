@@ -128,15 +128,26 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
   }
   else if (GPIO_Pin == GPIO_PIN_3)
   {
+    // for (volatile uint32_t i = 0; i < 1000; i++)
+    // {
+    //   // 空循环，忙等待以消抖
+    // }
+    // printf("ZDT_Stepper_Enable\r\n");
     if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
     {
-      printf("on");
+      printf("电机打开\r\n");
       ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+      for (volatile uint32_t i = 0; i < 1000; i++)
+      {
+      }
     }
     else
     {
-      printf("off");
+      printf("电机关闭\r\n");
       ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+      for (volatile uint32_t i = 0; i < 1000; i++)
+      {
+      }
     }
   }
 }

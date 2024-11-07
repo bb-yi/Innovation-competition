@@ -11,5 +11,5 @@ typedef struct // 定义pid结构体
     float integral;   // 定义积分值
     float Output;     // 定义电压值
 } pid;
-float PID_Control(pid *pid_ctrl, float Angle_Err);
+float PID_Control(pid *pid_ctrl, float Angle_Err, float i_max);
 #endif

@@ -1,6 +1,6 @@
 ﻿#include "ZDT_Stepper.h"
 #include "cmsis_os.h"
-
+#include "beep.h"
 extern DMA_HandleTypeDef hdma_usart3_rx;
 uint8_t UART_Rx_data[50] = {0};
 
@@ -144,6 +144,9 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->firmware_version = (data[2] << 8) | data[3]; // 固件版本
             stepperdata_temp->hardware_version = (data[4] << 8) | data[5]; // 硬件版本
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "固件版本: %d, 硬件版本: %d", stepperdata_temp->firmware_version, stepperdata_temp->hardware_version);
+            // beep_short();
+            set_beep_short_flag();
+
             break;
 
         case 0x20:
@@ -221,6 +224,9 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->motor_zeroing_in_progress = (data[2] & 0x04) >> 2;
             stepperdata_temp->motor_zeroing_failed = (data[2] & 0x08) >> 3;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "正在回零 %d, 回零失败 %d", stepperdata_temp->motor_zeroing_in_progress, stepperdata_temp->motor_zeroing_failed);
+            break;
+        case 0xF3:
+            snprintf(message + strlen(message), sizeof(message) - strlen(message), "电机使能命令成功");
             break;
         default:
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "未知命令");
@@ -537,6 +543,9 @@ void ZDT_Stepper_Read_version(uint8_t id)
     command[1] = 0x1F; // 命令头
     command[2] = 0x6B; // 校验字节
     ZDT_Stepper_UART_Send_Data(command, 3);
+    // beep_short();
+    // set_beep_short_flag();
+
     ZDT_Stepper_Ddelay(delaytime);
 }
 /**

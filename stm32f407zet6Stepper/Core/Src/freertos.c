@@ -34,6 +34,7 @@
 #include "user_task.h"
 #include "servo.h"
 #include "ZDT_Stepper.h"
+#include "beep.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -249,82 +250,58 @@ void StartTask03(void *argument)
   ZDT_Stepper_Read_version(5);
   osDelay(delay_time);
   // osDelay(1000);
-  ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+  // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+  osDelay(delay_time);
+  osDelay(500);
   for (;;)
   {
     if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
     {
+      // beep_long();
+      set_beep_long_flag();
       break;
     }
   }
+
   float speed = 240;
   ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
-  ZDT_Stepper_Enable(5, Disable, SYNC_DISABLE);
-
-  osDelay(1000);
-  // uint8_t data[] = {0x05, 0x9A, 0x02, 0x00, 0x6B};               // ??????
-  // HAL_UART_Transmit(&huart3, data, sizeof(data), HAL_MAX_DELAY); // ????
-  // Slider_position_init();
-  // osDelay(1000);
-  // set_Slider_position(0, 1500);
-  // osDelay(1000);
-  // set_Slider_position(40, 800);
-  // osDelay(1000);
-  // set_Slider_position(150, 600);
-  // osDelay(1000);
-  // set_Slider_position(80, 200);
-  // osDelay(1000);
-
-  // ZDT_Stepper_Set_T_position(5, CCW, 1500, 1500, 1500, 1310, REL_POS_MODE, SYNC_DISABLE);
-  // ZDT_Stepper_Set_Speed(1, CW, 40, 60, SYNC_DISABLE);
-  // motor_test();
-  // base_run_distance_and_rotation(0, 100, 180, 30);
-  // base_run_distance_base(10, 10, 0, speed);
-  // osDelay(1000);
-  // base_run_distance_base(-10, -10, 0, speed);
-  // osDelay(1000);
-  // base_run_distance_base(0, 0, 90, speed);
-  // osDelay(1000);
-  // base_run_distance_base(0, 0, -90, speed);
-  // osDelay(1000);
-
-  // base_run_distance_base(0, 0, 90, speed, 0);
-  // osDelay(1000);
-  // base_run_distance_base(0, 0, -90, speed, 0);
-  // osDelay(1000);
-  // Set_Table_Pos(0);
-  // Set_Sliding_table_Pos(0);
-  // Release_material();
-  // Camera_switch_mode(FIND_LINE_MODE);
-  // Slider_position_init();
-  // osDelay(1000);
-  // set_Slider_position(150, 7);
-
-  // osDelay(1000);
-  // for (;;)
+  // if (check_motor_is_enable() == 0)
   // {
-
-  //   if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+  //   for (;;)
   //   {
-  //     break;
+  //     ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
+  //     if (check_motor_is_enable() == 1)
+  //     {
+  //       break;
+  //     }
   //   }
   // }
+  // ZDT_Stepper_Enable(5, Disable, SYNC_DISABLE);
+  // osDelay(1000);-
+  printf("enable %d", check_motor_is_enable());
+  osDelay(1000);
+  // main_task();
+  // motor_rotation_test();
+  base_rotation_world(90, 80);
+  osDelay(1000);
+  base_rotation_world(0, 80);
+  osDelay(1000);
+  base_rotation_world(180, 80);
+  osDelay(1000);
+  base_rotation_world(0, 80);
+  osDelay(1000);
 
-  // osDelay(1000);
-  // Slider_position_init();
-  // osDelay(1000);
-  // set_Slider_position(150, 7);
-  // QrCode_Task();
-
-  // osDelay(1000);
-
-  // Catch_material();
-  main_task();
+  // base_speed_control(0, 0, 1);
+  // base_run_distance_base(20, 20, 0, 40);
+  //  osDelay(1000);
+  //  base_run_distance_base(-20, -20, 0, 40);
+  //  osDelay(1000);
+  //  printf("111");
   /* Infinite loop */
   for (;;)
   {
 
-    motor_stop_all();
+    // motor_stop_all();
     // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
 
     osDelay(1000);
@@ -347,7 +324,14 @@ void StartTask04(void *argument)
   /* Infinite loop */
   for (;;)
   {
-
+    if (beep_short_flag == 1)
+    {
+      beep_short();
+    }
+    else if (beep_long_flag == 1)
+    {
+      beep_long();
+    }
     osDelay(1);
   }
   /* USER CODE END StartTask04 */

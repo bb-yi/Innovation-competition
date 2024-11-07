@@ -1,6 +1,8 @@
 #include "MecanumMotionControl.h"
 #include "mpu.h"
 #include "ZDT_Stepper.h"
+#include "beep.h"
+#include "pid.h"
 uint16_t accel_accel_max = 120; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern ZDTStepperData stepperdata_1;
@@ -22,6 +24,25 @@ void motor_stop_all(void)
     ZDT_Stepper_stop(3, SYNC_ENABLE); // 立即停止
     ZDT_Stepper_stop(4, SYNC_ENABLE); // 立即停止
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+}
+
+uint8_t check_motor_is_enable(void)
+{
+    ZDT_Stepper_Read_motor_status_flags(1);
+    ZDT_Stepper_Read_motor_status_flags(2);
+    ZDT_Stepper_Read_motor_status_flags(3);
+    ZDT_Stepper_Read_motor_status_flags(4);
+    // osDelay(3);
+    if (stepperdata_1.motor_enabled == 1 && stepperdata_2.motor_enabled == 1 && stepperdata_3.motor_enabled == 1 && stepperdata_4.motor_enabled == 1)
+    {
+        return 1;
+    }
+    else
+    {
+        printf("Motor is not enable!,1:%d,2:%d,3:%d,4:%d\r\n", stepperdata_1.motor_enabled, stepperdata_2.motor_enabled, stepperdata_3.motor_enabled, stepperdata_4.motor_enabled);
+
+        return 0;
+    }
 }
 
 /**
@@ -80,10 +101,10 @@ void Set_all_stepper_angle(float *angles, float max_speed)
     float speed[4];
     float accel_accel[4];
     float max_angle = find_max_angle(Abs(angles[0]), Abs(angles[1]), Abs(angles[2]), Abs(angles[3]));
-    speed[0] = Abs(angles[0] * max_speed_f / max_angle);
-    speed[1] = Abs(angles[1] * max_speed_f / max_angle);
-    speed[2] = Abs(angles[2] * max_speed_f / max_angle);
-    speed[3] = Abs(angles[3] * max_speed_f / max_angle);
+    speed[0] = Abs(angles[0] * max_speed / max_angle);
+    speed[1] = Abs(angles[1] * max_speed / max_angle);
+    speed[2] = Abs(angles[2] * max_speed / max_angle);
+    speed[3] = Abs(angles[3] * max_speed / max_angle);
     accel_accel[0] = Abs(angles[0] * accel_accel_max / max_angle);
     accel_accel[1] = Abs(angles[1] * accel_accel_max / max_angle);
     accel_accel[2] = Abs(angles[2] * accel_accel_max / max_angle);
@@ -177,14 +198,14 @@ uint8_t CheckMotorsAtTargetPosition(void)
  *s
  * @param x_speed x方向速度，单位，RPM
  * @param y_speed y方向速度，单位，RPM
- * @param rot_speed 旋转速度，1左右就可以
+ * @param rot_speed 旋转速度，1左右就可以 单位 度/秒
  */
-void base_speed_control(float x_speed, float y_speed, float rot_speed)
+void base_speed_control(float x_speed, float y_speed, float rot_speed, float accel_accel)
 {
     float wheel_speeds[4];
     MecanumWheelIK(x_speed, y_speed, rot_speed, wheel_speeds);
     // printf("wheel_speeds:%f,%f,%f,%f,x_speed:%f,y_speed:%f,rot_speed:%f\r\n", wheel_speeds[0], wheel_speeds[1], wheel_speeds[2], wheel_speeds[3], x_speed, y_speed, rot_speed);
-    Set_all_stepper_speed(wheel_speeds, accel_accel_max);
+    Set_all_stepper_speed(wheel_speeds, accel_accel);
 }
 
 /**
@@ -208,23 +229,27 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
  */
 void base_run_distance_base(float distance_x, float distance_y, float angle, float speed)
 {
+    set_beep_short_flag();
     distance_x = -distance_x * 10.0f; // 将函数的单位转化为cm
     distance_y = distance_y * 10.0f;
     float wheel_angles[4];
     MecanumWheelIK(distance_x, distance_y, angle, wheel_angles);
     Set_all_stepper_angle(wheel_angles, speed);
     uint32_t start_time = HAL_GetTick();
-    float max_time = angle == 0 ? Abs((distance_x + distance_y) / 50) : 3;
+    float max_time = angle == 0 ? (Abs(distance_x) + Abs(distance_y)) / speed : 3;
+    printf("max_time:%f\n", max_time);
     for (;;)
     {
         uint32_t current_time = HAL_GetTick();
         if (CheckMotorsAtTargetPosition() == 1)
         {
+            set_beep_short_flag();
             printf("到达目标位置\n");
             break;
         }
-        if (current_time - start_time > (uint32_t)(7 * 1000))
+        if (current_time - start_time > (uint32_t)(max_time * 1000))
         {
+            set_beep_long_flag();
             printf("机身运动超时,max_time:%f\n", max_time);
             break;
         }
@@ -242,19 +267,107 @@ void base_Horizontal_run_distance(float distance, float speed)
     base_run_distance_base(distance, 0, 0, speed);
 }
 
+/**
+ * @brief 小车旋转指定角度——开环
+ *  阻塞型函数
+ * @param angle 角度 逆时针为负，顺时针为正
+ * @param speed
+ */
+void base_run_angle_open_loop(float angle, float speed)
+{
+    angle = -angle;
+    float start_yaw = radiansToDegrees(Get_IMU_Yaw());
+    base_run_distance_base(0, 0, angle, speed);
+    float end_yaw = radiansToDegrees(Get_IMU_Yaw());
+    float error_yaw = (start_yaw - angle) - end_yaw;
+    printf("start_yaw:%f,end_yaw:%f,error_yaw:%f\n", start_yaw, end_yaw, error_yaw);
+}
+
+pid rotation_pid;
 void base_rotation_world(float angle, float speed)
 {
+    uint32_t start_time = HAL_GetTick();
+
+    set_beep_short_flag();
+    speed = speed * 0.01f;
+    pid_base_init(&rotation_pid);
+    rotation_pid.Kp = 0.5f; // 60.0f
+    rotation_pid.Ki = 0.0f; // 0.18f
+    rotation_pid.Kd = 0.5f; // 40.0f
+    float clamp_speed = 50.0f;
+    float target_angle = angle;
+    float now_angle, error_angle, output;
+    for (;;)
+    {
+        uint32_t current_time = HAL_GetTick();
+
+        now_angle = radiansToDegrees(Get_IMU_Yaw());
+        error_angle = target_angle - now_angle;
+        output = PID_Control(&rotation_pid, error_angle, 20);
+        output = clamp(output * speed, -clamp_speed, clamp_speed);
+        // printf("now_angle:%f,target_angle:%f,error_angle:%f,output:%f\n", now_angle, target_angle, error_angle, output);
+        base_speed_control(0, 0, -output, 800);
+        if (Abs(error_angle) < 0.02f)
+        {
+            set_beep_short_flag();
+            motor_stop_all();
+            printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+            break;
+        }
+        if (current_time - start_time > (uint32_t)(3 * 1000))
+        {
+            set_beep_long_flag();
+            motor_stop_all();
+            printf("机身运动超时!,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+            break;
+        }
+    }
 }
 
 /**
  * @brief 小车旋转指定角度
  *  阻塞型函数
- * @param angle 角度 逆时针为正，顺时针为负
- * @param speed
+ * @param angle 角度 逆时针为负，顺时针为正
+ * @param speed 参考值 100
  */
 void base_run_angle(float angle, float speed)
 {
-    base_run_distance_base(0, 0, angle, speed);
+    uint32_t start_time = HAL_GetTick();
+    set_beep_short_flag();
+    speed = speed * 0.01f;
+    pid_base_init(&rotation_pid);
+    rotation_pid.Kp = 0.5f; // 60.0f
+    rotation_pid.Ki = 0.0f; // 0.18f
+    rotation_pid.Kd = 0.5f; // 40.0f
+    float clamp_speed = 50.0f;
+    float start_yaw = radiansToDegrees(Get_IMU_Yaw());
+    float target_angle = start_yaw + angle;
+    float now_angle, error_angle, output;
+    for (;;)
+    {
+        uint32_t current_time = HAL_GetTick();
+
+        now_angle = radiansToDegrees(Get_IMU_Yaw());
+        error_angle = target_angle - now_angle;
+        output = PID_Control(&rotation_pid, error_angle, 20);
+        output = clamp(output * speed, -clamp_speed, clamp_speed);
+        // printf("now_angle:%f,target_angle:%f,error_angle:%f,output:%f\n", now_angle, target_angle, error_angle, output);
+        base_speed_control(0, 0, -output, 800);
+        if (Abs(error_angle) < 0.02f)
+        {
+            set_beep_short_flag();
+            motor_stop_all();
+            printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+            break;
+        }
+        if (current_time - start_time > (uint32_t)(3 * 1000))
+        {
+            set_beep_long_flag();
+            motor_stop_all();
+            printf("机身运动超时!,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+            break;
+        }
+    }
 }
 
 void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float time)
@@ -287,4 +400,16 @@ void motor_test(void)
 {
     // base_run_distance_and_rotation(0, 100, 360, 3);
     base_run_distance(60, 240);
+}
+
+void motor_rotation_test(void)
+{
+    base_run_angle(90, 100);
+    osDelay(1000);
+    base_run_angle(-90, 100);
+    osDelay(1000);
+    base_run_angle(180, 100);
+    osDelay(1000);
+    base_run_angle(-180, 100);
+    osDelay(1000);
 }

@@ -34,15 +34,6 @@ void Set_Servo_angle(uint8_t servo, uint16_t angle)
     }
 }
 
-void Servo_Init(void)
-{
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
-    HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
-    Set_Servo_angle(0, 54);
-    Set_Servo_angle(1, 15);
-    Set_Servo_angle(2, 30);
-}
 void Set_Sliding_table_Pos(uint8_t pos)
 {
     switch (pos)
