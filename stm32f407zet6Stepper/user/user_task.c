@@ -9,12 +9,21 @@
 #include "openmv.h"
 #include "servo.h"
 #include "pid.h"
+#include "ZDT_Stepper.h"
+#include "beep.h"
 
 extern SYS_STATE_Data sys_state_data; // 陀螺仪数据
 extern OPENMV_data openmv_data;       // 摄像头OpenMV数据
 extern uint8_t MPU_RX_flag;           // 陀螺仪接收标志位
 extern uint8_t openmv_rx_flag;        // OpenMV接收标志位
 extern uint8_t Camera_now_mode;       // 摄像头当前模式
+
+void check_stack_usage(TaskHandle_t task)
+{
+    UBaseType_t stack_water_mark = uxTaskGetStackHighWaterMark(task);
+
+    printf("Stack high water mark: %u\n", stack_water_mark);
+}
 
 void Display_flag(uint8_t x, uint8_t y, uint8_t flag)
 {
@@ -103,6 +112,83 @@ void OLED_display_task(void)
     }
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
 }
+uint8_t delay_time = 5;
+void check_stepper_is_working(void)
+{
+    osDelay(500);
+    ZDT_Stepper_Read_version(1);
+    osDelay(delay_time);
+    ZDT_Stepper_Read_version(2);
+    osDelay(delay_time);
+    ZDT_Stepper_Read_version(3);
+    osDelay(delay_time);
+    ZDT_Stepper_Read_version(4);
+    osDelay(delay_time);
+    ZDT_Stepper_Read_version(5);
+    osDelay(delay_time);
+}
+
+void enable_stepper_task(void)
+{
+    ZDT_Stepper_Enable(1, Enable, SYNC_ENABLE);
+    beep_short();
+    // osDelay(delay_time);
+    ZDT_Stepper_Enable(2, Enable, SYNC_ENABLE);
+    beep_short();
+    // osDelay(delay_time);
+    ZDT_Stepper_Enable(3, Enable, SYNC_ENABLE);
+    beep_short();
+    // osDelay(delay_time);
+    ZDT_Stepper_Enable(4, Enable, SYNC_ENABLE);
+    beep_short();
+    // osDelay(delay_time);
+    ZDT_Stepper_Enable(5, Enable, SYNC_ENABLE);
+    beep_short();
+    // osDelay(delay_time);
+    ZDT_Stepper_start_sync_motion(0);
+    osDelay(100);
+    if (check_motor_is_enable() == 1)
+    {
+        beep_short();
+        beep_short();
+    }
+    else
+    {
+        beep_long();
+    }
+}
+extern osThreadId_t myTask03Handle;
+uint8_t start_flag = 0;
+void init_task(void)
+{
+    check_stepper_is_working();
+    for (;;)
+    {
+        osDelay(1);
+        if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+        {
+            set_beep_long_flag();
+            break;
+        }
+    }
+    enable_stepper_task();
+    printf("enable %d\n", check_motor_is_enable());
+    osDelay(200);
+    Slider_position_init();
+    for (;;)
+    {
+        // printf("start_flag=%d\r\n", start_flag);
+        osDelay(1);
+        if (start_flag == 1)
+        {
+            printf("start\r\n");
+            break;
+        }
+    }
+
+    Set_Sliding_table_Pos(0); // 滑台舵机展开
+}
+
 // 二维码区域任务
 void QrCode_Task(void)
 {
@@ -365,25 +451,13 @@ void TemporaryStorageArea_Task(void)
 
 extern uint8_t Slider_is_OK;
 float run_speed = 80;
-float rot_speed = 60;
+float rot_speed = 100;
 
 uint8_t main_task(void)
 {
-    osDelay(2000);
+    osDelay(100);
     Camera_switch_mode(FIND_LINE_MODE);
-
-    // Slider_position_init();
-    // osDelay(1000);
-    // set_Slider_position(150, 7);
-    // base_run_distance_base(0, 0, 90, run_speed);
-
-    // base_run_distance_base(float distance_x, float distance_y, float angle, float speed);
-    // base_run_distance(float distance, float speed);
-    // base_Horizontal_run_distance(float distance, float speed);
-    // base_run_angle(float angle, float speed);
-
-    base_run_distance_base(15, 15, 0, run_speed);
-    // base_Horizontal_run_distance(15, 4); // 移出启停区
+    base_run_distance_base(15, 15, 0, run_speed); // 移出启停区
     osDelay(200);
     base_run_distance(49, run_speed); // 去往二维码区域
     osDelay(200);
@@ -392,7 +466,7 @@ uint8_t main_task(void)
     osDelay(1000);
     base_run_distance(85, run_speed); // 去往原料区
     osDelay(1000);
-    base_Horizontal_run_distance(-4, run_speed); // 移出启停区
+    base_Horizontal_run_distance(-4, run_speed);
 
     // osDelay(1000);
 

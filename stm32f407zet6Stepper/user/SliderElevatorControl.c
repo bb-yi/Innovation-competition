@@ -7,7 +7,7 @@ extern ZDTStepperData stepperdata_5;
 float last_position = 0;
 void set_Slider_position(float position, float speed)
 {
-    position = clamp(position, 4, 148);
+    position = clamp(position, 4, 145);
     float d_position = position - last_position;
     uint8_t dir;
     dir = (d_position > 0) ? 1 : 0;
@@ -21,6 +21,7 @@ void set_Slider_position(float position, float speed)
     for (;;)
     {
         ZDT_Stepper_Read_motor_status_flags(5);
+        osDelay(10);
         uint32_t current_time = HAL_GetTick();
         if (stepperdata_5.motor_position_reached == 1)
         {
@@ -32,7 +33,6 @@ void set_Slider_position(float position, float speed)
             printf("设置滑台位置超时,max_time:%f\n", max_time);
             break;
         }
-        osDelay(10);
     }
 }
 

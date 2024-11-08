@@ -120,11 +120,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   }
 }
 
+extern uint8_t start_flag;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == GPIO_PIN_0) // 用户按键 按下归零???????螺仪和轮子编码器
   {
     calibrateAngleToZero();
+    start_flag = 1;
   }
   else if (GPIO_Pin == GPIO_PIN_3)
   {

@@ -399,7 +399,27 @@ void base_run_distance_and_rotation(float distance_x, float distance_y, float an
 void motor_test(void)
 {
     // base_run_distance_and_rotation(0, 100, 360, 3);
-    base_run_distance(60, 240);
+    base_run_distance_base(15, 15, 0, 100);
+    osDelay(1000);
+    base_run_distance(30, 100);
+    osDelay(1000);
+    base_Horizontal_run_distance(-15, 100);
+    osDelay(1000);
+    base_Horizontal_run_distance(15, 100);
+    osDelay(1000);
+    base_run_distance(-30, 100);
+    osDelay(1000);
+    base_run_distance_base(-15, -15, 0, 100);
+    osDelay(1000);
+    base_run_angle(90, 100);
+    osDelay(1000);
+    base_run_angle(180, 100);
+    osDelay(1000);
+    base_run_angle(90, 100);
+    osDelay(1000);
+    base_rotation_world(90, 100);
+    osDelay(1000);
+    base_rotation_world(0, 100);
 }
 
 void motor_rotation_test(void)
@@ -411,5 +431,13 @@ void motor_rotation_test(void)
     base_run_angle(180, 100);
     osDelay(1000);
     base_run_angle(-180, 100);
+    osDelay(1000);
+    base_rotation_world(90, 80);
+    osDelay(1000);
+    base_rotation_world(0, 80);
+    osDelay(1000);
+    base_rotation_world(180, 80);
+    osDelay(1000);
+    base_rotation_world(0, 80);
     osDelay(1000);
 }

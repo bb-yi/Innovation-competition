@@ -156,16 +156,10 @@ void MX_FREERTOS_Init(void)
 /* USER CODE BEGIN Header_StartDefaultTask */
 
 /**
- * @brief �????????????查剩余内内存
+ * @brief �????????????查剩余内内存
  *
  * @param task
  */
-void check_stack_usage(TaskHandle_t task)
-{
-  UBaseType_t stack_water_mark = uxTaskGetStackHighWaterMark(task);
-
-  printf("Stack high water mark: %u\n", stack_water_mark);
-}
 
 /**
  * @brief 获取当前时间
@@ -233,70 +227,35 @@ extern int stepper_count;
  * @param argument: Not used
  * @retval None
  */
+extern uint8_t delay_time;
 /* USER CODE END Header_StartTask03 */
 void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
-  osDelay(500);
-  uint8_t delay_time = 5;
-  ZDT_Stepper_Read_version(1);
-  osDelay(delay_time);
-  ZDT_Stepper_Read_version(2);
-  osDelay(delay_time);
-  ZDT_Stepper_Read_version(3);
-  osDelay(delay_time);
-  ZDT_Stepper_Read_version(4);
-  osDelay(delay_time);
-  ZDT_Stepper_Read_version(5);
-  osDelay(delay_time);
-  // osDelay(1000);
-  // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
-  osDelay(delay_time);
-  osDelay(500);
-  for (;;)
-  {
-    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
-    {
-      // beep_long();
-      set_beep_long_flag();
-      break;
-    }
-  }
 
-  float speed = 240;
-  ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
-  // if (check_motor_is_enable() == 0)
-  // {
-  //   for (;;)
-  //   {
-  //     ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
-  //     if (check_motor_is_enable() == 1)
-  //     {
-  //       break;
-  //     }
-  //   }
-  // }
-  // ZDT_Stepper_Enable(5, Disable, SYNC_DISABLE);
-  // osDelay(1000);-
-  printf("enable %d", check_motor_is_enable());
+  init_task();
   osDelay(1000);
+  // Get_material(0);
+  // Get_material(1);
+  // Get_material(2);
+  Put_material(0);
+  Put_material(1);
+  Put_material(2);
+
+  // set_Slider_position(0, 500);
+  // osDelay(1000);
+  // set_Slider_position(100, 500);
+  // osDelay(1000);
+  // motor_test();
+
   // main_task();
   // motor_rotation_test();
-  base_rotation_world(90, 80);
-  osDelay(1000);
-  base_rotation_world(0, 80);
-  osDelay(1000);
-  base_rotation_world(180, 80);
-  osDelay(1000);
-  base_rotation_world(0, 80);
-  osDelay(1000);
 
   // base_speed_control(0, 0, 1);
   // base_run_distance_base(20, 20, 0, 40);
   //  osDelay(1000);
   //  base_run_distance_base(-20, -20, 0, 40);
-  //  osDelay(1000);
-  //  printf("111");
+
   /* Infinite loop */
   for (;;)
   {
