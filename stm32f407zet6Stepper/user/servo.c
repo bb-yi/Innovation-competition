@@ -83,10 +83,10 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_1);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
-    Set_Sliding_table_Pos(1); // 滑台舵机
-    // Set_Sliding_table_Pos(0); // 滑台舵机
-    Set_Table_Pos(0);   // 物料盘舵机
-    Release_material(); // 爪子舵机
+    // Set_Sliding_table_Pos(1); // 滑台舵机
+    Set_Sliding_table_Pos(0); // 滑台舵机
+    Set_Table_Pos(0);         // 物料盘舵机
+    Release_material();       // 爪子舵机
 }
 float solider_speed = 500.0f;
 

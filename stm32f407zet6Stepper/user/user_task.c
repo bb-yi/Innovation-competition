@@ -466,7 +466,9 @@ uint8_t main_task(void)
     osDelay(1000);
     base_run_distance(85, run_speed); // 去往原料区
     osDelay(1000);
-    base_Horizontal_run_distance(-4, run_speed);
+    base_Horizontal_run_distance(-10, run_speed);
+    osDelay(1000);
+    base_Horizontal_run_distance(10, run_speed);
 
     // osDelay(1000);
 
@@ -479,11 +481,11 @@ uint8_t main_task(void)
 
     base_run_distance(-40, run_speed); // 去往粗加工区
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_run_angle(-90, rot_speed);
     osDelay(200);
     base_run_distance(180, run_speed);
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_run_angle(-90, rot_speed);
     // RoughProcessingArea_Task(); // 粗加工区任务
     return 1;
 

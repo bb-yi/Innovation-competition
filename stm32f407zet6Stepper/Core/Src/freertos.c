@@ -238,17 +238,24 @@ void StartTask03(void *argument)
   // Get_material(0);
   // Get_material(1);
   // Get_material(2);
-  Put_material(0);
-  Put_material(1);
-  Put_material(2);
+  // Put_material(0);
+  // Put_material(1);
+  // Put_material(2);
 
   // set_Slider_position(0, 500);
   // osDelay(1000);
   // set_Slider_position(100, 500);
   // osDelay(1000);
   // motor_test();
-
-  // main_task();
+  // base_Horizontal_run_distance(300, 100);
+  // osDelay(1000);
+  // base_Horizontal_run_distance(-300, 100);
+  // osDelay(1000);
+  // ZDT_Stepper_Set_T_position(2, CW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
+  // osDelay(3000);
+  // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
+  // osDelay(3000);
+  main_task();
   // motor_rotation_test();
 
   // base_speed_control(0, 0, 1);

@@ -220,7 +220,7 @@ float radiansToDegrees(float radians)
 }
 void rotate_vector(float *vector, float angle, float *result)
 {
-    float rad = angle * (PI / 180.0);                        // 将角度转换为弧度
+    float rad = angle * (PI / 180.0f);                       // 将角度转换为弧度
     result[0] = vector[0] * cos(rad) - vector[1] * sin(rad); // 计算x'
     result[1] = vector[0] * sin(rad) + vector[1] * cos(rad); // 计算y'
 }

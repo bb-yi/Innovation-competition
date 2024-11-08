@@ -12,7 +12,7 @@ void print_hex_array(const uint8_t *data)
     }
     printf("\n");
 }
-uint16_t delaytime = 5;
+uint16_t delaytime = 10;
 void ZDT_Stepper_Ddelay(uint32_t delay)
 {
     osDelay(delay);

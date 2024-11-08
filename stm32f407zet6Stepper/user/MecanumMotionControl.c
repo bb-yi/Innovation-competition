@@ -3,7 +3,7 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "pid.h"
-uint16_t accel_accel_max = 120; // 加速度 单位RPM/s
+uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
