@@ -110,33 +110,29 @@ float find_max_angle(float angle_A, float angle_B, float angle_C, float angle_D)
 }
 void Set_all_stepper_angle(float *angles, float max_speed)
 {
-    float speed[4];
-    float accel_accel[4];
-    float max_angle = find_max_angle(Abs(angles[0]), Abs(angles[1]), Abs(angles[2]), Abs(angles[3]));
-    speed[0] = Abs(angles[0] * max_speed / max_angle);
-    speed[1] = Abs(angles[1] * max_speed / max_angle);
-    speed[2] = Abs(angles[2] * max_speed / max_angle);
-    speed[3] = Abs(angles[3] * max_speed / max_angle);
-    accel_accel[0] = Abs(angles[0] * accel_accel_max / max_angle);
-    accel_accel[1] = Abs(angles[1] * accel_accel_max / max_angle);
-    accel_accel[2] = Abs(angles[2] * accel_accel_max / max_angle);
-    accel_accel[3] = Abs(angles[3] * accel_accel_max / max_angle);
+    // float speed[4];
+    // float accel_accel[4];
+    // float max_angle = find_max_angle(Abs(angles[0]), Abs(angles[1]), Abs(angles[2]), Abs(angles[3]));
+    // speed[0] = Abs(angles[0] * max_speed / max_angle);
+    // speed[1] = Abs(angles[1] * max_speed / max_angle);
+    // speed[2] = Abs(angles[2] * max_speed / max_angle);
+    // speed[3] = Abs(angles[3] * max_speed / max_angle);
+    // accel_accel[0] = Abs(angles[0] * accel_accel_max / max_angle);
+    // accel_accel[1] = Abs(angles[1] * accel_accel_max / max_angle);
+    // accel_accel[2] = Abs(angles[2] * accel_accel_max / max_angle);
+    // accel_accel[3] = Abs(angles[3] * accel_accel_max / max_angle);
 
-    Set_Stepper_run_T_angle(1, accel_accel[0], speed[0], angles[0], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], SYNC_ENABLE);
-    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
-
-    // Set_Stepper_run_T_angle(1, accel_accel_max, max_speed, angles[0], SYNC_ENABLE);
-    // osDelay(10);
-    // Set_Stepper_run_T_angle(2, accel_accel_max, max_speed, angles[1], SYNC_ENABLE);
-    // osDelay(10);
-    // Set_Stepper_run_T_angle(3, accel_accel_max, max_speed, angles[2], SYNC_ENABLE);
-    // osDelay(10);
-    // Set_Stepper_run_T_angle(4, accel_accel_max, max_speed, angles[3], SYNC_ENABLE);
-    // osDelay(10);
+    // Set_Stepper_run_T_angle(1, accel_accel[0], speed[0], angles[0], SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], SYNC_ENABLE);
     // ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+
+    Set_Stepper_run_T_angle(1, accel_accel_max, max_speed, angles[0], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(2, accel_accel_max, max_speed, angles[1], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(3, accel_accel_max, max_speed, angles[2], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(4, accel_accel_max, max_speed, angles[3], SYNC_ENABLE);
+    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
 void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
 {
@@ -286,6 +282,12 @@ void base_run_distance(float distance, float speed)
 void base_Horizontal_run_distance(float distance, float speed)
 {
     base_run_distance_base(distance, 0, 0, speed);
+}
+
+void base_run_distance_part(float distance_x, float distance_y, float speed)
+{
+    set_beep_short_flag();
+    
 }
 
 /**

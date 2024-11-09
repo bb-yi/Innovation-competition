@@ -253,14 +253,25 @@ void StartTask03(void *argument)
 
   // base_Horizontal_run_distance(300, 100);
   // osDelay(1000);
-  // base_Horizontal_run_distance(-300, 100);
+  // base_Horizontal_run_distance(-300, 100);s
   // osDelay(1000);
   // ZDT_Stepper_Set_T_position(2, CW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
   // main_task();
-  motor_rotation_test();
+  base_run_distance(200, 200);
+  osDelay(1000);
+  base_run_distance(-200, 200);
+  osDelay(1000);
+  // base_run_distance(-200, 80);
+  // osDelay(1000);
+  // base_Horizontal_run_distance(200, 100);
+  // osDelay(1000);
+  // base_Horizontal_run_distance(-200, 100);
+  // osDelay(1000);
+
+  // motor_rotation_test();
   // motor_test();
 
   // base_speed_control(0, 0, 1);
