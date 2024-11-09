@@ -12,7 +12,7 @@ void print_hex_array(const uint8_t *data)
     }
     printf("\n");
 }
-uint16_t delaytime = 10;
+uint16_t delaytime = 3;
 void ZDT_Stepper_Ddelay(uint32_t delay)
 {
     osDelay(delay);
@@ -29,6 +29,7 @@ ZDTStepperData stepperdata_2;
 ZDTStepperData stepperdata_3;
 ZDTStepperData stepperdata_4;
 ZDTStepperData stepperdata_5;
+uint8_t command_success_flag = 0;
 // 根据指令标识赋值的函数
 void assign_message_based_on_command(uint8_t command_id, char *message, size_t message_size)
 {
@@ -71,6 +72,9 @@ void assign_message_based_on_command(uint8_t command_id, char *message, size_t m
     case 0x84:
         snprintf(message, message_size, "修改细分");
         break;
+    case 0x00:
+        snprintf(message, message_size, "错误命令");
+        break;
     default:
         snprintf(message, message_size, "未知的指令");
         break;
@@ -96,6 +100,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             return; // 校验失败，返回
         }
         snprintf(statu_message, sizeof(statu_message), (status == 0x02) ? "执行成功" : "执行失败");
+        command_success_flag = (status == 0x02) ? 1 : 0;
         assign_message_based_on_command(command_id, message, sizeof(message));
         // printf("电机 %d:%s:%s\n", motor_id, message, statu_message);
         // 这里可以根据需要进一步处理接收到的指令

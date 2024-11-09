@@ -34,8 +34,8 @@ def get_qrcode():
 
 command = 'a'
 while(True):
-    uart.write("11")
-    print("11")
+    #uart.write("11")
+    #print("11")
     if uart.any():
         receive_data = uart.read()
         command=receive_data.decode('utf-8')

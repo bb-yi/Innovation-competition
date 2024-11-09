@@ -109,9 +109,9 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   }
   else if (huart == &huart2)
   {
-    openmv2_uart_rx_callback(Size);
-    openmv_rx_flag = 1 - openmv_rx_flag;
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
+    // openmv2_uart_rx_callback(Size);
+    // openmv_rx_flag = 1 - openmv_rx_flag;
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
   }
   else if (huart == &huart3)
   {

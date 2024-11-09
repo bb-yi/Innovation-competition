@@ -246,7 +246,11 @@ void StartTask03(void *argument)
   // osDelay(1000);
   // set_Slider_position(100, 500);
   // osDelay(1000);
-  // motor_test();
+  // Set_Stepper_run_T_angle(1, 200, 200, 360, SYNC_ENABLE);
+  // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
+  // Set_Stepper_run_T_angle(3, 200, 200, 360, SYNC_ENABLE);
+  // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
+
   // base_Horizontal_run_distance(300, 100);
   // osDelay(1000);
   // base_Horizontal_run_distance(-300, 100);
@@ -255,8 +259,9 @@ void StartTask03(void *argument)
   // osDelay(3000);
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
-  main_task();
-  // motor_rotation_test();
+  // main_task();
+  motor_rotation_test();
+  // motor_test();
 
   // base_speed_control(0, 0, 1);
   // base_run_distance_base(20, 20, 0, 40);
@@ -269,7 +274,10 @@ void StartTask03(void *argument)
 
     // motor_stop_all();
     // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
-
+    // Set_Stepper_run_T_angle(1, 200, 200, 360, SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(3, 200, 200, 360, SYNC_ENABLE);
+    // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
     osDelay(1000);
     osDelay(delay_time);
     osDelay(1);

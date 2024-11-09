@@ -111,9 +111,12 @@ def determine_color(color, threshold=50):
 
 def get_dominant_color_in_roi(roi):
     img = sensor.snapshot()
-    red_threshold = (24, 58, 11, 81, -52, 77)# 红色阈值
-    green_threshold = (42, 60, -34, -4, -1, 108)  # 绿色阈值
-    blue_threshold = (18, 50, -5, 13, -39, -8)      # 蓝色阈值
+    #red_threshold = (24, 58, 11, 81, -52, 77)# 红色阈值
+    #reen_threshold = (42, 60, -34, -4, -1, 108)  # 绿色阈值
+    #blue_threshold = (18, 50, -5, 13, -39, -8)      # 蓝色阈值
+    red_threshold = (0, 0, -128, -128, -128, -128)# 红色阈值
+    green_threshold = (0, 0, -128, -128, -128, -128)  # 绿色阈值
+    blue_threshold = (0, 0, -128, -128, -128, -128)      # 蓝色阈值
 
     # 查找红、绿、蓝、白色块
     red_blobs = img.find_blobs([red_threshold], roi=roi, pixels_threshold=10, area_threshold=10, merge=True)
@@ -201,7 +204,7 @@ def get_circles(max_x=160, max_y=120, threshold=2000, r_min=8, r_max=16):
 
 
         # 输出圆心位置及颜色信息
-        message = f"[y,{current_x/width:.4f},{current_y/height:.4f},{determine_color(color,20)}]"  # 消息内容
+        message = f"[y,{current_x/width:.4f},{current_y/height:.4f},{determine_color(color,10)}]"  # 消息内容
 
         # 画出圆心和圆
         img.draw_circle(current_x, current_y, Radius, color=(255, 0, 0))
@@ -266,15 +269,15 @@ s = 1
 u = 1
 v = 1
 p = 1
-command = 'c'
+command = 'y'
 i = 0
 while True:
 
     i += 1
     if i > 9:
         i = 0
-    print(i)
-    uart.write(f"{i}\r\n")
+    #print(i)
+    #uart.write(f"{i}\r\n")
 
     if uart.any():
         receive_data = uart.read()
@@ -310,16 +313,19 @@ while True:
             sensor.set_hmirror(False)
             sensor.set_transpose(False)
             sensor.set_framesize(sensor.QQVGA)
+            sensor.set_auto_whitebal(False)
             sensor.skip_frames(time=10)
+
             s = 0
         roi = calculate_roi(80, 60, 160, 120)  # QVGA
-        get_circles(max_x=160, max_y=120, threshold=2500, r_min=8, r_max=30)
+        get_circles(max_x=160, max_y=120, threshold=1500, r_min=17, r_max=30)
     elif command == 'c':  # 高像素找圆
         if u == 1:
             sensor.set_vflip(False)
             sensor.set_hmirror(False)
             sensor.set_transpose(False)
             sensor.set_framesize(sensor.HVGA)
+            sensor.set_auto_whitebal(False)
             sensor.skip_frames(20)
             u = 0
         # roi = calculate_roi(240, 160, 480, 320)  # HVGA
@@ -331,6 +337,7 @@ while True:
             sensor.set_transpose(True)
             sensor.set_pixformat(sensor.RGB565)
             sensor.set_framesize(sensor.HQQVGA)
+            sensor.set_auto_whitebal(False)
             sensor.skip_frames(time=10)
             v = 0
         seek_line()  # 进入 seek_line 循环

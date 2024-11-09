@@ -53,6 +53,7 @@ void motor_init(void)
 {
 }
 
+extern uint8_t command_success_flag;
 /**
  * @brief 设置电机速度
  *
@@ -76,7 +77,18 @@ void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_s
         angle = -angle;
     }
     uint8_t dir = angle > 0 ? 0 : 1;
-    ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), REL_POS_MODE, sync_flag);
+    command_success_flag = 0;
+    for (;;)
+    {
+        ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), REL_POS_MODE, sync_flag);
+        osDelay(10);
+        printf("等待返回,%d\n", motor_id);
+        if (command_success_flag == 1)
+        {
+            printf("成功\n");
+            break;
+        }
+    }
 }
 
 float find_max_angle(float angle_A, float angle_B, float angle_C, float angle_D)
@@ -114,15 +126,24 @@ void Set_all_stepper_angle(float *angles, float max_speed)
     Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], SYNC_ENABLE);
     Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], SYNC_ENABLE);
     Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], SYNC_ENABLE);
-
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+
+    // Set_Stepper_run_T_angle(1, accel_accel_max, max_speed, angles[0], SYNC_ENABLE);
+    // osDelay(10);
+    // Set_Stepper_run_T_angle(2, accel_accel_max, max_speed, angles[1], SYNC_ENABLE);
+    // osDelay(10);
+    // Set_Stepper_run_T_angle(3, accel_accel_max, max_speed, angles[2], SYNC_ENABLE);
+    // osDelay(10);
+    // Set_Stepper_run_T_angle(4, accel_accel_max, max_speed, angles[3], SYNC_ENABLE);
+    // osDelay(10);
+    // ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
 void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
 {
-    set_Stepper_speed(1, accel_accel, speeds[0], SYNC_ENABLE);
-    set_Stepper_speed(2, accel_accel, speeds[1], SYNC_ENABLE);
-    set_Stepper_speed(3, accel_accel, speeds[2], SYNC_ENABLE);
-    set_Stepper_speed(4, accel_accel, speeds[3], SYNC_ENABLE);
+    set_Stepper_speed(1, accel_accel_max, speeds[0], SYNC_ENABLE);
+    set_Stepper_speed(2, accel_accel_max, speeds[1], SYNC_ENABLE);
+    set_Stepper_speed(3, accel_accel_max, speeds[2], SYNC_ENABLE);
+    set_Stepper_speed(4, accel_accel_max, speeds[3], SYNC_ENABLE);
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
 /**
@@ -287,20 +308,20 @@ pid rotation_pid;
 void base_rotation_world(float angle, float speed)
 {
     uint32_t start_time = HAL_GetTick();
-
     set_beep_short_flag();
     speed = speed * 0.01f;
     pid_base_init(&rotation_pid);
-    rotation_pid.Kp = 0.5f; // 60.0f
+    rotation_pid.Kp = 1.0;  // 60.0f
     rotation_pid.Ki = 0.0f; // 0.18f
-    rotation_pid.Kd = 0.5f; // 40.0f
-    float clamp_speed = 50.0f;
+    rotation_pid.Kd = 5.0f; // 40.0f
+    float clamp_speed = 25.0f;
+    float start_yaw = radiansToDegrees(Get_IMU_Yaw());
     float target_angle = angle;
     float now_angle, error_angle, output;
     for (;;)
     {
+        osDelay(1);
         uint32_t current_time = HAL_GetTick();
-
         now_angle = radiansToDegrees(Get_IMU_Yaw());
         error_angle = target_angle - now_angle;
         output = PID_Control(&rotation_pid, error_angle, 20);
@@ -309,12 +330,16 @@ void base_rotation_world(float angle, float speed)
         base_speed_control(0, 0, -output, 800);
         if (Abs(error_angle) < 0.02f)
         {
-            set_beep_short_flag();
+
             motor_stop_all();
-            printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
-            break;
+            if (Abs(target_angle - radiansToDegrees(Get_IMU_Yaw())) < 0.02f)
+            {
+                set_beep_short_flag();
+                printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+                break;
+            }
         }
-        if (current_time - start_time > (uint32_t)(3 * 1000))
+        if (current_time - start_time > (uint32_t)(Abs(angle - start_yaw) / 90.0f * 3000))
         {
             set_beep_long_flag();
             motor_stop_all();
@@ -336,17 +361,17 @@ void base_run_angle(float angle, float speed)
     set_beep_short_flag();
     speed = speed * 0.01f;
     pid_base_init(&rotation_pid);
-    rotation_pid.Kp = 0.5f; // 60.0f
+    rotation_pid.Kp = 1.0;  // 60.0f
     rotation_pid.Ki = 0.0f; // 0.18f
-    rotation_pid.Kd = 0.5f; // 40.0f
-    float clamp_speed = 50.0f;
+    rotation_pid.Kd = 5.0f; // 40.0f
+    float clamp_speed = 25.0f;
     float start_yaw = radiansToDegrees(Get_IMU_Yaw());
     float target_angle = start_yaw + angle;
     float now_angle, error_angle, output;
     for (;;)
     {
+        osDelay(1);
         uint32_t current_time = HAL_GetTick();
-
         now_angle = radiansToDegrees(Get_IMU_Yaw());
         error_angle = target_angle - now_angle;
         output = PID_Control(&rotation_pid, error_angle, 20);
@@ -355,12 +380,16 @@ void base_run_angle(float angle, float speed)
         base_speed_control(0, 0, -output, 800);
         if (Abs(error_angle) < 0.02f)
         {
-            set_beep_short_flag();
+
             motor_stop_all();
-            printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
-            break;
+            if (Abs(target_angle - radiansToDegrees(Get_IMU_Yaw())) < 0.02f)
+            {
+                set_beep_short_flag();
+                printf("到达目标角度,error_angle:%f\n", target_angle - radiansToDegrees(Get_IMU_Yaw()));
+                break;
+            }
         }
-        if (current_time - start_time > (uint32_t)(3 * 1000))
+        if (current_time - start_time > (uint32_t)(Abs(angle) / 90.0f * 3000))
         {
             set_beep_long_flag();
             motor_stop_all();
@@ -432,12 +461,12 @@ void motor_rotation_test(void)
     osDelay(1000);
     base_run_angle(-180, 100);
     osDelay(1000);
-    base_rotation_world(90, 80);
+    base_rotation_world(90, 100);
     osDelay(1000);
-    base_rotation_world(0, 80);
+    base_rotation_world(0, 100);
     osDelay(1000);
-    base_rotation_world(180, 80);
+    base_rotation_world(180, 100);
     osDelay(1000);
-    base_rotation_world(0, 80);
+    base_rotation_world(0, 100);
     osDelay(1000);
 }
