@@ -149,6 +149,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->firmware_version = (data[2] << 8) | data[3]; // 固件版本
             stepperdata_temp->hardware_version = (data[4] << 8) | data[5]; // 硬件版本
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "固件版本: %d, 硬件版本: %d", stepperdata_temp->firmware_version, stepperdata_temp->hardware_version);
+            printf("%s\n", message);
             // beep_short();
             set_beep_short_flag();
 
@@ -158,60 +159,71 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->phase_resistance = (data[2] << 8) | data[3]; // 相电阻
             stepperdata_temp->phase_inductance = (data[4] << 8) | data[5]; // 相电感
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电阻: %d mΩ, 相电感: %d µH", stepperdata_temp->phase_resistance, stepperdata_temp->phase_inductance);
+            printf("%s\n", message);
             break;
 
         case 0x24:
             stepperdata_temp->bus_voltage = (data[2] << 8) | data[3];
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线电压: %d mV", stepperdata_temp->bus_voltage);
+            printf("%s\n", message);
             break;
 
         case 0x26:
             stepperdata_temp->bus_average_current = (data[2] << 8) | data[3];
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "总线平均电流: %d mA", stepperdata_temp->bus_average_current);
+            printf("%s\n", message);
             break;
 
         case 0x27:
             stepperdata_temp->phase_current = (data[2] << 8) | data[3];
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "相电流: %d mA", stepperdata_temp->phase_current);
+            printf("%s\n", message);
             break;
 
         case 0x29:
             stepperdata_temp->encoder_raw_value = (data[2] << 8) | data[3];
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "编码器原始值: %d", stepperdata_temp->encoder_raw_value);
+            printf("%s\n", message);
             break;
 
         case 0x31:
             stepperdata_temp->encoder_calibrated_value = (data[2] << 8) | data[3];
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "经过线性化校准后的编码器值: %d", stepperdata_temp->encoder_calibrated_value);
+            printf("%s\n", message);
             break;
 
         case 0x33:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
             stepperdata_temp->target_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "目标位置: %.1f °", stepperdata_temp->target_position);
+            printf("%s\n", message);
             break;
 
         case 0x35:
             temp = (data[3] << 8) | data[4]; // 组合两个字节
             stepperdata_temp->current_speed = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时转速: %.1f RPM", stepperdata_temp->current_speed);
+            printf("%s\n", message);
             break;
 
         case 0x36:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
             stepperdata_temp->current_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时位置: %.1f °", stepperdata_temp->current_position);
+            // printf("%s\n", message);
             break;
 
         case 0x37:
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
             stepperdata_temp->position_error = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "位置误差: %.1f °", stepperdata_temp->position_error);
+            printf("%s\n", message);
             break;
 
         case 0x39:
             stepperdata_temp->driver_temperature = (data[2] == 0x01) ? -((int8_t)data[3]) : ((int8_t)data[3]);
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "驱动器实时温度: %.d °C", stepperdata_temp->driver_temperature);
+            printf("%s\n", message);
             break;
 
         case 0x3A:
@@ -221,6 +233,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->motor_stall = (data[2] & 0x04) >> 2;
             stepperdata_temp->motor_stall_protection = (data[2] & 0x08) >> 3;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "使能 %d, 位置到位 %d, 电机堵转 %d, 堵转保护 %d", stepperdata_temp->motor_enabled, stepperdata_temp->motor_position_reached, stepperdata_temp->motor_stall, stepperdata_temp->motor_stall_protection);
+            printf("%s\n", message);
             break;
         case 0x3B:
             stepperdata_temp->motor_Zero_Status_flags = data[2];
@@ -229,18 +242,21 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->motor_zeroing_in_progress = (data[2] & 0x04) >> 2;
             stepperdata_temp->motor_zeroing_failed = (data[2] & 0x08) >> 3;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "正在回零 %d, 回零失败 %d", stepperdata_temp->motor_zeroing_in_progress, stepperdata_temp->motor_zeroing_failed);
+            printf("%s\n", message);
             break;
         case 0xF3:
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "电机使能命令成功");
+            printf("%s\n", message);
             break;
         default:
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "未知命令");
+            printf("%s\n", message);
             print_hex_array(data);
             break;
         }
 
         // 最后统一打印
-        printf("%s\n", message);
+        // printf("%s\n", message);
     }
 }
 void ZDT_Stepper_USRT_RX_callback(uint16_t Size)

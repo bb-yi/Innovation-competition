@@ -173,6 +173,7 @@ void init_task(void)
     }
     enable_stepper_task();
     printf("enable %d\n", check_motor_is_enable());
+    motor_stop_all();
     osDelay(200);
     Slider_position_init();
     for (;;)
@@ -450,25 +451,31 @@ void TemporaryStorageArea_Task(void)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 80;
+float run_speed = 60;
 float rot_speed = 100;
 
 uint8_t main_task(void)
 {
+
+    // base_rotation_world(-90, rot_speed);
+
     osDelay(100);
     Camera_switch_mode(FIND_LINE_MODE);
-    base_run_distance_base(15, 15, 0, run_speed); // 移出启停区
+    // base_run_distance_base(15, 15, 0, run_speed); // 移出启停区
+    base_Horizontal_run_distance_fix(15, run_speed);
     osDelay(200);
-    base_run_distance(49, run_speed); // 去往二维码区域
+    // base_run_distance_fix(15, run_speed);
+    // osDelay(200);
+    base_run_distance_fix(64, run_speed); // 去往二维码区域
     osDelay(200);
     // QrCode_Task();
 
     osDelay(1000);
-    base_run_distance(85, run_speed); // 去往原料区
+    base_run_distance_fix(80, run_speed); // 去往原料区
     osDelay(1000);
-    base_Horizontal_run_distance(-10, run_speed);
+    base_Horizontal_run_distance_fix(-10, 300); // 靠近物料
     osDelay(1000);
-    base_Horizontal_run_distance(10, run_speed);
+    base_Horizontal_run_distance_fix(10, 300);
 
     // osDelay(1000);
 
@@ -479,65 +486,69 @@ uint8_t main_task(void)
 
     osDelay(1000);
 
-    base_run_distance(-40, run_speed); // 去往粗加工区
+    base_run_distance_fix(-40, run_speed); // 去往粗加工区
     osDelay(200);
-    base_run_angle(-90, rot_speed);
+    base_rotation_world(-90, rot_speed);
     osDelay(200);
-    base_run_distance(180, run_speed);
+    base_run_distance_fix(170, run_speed); // 去粗加工区
     osDelay(200);
-    base_run_angle(-90, rot_speed);
+    base_rotation_world(-180, rot_speed);
     // RoughProcessingArea_Task(); // 粗加工区任务
-    return 1;
+    // return 1;
 
     osDelay(1000);
 
-    base_run_distance(-88, run_speed);
+    base_run_distance_fix(-78, run_speed); // 粗加工区到暂存区1
     osDelay(200);
-    base_run_angle(-90, rot_speed);
+    base_rotation_world(-90, rot_speed);
     osDelay(200);
-    base_run_distance(-85, run_speed);
+    base_run_distance_fix(-80, run_speed); // 粗加工区到暂存区2
     // TemporaryStorageArea_Task(); // 暂存区任务
     osDelay(1000);
 
-    base_run_distance(-92, run_speed); // 去往原料区2
+    base_run_distance_fix(-85, run_speed); // 暂存区到原料区1
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_rotation_world(0, rot_speed);
     osDelay(200);
-    base_run_distance(-40, run_speed);
+    base_run_distance_fix(-40, run_speed);      // 暂存区到原料区2
+    base_Horizontal_run_distance_fix(-10, 300); // 靠近物料
+    osDelay(1000);
+    base_Horizontal_run_distance_fix(10, 300);
 
     // MaterialArea_Task(); // 原料区任务2
+
     osDelay(1000);
 
-    base_run_distance(-40, run_speed); // 去往粗加工区
+    base_run_distance_fix(-35, run_speed); // 去往粗加工区
     osDelay(1000);
-    base_run_angle(-90, rot_speed);
+    base_rotation_world(-90, rot_speed);
     osDelay(1000);
-    base_run_distance(175, run_speed);
+    base_run_distance_fix(175, run_speed);
     osDelay(1000);
-    base_run_angle(-90, rot_speed);
+    base_rotation_world(-180, rot_speed);
 
     // RoughProcessingArea_Task(); // 粗加工区任务
     osDelay(1000);
 
-    base_run_distance(-80, run_speed);
+    base_run_distance_fix(-78, run_speed);
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_rotation_world(-90, rot_speed);
     osDelay(200);
-    base_run_distance(-85, run_speed);
+    base_run_distance_fix(-85, run_speed);
 
     // TemporaryStorageArea_Task(); // 暂存区任务
     osDelay(1000);
 
-    base_run_distance(-90, run_speed); // 去往原料区2
+    base_run_distance_fix(-90, run_speed); // 去往原料区2
     osDelay(200);
-    base_run_angle(90, rot_speed);
+    base_rotation_world(0, rot_speed);
     osDelay(200);
-    base_run_distance(-210, run_speed);
+    base_run_distance_fix(-166, run_speed);
 
     // MaterialArea_Task(); // 原料区任务2
     osDelay(1000);
 
     // base_run_angle(90, run_speed);
-    base_Horizontal_run_distance(-15, run_speed); // 移进启停区
+    base_run_distance_base(-16, -16, 0, run_speed); // 移出启停区
     return 1;
 }
