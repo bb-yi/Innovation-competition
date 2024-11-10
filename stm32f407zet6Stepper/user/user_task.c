@@ -173,6 +173,7 @@ void init_task(void)
     }
     enable_stepper_task();
     printf("enable %d\n", check_motor_is_enable());
+    motor_stop_all();
     osDelay(200);
     Slider_position_init();
     for (;;)
