@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+﻿/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -35,6 +35,7 @@
 #include "servo.h"
 #include "ZDT_Stepper.h"
 #include "beep.h"
+#include "uart_screen.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -154,13 +155,13 @@ void MX_FREERTOS_Init(void)
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
-
-/**
- * @brief �????????????查剩余内内存
- *
- * @param task
- */
-
+// 检查任务剩余堆栈内存的函数
+void CheckTaskMemoryUsage(TaskHandle_t taskHandle)
+{
+  // 获取任务的堆栈高水位标记并转换为字节数
+  UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(taskHandle);
+  printf("任务历史剩余最小内存: %lu 字节\r\n", (unsigned long)(stackHighWaterMark * sizeof(StackType_t)));
+}
 /**
  * @brief 获取当前时间
  *
@@ -235,6 +236,7 @@ void StartTask03(void *argument)
 
   init_task();
   osDelay(1000);
+
   // Get_material(0);
   // Get_material(1);
   // Get_material(2);
@@ -259,7 +261,9 @@ void StartTask03(void *argument)
   // osDelay(3000);
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
+
   // main_task();
+
   // base_run_distance(100, 100);
   // osDelay(1000);
   // base_run_distance(100, 100);
@@ -270,14 +274,15 @@ void StartTask03(void *argument)
   // osDelay(1000);
   // base_Horizontal_run_distance(-100, 100);
   // osDelay(1000);
-  base_run_distance_base_fix(20, 0, 60);
-  osDelay(1000);
-  base_run_distance_base_fix(0, 180, 60);
-  osDelay(1000);
-  base_run_distance_base_fix(0, -180, 60);
-  osDelay(1000);
-  base_run_distance_base_fix(-20, 0, 60);
-  osDelay(1000);
+
+  // base_run_distance_base_fix(20, 0, 60);
+  // osDelay(1000);
+  // base_run_distance_base_fix(0, 180, 60);
+  // osDelay(1000);
+  // base_run_distance_base_fix(0, -180, 60);
+  // osDelay(1000);
+  // base_run_distance_base_fix(-20, 0, 60);
+  // osDelay(1000);
 
   // base_speed_control(0, 120, 0, 220);
   // motor_rotation_test();
@@ -298,7 +303,17 @@ void StartTask03(void *argument)
     // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
     // Set_Stepper_run_T_angle(3, 200, 200, 360, SYNC_ENABLE);
     // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
-    osDelay(1000);
+
+    // CheckTaskMemoryUsage(myTask03Handle);
+    screen_printf("t0.txt=\"%s\"\xff\xff\xff", "123,123");
+    osDelay(100);
+    for (uint16_t i = 0; i < 360; i++)
+    {
+      screen_printf("n0.val=%d\xff\xff\xff", i);
+      osDelay(1);
+    }
+
+    osDelay(100);
     osDelay(delay_time);
     osDelay(1);
   }

@@ -5,13 +5,9 @@
 #include "usart.h"
 #include "dma.h"
 extern DMA_HandleTypeDef hdma_uart4_rx;
-extern DMA_HandleTypeDef hdma_usart2_rx;
 
 #define OPENMV_UART_HANDLE huart4
 #define OPENMV_UART_DMA_HANDLE hdma_uart4_rx
-
-#define OPENMV2_UART_HANDLE huart2
-#define OPENMV2_UART_DMA_HANDLE hdma_usart2_rx
 
 /*
 1  2  3

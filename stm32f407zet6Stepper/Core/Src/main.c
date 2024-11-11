@@ -34,6 +34,7 @@
 #include "SliderElevatorControl.h"
 #include "servo.h"
 #include "ZDT_Stepper.h"
+#include "uart_screen.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,9 +110,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
   }
   else if (huart == &huart2)
   {
-    // openmv2_uart_rx_callback(Size);
-    // openmv_rx_flag = 1 - openmv_rx_flag;
-    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
   }
   else if (huart == &huart3)
   {
@@ -206,7 +204,8 @@ int main(void)
 
   openmv_uart_init();
   HAL_Delay(50);
-  openmv2_uart_init();
+  uart_screen_init();
+
   HAL_Delay(50);
   calibrateAngleToZero();
   /* USER CODE END 2 */

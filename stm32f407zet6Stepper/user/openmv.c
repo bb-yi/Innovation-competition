@@ -12,21 +12,16 @@ R  G  B
 */
 OPENMV_data openmv_data;
 uint8_t openmv_rx_data[50] = {0};
-uint8_t openmv2_rx_data[50] = {0};
 uint8_t openmv_rx_flag = 0;
 void openmv_uart_init(void)
 {
 	HAL_UARTEx_ReceiveToIdle_DMA(&OPENMV_UART_HANDLE, openmv_rx_data, 49);
 	__HAL_DMA_DISABLE_IT(&OPENMV_UART_DMA_HANDLE, DMA_IT_HT);
 }
-void openmv2_uart_init(void)
-{
-	HAL_UARTEx_ReceiveToIdle_DMA(&OPENMV2_UART_HANDLE, openmv2_rx_data, 49);
-	__HAL_DMA_DISABLE_IT(&OPENMV2_UART_DMA_HANDLE, DMA_IT_HT);
-}
+
 void openmv_uart_rx_callback(uint16_t Size)
 {
-	// HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
+	HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
 	char buffer[100]; // 用于存储转换后的字符串
 	strncpy(buffer, (char *)openmv_rx_data, sizeof(buffer) - 1);
 
@@ -38,7 +33,7 @@ void openmv_uart_rx_callback(uint16_t Size)
 		case 'e':
 			if (sscanf(buffer, "[e,%d,%d]", &openmv_data.object_list[0], &openmv_data.object_list[1]) == 2)
 			{
-				// printf("Object list: %d, %d\n", openmv_data.object_list[0], openmv_data.object_list[1]);
+				printf("Object list: %d, %d\n", openmv_data.object_list[0], openmv_data.object_list[1]);
 			}
 			break;
 
@@ -87,29 +82,6 @@ void openmv_uart_rx_callback(uint16_t Size)
 	}
 
 	openmv_uart_init();
-}
-void openmv2_uart_rx_callback(uint16_t Size)
-{
-	// HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
-	char buffer[100]; // 用于存储转换后的字符串
-	strncpy(buffer, (char *)openmv2_rx_data, sizeof(buffer) - 1);
-
-	if (buffer[0] == '[')
-	{
-		char type = buffer[1]; // 获取数据类型标识符
-		switch (type)
-		{
-		case 'e':
-			if (sscanf(buffer, "[e,%d,%d]", &openmv_data.object_list[0], &openmv_data.object_list[1]) == 2)
-			{
-				printf("Object list: %d, %d\n", openmv_data.object_list[0], openmv_data.object_list[1]);
-			}
-			break;
-		default:
-			break;
-		}
-	}
-	openmv2_uart_init();
 }
 
 // 获取三位数的第几位

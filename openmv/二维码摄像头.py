@@ -5,8 +5,9 @@ uart = UART(3, baudrate=115200)
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
-sensor.set_vflip(True)
-sensor.set_hmirror(True)
+sensor.set_auto_exposure(False,exposure_us=100000 )
+sensor.set_auto_gain(False, gain_db=14)
+sensor.set_auto_whitebal(False, rgb_gain_db =  (63.2751, 60.206, 61.5473))
 sensor.skip_frames(20)
 
 
@@ -33,7 +34,13 @@ def get_qrcode():
 
 
 command = 'a'
+i = 0
 while(True):
+    i += 1
+    if i > 9:
+        i = 0
+    #print(i)
+    #uart.write(f"{i}\r\n")
     #uart.write("11")
     #print("11")
     if uart.any():
