@@ -38,10 +38,8 @@ typedef struct
 } OPENMV_data;
 
 void openmv_uart_init(void);
-void openmv2_uart_init(void);
 
-void openmv_uart_rx_callback(uint16_t Size);
-void openmv2_uart_rx_callback(uint16_t Size);
+void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id);
 
 int extract_digit(int number, int position);
 void Camera_SendString(const char *str);

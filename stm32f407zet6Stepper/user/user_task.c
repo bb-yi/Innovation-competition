@@ -130,6 +130,14 @@ void check_stepper_is_working(void)
 
 void enable_stepper_task(void)
 {
+    ZDT_Stepper_release_stall_protection(0);
+    osDelay(delay_time);
+    ZDT_Stepper_release_stall_protection(1);
+    osDelay(delay_time);
+    ZDT_Stepper_release_stall_protection(2);
+    osDelay(delay_time);
+    ZDT_Stepper_release_stall_protection(3);
+    osDelay(delay_time);
     ZDT_Stepper_Enable(1, Enable, SYNC_ENABLE);
     beep_short();
     // osDelay(delay_time);

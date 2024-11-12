@@ -30,6 +30,7 @@ ZDTStepperData stepperdata_3;
 ZDTStepperData stepperdata_4;
 ZDTStepperData stepperdata_5;
 uint8_t command_success_flag = 0;
+uint8_t get_stepper_data_flag = 0;
 // 根据指令标识赋值的函数
 void assign_message_based_on_command(uint8_t command_id, char *message, size_t message_size)
 {
@@ -116,6 +117,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             printf("校验失败!\n");
             return; // 校验失败，返回
         }
+        get_stepper_data_flag = 1;
         ZDTStepperData *stepperdata_temp = NULL; // 定义指针
         // 根据 data[0] 选择不同的结构体
         switch (data[0])
@@ -210,7 +212,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
             stepperdata_temp->current_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时位置: %.1f °", stepperdata_temp->current_position);
-            // printf("%s\n", message);
+            printf("%s\n", message);
             break;
 
         case 0x37:

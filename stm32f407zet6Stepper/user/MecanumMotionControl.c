@@ -1,4 +1,4 @@
-#include "MecanumMotionControl.h"
+﻿#include "MecanumMotionControl.h"
 #include "mpu.h"
 #include "ZDT_Stepper.h"
 #include "beep.h"
@@ -7,6 +7,8 @@
 uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern uint8_t command_success_flag;
+extern uint8_t get_stepper_data_flag;
+
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
 extern ZDTStepperData stepperdata_3;
@@ -37,11 +39,22 @@ void stepper_stop(uint8_t id, uint8_t sync_flag)
  */
 void motor_stop_all(void)
 {
-    stepper_stop(1, SYNC_ENABLE);     // 立即停止
-    stepper_stop(2, SYNC_ENABLE);     // 立即停止
-    stepper_stop(3, SYNC_ENABLE);     // 立即停止
-    stepper_stop(4, SYNC_ENABLE);     // 立即停止
-    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+    stepper_stop(1, SYNC_ENABLE); // 立即停止
+    stepper_stop(2, SYNC_ENABLE); // 立即停止
+    stepper_stop(3, SYNC_ENABLE); // 立即停止
+    stepper_stop(4, SYNC_ENABLE); // 立即停止
+    command_success_flag = 0;
+    for (;;)
+    {
+        ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+        osDelay(5);
+        printf("多机同步,等待返回\n");
+        if (command_success_flag == 1)
+        {
+            printf("成功\n");
+            break;
+        }
+    }
 }
 
 uint8_t check_motor_is_enable(void)
@@ -84,10 +97,21 @@ void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed
         target_speed = -target_speed;
     }
     uint8_t dir = target_speed > 0 ? 0 : 1;
-    ZDT_Stepper_Set_Speed(motor_id, dir, speed_rate, Abs(target_speed), sync_flag);
+    for (;;)
+    {
+        ZDT_Stepper_Set_Speed(motor_id, dir, speed_rate, Abs(target_speed), sync_flag);
+        osDelay(3);
+        // printf("控制速度,等待返回,%d\n", motor_id);
+        if (command_success_flag == 1)
+        {
+            // printf("成功\n");
+            break;
+        }
+    }
+    // ZDT_Stepper_Set_Speed(motor_id, dir, speed_rate, Abs(target_speed), sync_flag);
 }
 
-void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_speed_f, float angle, uint8_t sync_flag)
+void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_speed_f, float angle, uint8_t position_mode, uint8_t sync_flag)
 {
     if (motor_id == 3 || motor_id == 4)
     {
@@ -97,7 +121,7 @@ void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_s
     command_success_flag = 0;
     for (;;)
     {
-        ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), REL_POS_MODE, sync_flag);
+        ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), position_mode, sync_flag);
         osDelay(10);
         printf("T形运动,等待返回,%d\n", motor_id);
         if (command_success_flag == 1)
@@ -139,17 +163,11 @@ void Set_all_stepper_angle(float *angles, float max_speed)
     accel_accel[2] = Abs(angles[2] * accel_accel_max / max_angle);
     accel_accel[3] = Abs(angles[3] * accel_accel_max / max_angle);
 
-    Set_Stepper_run_T_angle(1, accel_accel[0], speed[0], angles[0], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], SYNC_ENABLE);
-    Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], SYNC_ENABLE);
+    Set_Stepper_run_T_angle(1, accel_accel[0], speed[0], angles[0], REL_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], REL_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], REL_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], REL_POS_MODE, SYNC_ENABLE);
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
-
-    // Set_Stepper_run_T_angle(1, accel_accel_max, max_speed, angles[0], SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(2, accel_accel_max, max_speed, angles[1], SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(3, accel_accel_max, max_speed, angles[2], SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(4, accel_accel_max, max_speed, angles[3], SYNC_ENABLE);
-    // ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
 void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
 {
@@ -301,13 +319,27 @@ void base_Horizontal_run_distance(float distance, float speed)
 {
     base_run_distance_base(distance, 0, 0, speed);
 }
-
+void Stepper_Read_current_position(uint8_t motor_id)
+{
+    get_stepper_data_flag = 0;
+    for (;;)
+    {
+        ZDT_Stepper_Read_current_position(motor_id);
+        osDelay(5);
+        printf("读电机位置,等待返回,%d\n", motor_id);
+        if (get_stepper_data_flag == 1)
+        {
+            printf("成功\n");
+            break;
+        }
+    }
+}
 void read_all_stepper_position(void)
 {
-    ZDT_Stepper_Read_current_position(1);
-    ZDT_Stepper_Read_current_position(2);
-    ZDT_Stepper_Read_current_position(3);
-    ZDT_Stepper_Read_current_position(4);
+    Stepper_Read_current_position(1);
+    Stepper_Read_current_position(2);
+    Stepper_Read_current_position(3);
+    Stepper_Read_current_position(4);
 }
 void Set_Stepper_T_pos(uint8_t motor_id, uint16_t accel_accel, float max_speed_f, float angle, uint8_t sync_flag)
 {
@@ -330,88 +362,155 @@ void Set_Stepper_T_pos(uint8_t motor_id, uint16_t accel_accel, float max_speed_f
     }
 }
 pid distance_rotation_pid;
+// void base_run_distance_base_fix(float distance_x, float distance_y, float speed)
+// {
+//     uint8_t run_mode;
+//     int8_t dir;
+//     float max_error = 0.01f;
+//     run_mode = distance_x == 0 ? 0 : (distance_y == 0 ? 1 : 2);
+//     float run_distance = Abs(run_mode == 0 ? distance_y : distance_x);
+//     set_beep_short_flag();
+//     pid_base_init(&distance_rotation_pid);
+//     distance_rotation_pid.Kp = 1.6f; // 0.2f
+//     distance_rotation_pid.Ki = 0.0f;
+//     distance_rotation_pid.Kd = 0.0f;
+//     float now_yaw, error_yaw, yaw_output;
+//     float start_angle_1, start_angle_2, start_angle_3, start_angle_4;
+//     float target_angle_1, target_angle_2, target_angle_3, target_angle_4;
+//     float error_angle_1, error_angle_2, error_angle_3, error_angle_4;
+//     float alpha, control_speed = 0, last_speed = 0, target_speed;
+//     float smoothed_alpha, Threshold_distance;
+//     float start_yaw = radiansToDegrees(Get_IMU_Yaw());
+//     read_all_stepper_position();
+//     start_angle_1 = stepperdata_1.current_position;
+//     start_angle_2 = stepperdata_2.current_position;
+//     start_angle_3 = -stepperdata_3.current_position;
+//     start_angle_4 = -stepperdata_4.current_position;
+//     if (run_mode == 0)
+//     {
+//         dir = distance_y > 0 ? 1 : -1;
+//         target_angle_1 = start_angle_1 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
+//         target_angle_2 = start_angle_2 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
+//         target_angle_3 = start_angle_3 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
+//         target_angle_4 = start_angle_4 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
+//     }
+//     else if (run_mode == 1)
+//     {
+//         dir = distance_x > 0 ? 1 : -1;
+//         target_angle_1 = start_angle_1 + radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
+//         target_angle_2 = start_angle_2 - radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
+//         target_angle_3 = start_angle_3 + radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
+//         target_angle_4 = start_angle_4 - radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
+//     }
+//     else
+//     {
+//         return;
+//     }
+//     printf("d_angle_1:%.2f,d_angle_2:%.2f,d_angle_3:%.2f,d_angle_4:%.2f\n", radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10), radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10));
+//     for (;;)
+//     {
+//         read_all_stepper_position();
+//         now_yaw = radiansToDegrees(Get_IMU_Yaw());
+//         error_yaw = start_yaw - now_yaw;
+//         yaw_output = -PID_Control(&distance_rotation_pid, error_yaw, 20);
+//         error_angle_1 = target_angle_1 - stepperdata_1.current_position;
+//         error_angle_2 = target_angle_2 - stepperdata_2.current_position;
+//         error_angle_3 = target_angle_3 - (-stepperdata_3.current_position);
+//         error_angle_4 = target_angle_4 - (-stepperdata_4.current_position);
+//         if (run_mode == 1)
+//         {
+//             error_angle_2 = -error_angle_2;
+//             error_angle_4 = -error_angle_4;
+//         }
+//         alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees((run_mode == 0 ? distance_y : distance_x) / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
+//         float temp = clamp(exponentialMap(speed, 0, 100, 0.5f, 2.0f, 5.0f), 0.5f, 2.0f);
+//         Threshold_distance = run_distance < 20.0f ? float_Map(run_distance, 0, 20.0f, 0.8f * run_distance, 0.3f * run_distance) : 10.0f;
+//         if ((alpha * run_distance < Threshold_distance)) // 减速部分
+//         // if ((alpha < 0.1f * exponentialMap(run_distance, 0, 120, 3.0f, 1.0f, 0.8f) * exponentialMap(speed, 30, 100, 1.0f, 2.0f, 2.0f))) // 减速部分
+//         {
+//             // smoothed_alpha = 0.3f;
+
+//             smoothed_alpha = clamp(float_Map(run_distance, 0, 100, 0.1f, 0.3f), 0.1f, 0.3f);
+//             target_speed = 4;
+//         }
+//         else
+//         {
+//             smoothed_alpha = 0.1f;
+//             target_speed = speed;
+//         }
+
+//         control_speed = target_speed * smoothed_alpha + last_speed * (1 - smoothed_alpha);
+//         yaw_output = clamp(yaw_output, -20, 20);
+//         // printf("target_speed:%.2f,control_speed:%.2f,alpha:%f,error_yaw:%.2f,yaw_output:%.2f\n", target_speed, dir * control_speed, alpha, error_yaw, yaw_output);
+//         printf("target_speed:%.2f,control_speed:%.2f,alpha:%f,smoothed_alpha:%.2f,error_yaw:%.2f,yaw_output:%.2f,dir:%d\n", target_speed, dir * control_speed, alpha, smoothed_alpha, error_yaw, yaw_output, dir);
+//         if (run_mode == 0)
+//         {
+//             base_speed_control(0, dir * control_speed, yaw_output * (control_speed / speed), 10);
+//         }
+//         else if (run_mode == 1)
+//         {
+//             base_speed_control(dir * control_speed, 0, yaw_output * (control_speed / speed), 10);
+//         }
+//         last_speed = control_speed;
+//         if (alpha < max_error)
+//         {
+//             motor_stop_all();
+//             printf("alpha:%f,error_distance:%f,start_yaw%.2f,end_yaw%.2f\n", alpha, alpha * run_distance, start_yaw, radiansToDegrees(Get_IMU_Yaw()));
+//             set_beep_short_flag();
+//             printf("到达目标位置\n");
+//             break;
+//         }
+//         osDelay(1);
+//     }
+// }
+
+void Set_all_stepper_angle_ABS(float *angles, float max_speed)
+{
+    Set_Stepper_run_T_angle(1, accel_accel_max, max_speed, angles[0], ABS_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(2, accel_accel_max, max_speed, angles[1], ABS_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(3, accel_accel_max, max_speed, angles[2], ABS_POS_MODE, SYNC_ENABLE);
+    Set_Stepper_run_T_angle(4, accel_accel_max, max_speed, angles[3], ABS_POS_MODE, SYNC_ENABLE);
+    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+}
 void base_run_distance_base_fix(float distance_x, float distance_y, float speed)
 {
-    uint8_t run_mode;
-    int8_t dir;
-
-    float max_error = 0.01f;
-    run_mode = distance_x == 0 ? 0 : (distance_y == 0 ? 1 : 2);
     set_beep_short_flag();
-    pid_base_init(&distance_rotation_pid);
-    distance_rotation_pid.Kp = 0.2f; // 10.0f
-    distance_rotation_pid.Ki = 0.0f; // 0.18f
-    distance_rotation_pid.Kd = 0.0f; // 40.0f
-    float now_yaw, error_yaw, yaw_output;
-    float start_angle_1, start_angle_2, start_angle_3, start_angle_4;
-    float target_angle_1, target_angle_2, target_angle_3, target_angle_4;
-    float error_angle_1, error_angle_2, error_angle_3, error_angle_4;
-    float alpha, control_speed = 0, last_speed = 0, target_speed;
-    float smoothed_alpha = 0.3f;
+    distance_x = -distance_x * 10.0f; // 将函数的单位转化为cm
+    distance_y = distance_y * 10.0f;
+    uint8_t run_mode;
+    run_mode = distance_x == 0 ? 0 : (distance_y == 0 ? 1 : 2);
+    float start_wheel_angles[4];
+    float target_wheel_angles[4];
+    float wheel_d_angles[4];
     float start_yaw = radiansToDegrees(Get_IMU_Yaw());
+    float current_yaw;
     read_all_stepper_position();
-    start_angle_1 = stepperdata_1.current_position;
-    start_angle_2 = stepperdata_2.current_position;
-    start_angle_3 = -stepperdata_3.current_position;
-    start_angle_4 = -stepperdata_4.current_position;
+    start_wheel_angles[0] = stepperdata_1.current_position;
+    start_wheel_angles[1] = stepperdata_2.current_position;
+    start_wheel_angles[2] = -stepperdata_3.current_position;
+    start_wheel_angles[3] = -stepperdata_4.current_position;
+    MecanumWheelIK(distance_x, distance_y, 0, wheel_d_angles);
     if (run_mode == 0)
     {
-        dir = distance_y > 0 ? 1 : -1;
-        target_angle_1 = start_angle_1 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
-        target_angle_2 = start_angle_2 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
-        target_angle_3 = start_angle_3 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
-        target_angle_4 = start_angle_4 + radiansToDegrees(distance_y / WHEEL_RADIUS * 10);
+        target_wheel_angles[0] = start_wheel_angles[0] + wheel_d_angles[0];
+        target_wheel_angles[1] = start_wheel_angles[1] + wheel_d_angles[1];
+        target_wheel_angles[2] = start_wheel_angles[2] + wheel_d_angles[2];
+        target_wheel_angles[3] = start_wheel_angles[3] + wheel_d_angles[3];
     }
     else if (run_mode == 1)
     {
-        dir = distance_x > 0 ? 1 : -1;
-        target_angle_1 = start_angle_1 + radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
-        target_angle_2 = start_angle_2 - radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
-        target_angle_3 = start_angle_3 + radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
-        target_angle_4 = start_angle_4 - radiansToDegrees(distance_x / WHEEL_RADIUS * 10);
+        target_wheel_angles[0] = start_wheel_angles[0] + wheel_d_angles[0];
+        target_wheel_angles[1] = start_wheel_angles[1] - wheel_d_angles[1];
+        target_wheel_angles[2] = start_wheel_angles[2] + wheel_d_angles[2];
+        target_wheel_angles[3] = start_wheel_angles[3] - wheel_d_angles[3];
     }
-    else
-    {
-        return;
-    }
-    printf("target_angle_1:%f,target_angle_2:%f,target_angle_3:%f,target_angle_4:%f\n", target_angle_1, target_angle_2, target_angle_3, target_angle_4);
-    printf("d_angle_1:%.2f,d_angle_2:%.2f,d_angle_3:%.2f,d_angle_4:%.2f\n", radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10), radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10));
+    printf("start_1:%.2f,start_2:%.2f,start_3:%.2f,start_4:%.2f,end_1:%.2f,end_2:%.2f,end_3:%.2f,end_4:%.2f\n", start_wheel_angles[0], start_wheel_angles[1], start_wheel_angles[2], start_wheel_angles[3], target_wheel_angles[0], target_wheel_angles[1], target_wheel_angles[2], target_wheel_angles[3]);
+    Set_all_stepper_angle_ABS(target_wheel_angles, speed);
     for (;;)
     {
-        read_all_stepper_position();
-        now_yaw = radiansToDegrees(Get_IMU_Yaw());
-        error_yaw = start_yaw - now_yaw;
-        yaw_output = -PID_Control(&distance_rotation_pid, error_yaw, 20);
-        error_angle_1 = target_angle_1 - stepperdata_1.current_position;
-        error_angle_2 = target_angle_2 - stepperdata_2.current_position;
-        error_angle_3 = target_angle_3 - (-stepperdata_3.current_position);
-        error_angle_4 = target_angle_4 - (-stepperdata_4.current_position);
-        if (run_mode == 1)
+        uint32_t current_time = HAL_GetTick();
+        if (CheckMotorsAtTargetPosition() == 1)
         {
-            error_angle_2 = -error_angle_2;
-            error_angle_4 = -error_angle_4;
-        }
-
-        alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees((run_mode == 0 ? distance_y : distance_x) / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees((run_mode == 0 ? distance_y : distance_x) / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
-        // printf("error_angle_1:%f,error_angle_2:%f,error_angle_3:%f,error_angle_4:%f,alpha:%f\n", error_angle_1, error_angle_2, error_angle_3, error_angle_4, alpha);
-        // printf("alpha%.2f,error_yaw:%f,yaw_output:%f\n", alpha, error_yaw, yaw_output);
-        target_speed = alpha < 0.15f * (60.0f / Abs(run_mode == 0 ? distance_y : distance_x)) ? 4 : speed;
-        control_speed = target_speed * smoothed_alpha + last_speed * (1 - smoothed_alpha);
-        yaw_output = clamp(yaw_output, -20, 20);
-        // printf("target_speed:%.2f,control_speed:%.2f,alpha:%f,error_yaw:%.2f,yaw_output:%.2f\n", target_speed, control_speed, alpha, error_yaw, yaw_output);
-        if (run_mode == 0)
-        {
-            base_speed_control(0, dir * control_speed, yaw_output * (control_speed / speed), 10);
-        }
-        else if (run_mode == 1)
-        {
-            base_speed_control(dir * control_speed, 0, yaw_output * (control_speed / speed), 10);
-        }
-        last_speed = control_speed;
-        if (Abs(alpha) < max_error)
-        {
-            motor_stop_all();
-            printf("alpha:%f,error_distance:%f\n", alpha, alpha * (run_mode == 0 ? distance_y : distance_x));
             set_beep_short_flag();
             printf("到达目标位置\n");
             break;

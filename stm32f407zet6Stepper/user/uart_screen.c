@@ -35,5 +35,10 @@ void screen_printf(const char *format, ...)
     screen_SendString(buffer);
 }
 
+void Set_display_solid_num(uint16_t num1, uint16_t num2)
+{
+    screen_printf("n0.val=%d\xff\xff\xff", num1);
+    screen_printf("n1.val=%d\xff\xff\xff", num2);
+}
 // screen_print("t0.txt=\"%s\"\xff\xff\xff", Serial_RxPacket);
 // screen_print("n0.val=%d\xff\xff\xff", a);

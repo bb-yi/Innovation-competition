@@ -235,7 +235,7 @@ while True:
     i += 1
     if i > 9:
         i = 0
-    print(i)
+    #print(i)
     uart.write(f"{i}\r\n")
     if uart.any():
         receive_data = uart.read()

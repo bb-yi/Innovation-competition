@@ -1,6 +1,6 @@
 #include "openmv.h"
 #include "usart.h"
-
+#include "uart_screen.h"
 /*
 1  2  3
 R  G  B
@@ -12,6 +12,8 @@ R  G  B
 */
 OPENMV_data openmv_data;
 uint8_t openmv_rx_data[50] = {0};
+extern uint8_t uart_screen_rx_data[50];
+
 uint8_t openmv_rx_flag = 0;
 void openmv_uart_init(void)
 {
@@ -19,11 +21,20 @@ void openmv_uart_init(void)
 	__HAL_DMA_DISABLE_IT(&OPENMV_UART_DMA_HANDLE, DMA_IT_HT);
 }
 
-void openmv_uart_rx_callback(uint16_t Size)
+void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 {
-	HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
+
 	char buffer[100]; // 用于存储转换后的字符串
-	strncpy(buffer, (char *)openmv_rx_data, sizeof(buffer) - 1);
+	if (uart_id == 4)
+	{
+		// HAL_UART_Transmit(&huart1, openmv_rx_data, 50, HAL_MAX_DELAY);
+		strncpy(buffer, (char *)openmv_rx_data, sizeof(buffer) - 1);
+	}
+	else if (uart_id == 2)
+	{
+		// HAL_UART_Transmit(&huart3, uart_screen_rx_data, 50, HAL_MAX_DELAY);
+		strncpy(buffer, (char *)uart_screen_rx_data, sizeof(buffer) - 1);
+	}
 
 	if (buffer[0] == '[')
 	{
@@ -33,7 +44,10 @@ void openmv_uart_rx_callback(uint16_t Size)
 		case 'e':
 			if (sscanf(buffer, "[e,%d,%d]", &openmv_data.object_list[0], &openmv_data.object_list[1]) == 2)
 			{
+
 				printf("Object list: %d, %d\n", openmv_data.object_list[0], openmv_data.object_list[1]);
+				screen_printf("t0.txt=\"%s\"\xff\xff\xff", "+");
+				Set_display_solid_num(openmv_data.object_list[0], openmv_data.object_list[1]);
 			}
 			break;
 

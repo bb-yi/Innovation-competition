@@ -274,7 +274,44 @@ void StartTask03(void *argument)
   // osDelay(1000);
   // base_Horizontal_run_distance(-100, 100);
   // osDelay(1000);
+  // float out_speed = 0;
+  // for (uint16_t i = 0; i < 100; i++)
+  // {
+  //   float alpha = (float)i / 100.0f;
+  //   if (alpha > 0.5f)
+  //   {
+  //     out_speed = S_Curve_Smoothing(0, 100, 0.2, 1 - alpha, 0.5f, 0.01);
+  //   }
+  //   else
+  //   {
+  //     out_speed = S_Curve_Smoothing(100, 4, 0.2, 0.5f - alpha, 0.5f, 0.01);
+  //   }
+  //   printf("alpha=%.2f, out_speed=%.2f\r\n", alpha, out_speed);
+  //   osDelay(10);
+  // }
+  for (uint8_t j = 0; j < 7; j++)
+  {
+    for (uint8_t i = 0; i < 1; i++)
+    {
+      base_run_distance_base_fix(0, (j + 1) * 10, 100);
+      // base_run_distance_base_fix((j + 1) * 10, 0, 60);
 
+      osDelay(500);
+    }
+    osDelay(1000);
+    for (uint8_t i = 0; i < 1; i++)
+    {
+      base_run_distance_base_fix(0, -(j + 1) * 10, 100);
+      // base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
+
+      osDelay(500);
+    }
+    osDelay(1000);
+  }
+  // base_run_distance_base_fix(0, 60, 100);
+  // osDelay(1000);
+  // base_run_distance_base_fix(0, -60, 100);
+  // osDelay(1000);
   // base_run_distance_base_fix(20, 0, 60);
   // osDelay(1000);
   // base_run_distance_base_fix(0, 180, 60);
@@ -305,13 +342,11 @@ void StartTask03(void *argument)
     // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
 
     // CheckTaskMemoryUsage(myTask03Handle);
-    screen_printf("t0.txt=\"%s\"\xff\xff\xff", "123,123");
-    osDelay(100);
-    for (uint16_t i = 0; i < 360; i++)
-    {
-      screen_printf("n0.val=%d\xff\xff\xff", i);
-      osDelay(1);
-    }
+    // for (uint8_t i = 0; i < 128; i++)
+    // {
+    //   Set_display_solid_num(i, i * 2);
+    //   osDelay(10);
+    // }
 
     osDelay(100);
     osDelay(delay_time);

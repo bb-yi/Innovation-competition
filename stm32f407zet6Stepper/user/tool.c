@@ -180,7 +180,7 @@ float clamp_min(float value, float min_positive)
  */
 float S_Curve_Smoothing(float StartSpeed, float TargetSpeed, float Smoothness, float current_time, float total_time, float Threshold)
 {
-    // 计算归一化的时间范围 (从0到1)
+    // 计算归一化的时间范围 (从-1到1)
     float normalized_time = (current_time - total_time / 2) / (total_time / 2);
 
     // 计算速度变化的Sigmoid曲线
@@ -195,6 +195,16 @@ float S_Curve_Smoothing(float StartSpeed, float TargetSpeed, float Smoothness, f
     return speed;
 }
 
+// 指数映射函数
+float exponentialMap(float input, float input_min, float input_max, float output_min, float output_max, float base)
+{
+    // 归一化输入 (0 到 1)
+    float normalized_input = (input - input_min) / (input_max - input_min);
+    // 使用指数函数调整非线性映射
+    float adjusted = (powf(base, normalized_input) - 1) / (base - 1);
+    // 映射到输出范围
+    return output_min + adjusted * (output_max - output_min);
+}
 /**
  * @brief 求绝对值函数
  * @param a

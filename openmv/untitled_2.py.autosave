@@ -228,7 +228,7 @@ u = 1
 v = 1
 
 
-command = 'c'
+command = 'y'
 i = 0
 while True:
 

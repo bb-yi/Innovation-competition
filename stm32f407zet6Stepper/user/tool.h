@@ -22,6 +22,7 @@ float float_Map(float input_value, float input_min, float input_max, float outpu
 int int_Map(int input_value, int input_min, int input_max, int output_min, int output_max);
 float float_Map_with_median(float input_value, float input_min, float input_max, float median, float output_min, float output_max);
 float S_Curve_Smoothing(float StartSpeed, float TargetSpeed, float Smoothness, float current_time, float total_time, float Threshold);
+float exponentialMap(float input, float input_min, float input_max, float output_min, float output_max, float base);
 float Abs(float a);
 float clamp(float value, float min, float max);
 float clamp_min(float value, float min_positive);

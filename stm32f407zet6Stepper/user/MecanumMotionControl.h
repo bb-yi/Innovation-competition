@@ -41,7 +41,7 @@ void motor_init(void);
 void motor_stop_all(void);
 uint8_t check_motor_is_enable(void);
 void base_speed_control(float x_speed, float y_speed, float rot_speed, float accel_accel);
-void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_speed_f, float angle, uint8_t sync_flag);
+void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_speed_f, float angle, uint8_t position_mode, uint8_t sync_flag);
 void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed, uint8_t sync_flag);
 uint8_t CheckMotorsAtTargetPosition(void);
 uint8_t base_rotation_control_world(float target_angle, float speed);
