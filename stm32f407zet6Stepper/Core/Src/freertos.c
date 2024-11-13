@@ -289,29 +289,29 @@ void StartTask03(void *argument)
   //   printf("alpha=%.2f, out_speed=%.2f\r\n", alpha, out_speed);
   //   osDelay(10);
   // }
-  for (uint8_t j = 0; j < 7; j++)
-  {
-    for (uint8_t i = 0; i < 1; i++)
-    {
-      base_run_distance_base_fix(0, (j + 1) * 10, 100);
-      // base_run_distance_base_fix((j + 1) * 10, 0, 60);
+  // for (uint8_t j = 0; j < 7; j++)
+  // {
+  //   for (uint8_t i = 0; i < 1; i++)
+  //   {
+  //     base_run_distance_base_fix(0, (j + 1) * 10, 100);
+  //     // base_run_distance_base_fix((j + 1) * 10, 0, 60);
 
-      osDelay(500);
-    }
-    osDelay(1000);
-    for (uint8_t i = 0; i < 1; i++)
-    {
-      base_run_distance_base_fix(0, -(j + 1) * 10, 100);
-      // base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
+  //     osDelay(500);
+  //   }
+  //   osDelay(1000);
+  //   for (uint8_t i = 0; i < 1; i++)
+  //   {
+  //     base_run_distance_base_fix(0, -(j + 1) * 10, 100);
+  //     // base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
 
-      osDelay(500);
-    }
-    osDelay(1000);
-  }
-  // base_run_distance_base_fix(0, 60, 100);
-  // osDelay(1000);
-  // base_run_distance_base_fix(0, -60, 100);
-  // osDelay(1000);
+  //     osDelay(500);
+  //   }
+  //   osDelay(1000);
+  // }
+  base_run_distance_base_fix(0, 80, 100);
+  osDelay(1000);
+  base_run_distance_base_fix(0, -80, 100);
+  osDelay(1000);
   // base_run_distance_base_fix(20, 0, 60);
   // osDelay(1000);
   // base_run_distance_base_fix(0, 180, 60);
