@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+﻿ /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -36,12 +36,12 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "uart_screen.h"
-/* USER CODE END Includes */
+    /* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
+    /* Private typedef -----------------------------------------------------------*/
+    /* USER CODE BEGIN PTD */
 
-extern SYS_STATE_Data sys_state_data;
+    extern SYS_STATE_Data sys_state_data;
 extern OPENMV_data openmv_data;
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
@@ -262,7 +262,7 @@ void StartTask03(void *argument)
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
 
-  // main_task();
+  main_task();
 
   // base_run_distance(100, 100);
   // osDelay(1000);
@@ -293,25 +293,25 @@ void StartTask03(void *argument)
   // {
   //   for (uint8_t i = 0; i < 1; i++)
   //   {
-  //     base_run_distance_base_fix(0, (j + 1) * 10, 100);
-  //     // base_run_distance_base_fix((j + 1) * 10, 0, 60);
+  //     // base_run_distance_base_fix(0, (j + 1) * 10, 60);
+  //     base_run_distance_base_fix((j + 1) * 10, 0, 60);
 
   //     osDelay(500);
   //   }
   //   osDelay(1000);
   //   for (uint8_t i = 0; i < 1; i++)
   //   {
-  //     base_run_distance_base_fix(0, -(j + 1) * 10, 100);
-  //     // base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
+  //     // base_run_distance_base_fix(0, -(j + 1) * 10, 60);
+  //     base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
 
   //     osDelay(500);
   //   }
   //   osDelay(1000);
   // }
-  base_run_distance_base_fix(0, 80, 100);
-  osDelay(1000);
-  base_run_distance_base_fix(0, -80, 100);
-  osDelay(1000);
+  // base_run_distance_base_fix(0, 100, 60);
+  // osDelay(1000);
+  // base_run_distance_base_fix(0, -100, 60);
+  // osDelay(1000);
   // base_run_distance_base_fix(20, 0, 60);
   // osDelay(1000);
   // base_run_distance_base_fix(0, 180, 60);
@@ -323,6 +323,10 @@ void StartTask03(void *argument)
 
   // base_speed_control(0, 120, 0, 220);
   // motor_rotation_test();
+  // motor_rotation_test();
+  // motor_rotation_test();
+  // motor_rotation_test();
+
   // motor_test();
 
   // base_speed_control(0, 0, 1);

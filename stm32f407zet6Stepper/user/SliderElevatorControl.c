@@ -35,7 +35,18 @@ void set_Slider_position(float position, float speed)
         }
     }
 }
-
+void set_Slider_position_2(float position, float speed)
+{
+    position = clamp(position, 4, 145);
+    float d_position = position - last_position;
+    uint8_t dir;
+    dir = (d_position > 0) ? 1 : 0;
+    d_position = Abs(d_position);
+    float angle = d_position * 36.0f / 4.0f;
+    printf("滑块位置：%f,角度：%f\r\n", position, angle);
+    ZDT_Stepper_Set_T_position(5, dir, 1500, 1500, speed, angle, REL_POS_MODE, SYNC_DISABLE);
+    last_position = position;
+}
 void Slider_position_init(void)
 {
     ZDT_Stepper_trigger_zero_return(5, 2, SYNC_DISABLE);
