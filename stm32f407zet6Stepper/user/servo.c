@@ -75,7 +75,7 @@ void Catch_material(void)
 
 void Release_material(void)
 {
-    Set_Servo_angle(catch, 30);
+    Set_Servo_angle(catch, 45);
     printf("张开爪子\n");
 }
 void Servo_Init(void)
@@ -95,7 +95,7 @@ void Get_material(uint8_t pos)
     Release_material();
     Set_Sliding_table_Pos(0);
     osDelay(500);
-    set_Slider_position(85, solider_speed);
+    set_Slider_position(95, solider_speed);
     osDelay(100);
     Catch_material();
     osDelay(500);

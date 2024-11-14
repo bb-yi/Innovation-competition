@@ -217,14 +217,17 @@ void find_circle(uint8_t mode)
 {
     // x 0.5 y 0.42
     float PositionThreshold;
+    float target_x, target_y;
     PositionThreshold = (mode == 0 ? 0.01f : 0.01f);
     float clamp_value = 10.0f;
     if (mode == 0)
     {
-        find_circle_pid.Kp = 60.0f;
+        find_circle_pid.Kp = 25.0f;
         find_circle_pid.Ki = 0.00f;
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
+        target_x = 0.56f;
+        target_y = 0.49f;
     }
     else
     {
@@ -232,6 +235,8 @@ void find_circle(uint8_t mode)
         find_circle_pid.Ki = 0.0f;
         find_circle_pid.Kd = 0.0f;
         clamp_value = 3.5f;
+        target_x = 0.716f;
+        target_y = 0.456f;
     }
     find_circle_yaw_pid.Kp = 1.0f;
     find_circle_yaw_pid.Ki = 0.00f;
@@ -240,8 +245,7 @@ void find_circle(uint8_t mode)
     float error_x, error_y, output_x, output_y;
     float start_yaw = Get_IMU_Yaw();
     float error_yaw, output_yaw;
-    float target_x = 0.63f;
-    float target_y = 0.47f;
+
     if (mode == 1)
     {
         target_x = 0.66f;
@@ -341,8 +345,8 @@ void MaterialArea_Task(void)
 {
 
     Camera_switch_mode(CENTER_POSITION_MODE);
-    set_Slider_position(150, 7);
-    find_circle(0);
+    set_Slider_position(148, 7);
+    // find_circle(0);
     printf("finish\r\n");
     osDelay(200);
     // Camera_switch_mode(QR_MODE);
@@ -468,9 +472,9 @@ uint8_t main_task(void)
     set_Slider_position_2(148, 500);
     osDelay(1000);
     base_Horizontal_run_distance_fix(-9, run_speed); // 靠近物料
-    // osDelay(1000);
-    // MaterialArea_Task(); // 原料区任务
-    // osDelay(1000);
+    osDelay(200);
+    MaterialArea_Task(); // 原料区任务
+    return 1;
     osDelay(200);
     base_Horizontal_run_distance_fix(9, run_speed);
     osDelay(1000);

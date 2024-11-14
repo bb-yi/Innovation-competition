@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+﻿ /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -36,12 +36,12 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "uart_screen.h"
-/* USER CODE END Includes */
+    /* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
+    /* Private typedef -----------------------------------------------------------*/
+    /* USER CODE BEGIN PTD */
 
-extern SYS_STATE_Data sys_state_data;
+    extern SYS_STATE_Data sys_state_data;
 extern OPENMV_data openmv_data;
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
@@ -243,11 +243,11 @@ void StartTask03(void *argument)
   // Put_material(0);
   // Put_material(1);
   // Put_material(2);
-  Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
-  find_circle(0);
-  printf("finish\r\n");
+  // Camera_switch_mode(CENTER_POSITION_MODE);
+  // find_circle(0);
+  // printf("finish\r\n");
   // Get_material(openmv_data.last_identify_color - 1);
-  Get_material_floor(openmv_data.last_identify_color - 1);
+  // Get_material(openmv_data.last_identify_color - 1);
   // set_Slider_position(0, 500);
   // osDelay(1000);
   // set_Slider_position(100, 500);
@@ -266,7 +266,7 @@ void StartTask03(void *argument)
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
 
-  // main_task();
+  main_task();
 
   // base_run_distance(100, 100);
   // osDelay(1000);

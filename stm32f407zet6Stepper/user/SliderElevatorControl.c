@@ -50,7 +50,7 @@ void set_Slider_position(float position, float speed)
             printf("电机到位\r\n");
             break;
         }
-        if (current_time - start_time > (uint32_t)(max_time * 1000))
+        if (current_time - start_time > (uint32_t)(2 * 1000))
         {
             set_beep_long_flag();
             printf("设置滑台位置超时,max_time:%f\n", max_time);

@@ -8,7 +8,7 @@ uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern uint8_t command_success_flag;
 extern uint8_t get_stepper_data_flag;
-uint8_t print_flag = 1;
+uint8_t print_flag = 0;
 
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
@@ -473,11 +473,11 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed)
         printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, yaw_output);
         if (run_mode == 0)
         {
-            base_speed_control(0, dir * control_speed, yaw_output, 10);
+            base_speed_control(0, dir * control_speed, yaw_output, 200);
         }
         else if (run_mode == 1)
         {
-            base_speed_control(dir * control_speed, 0, yaw_output, 10);
+            base_speed_control(dir * control_speed, 0, yaw_output, 200);
         }
         // yaw_output *(control_speed / speed);
         if (alpha < max_error)
