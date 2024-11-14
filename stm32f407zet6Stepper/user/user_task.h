@@ -4,6 +4,7 @@
 void check_stack_usage(TaskHandle_t task);
 void OLED_display_task(void);
 void init_task(void);
+void find_circle(uint8_t mode);
 void find_line_calibrate_MPU(void);
 void find_line_calibrate_MPU_PID(void);
 

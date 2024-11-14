@@ -212,44 +212,42 @@ void QrCode_Task(void)
 
 pid find_circle_pid;
 pid find_circle_yaw_pid;
-
+// 原料区为0 放置为1
 void find_circle(uint8_t mode)
 {
     // x 0.5 y 0.42
     float PositionThreshold;
-    PositionThreshold = (mode == 0 ? 0.1f : 0.01f);
+    PositionThreshold = (mode == 0 ? 0.01f : 0.01f);
     float clamp_value = 10.0f;
     if (mode == 0)
     {
-        find_circle_pid.Kp = 40.0f;
-        find_circle_pid.Ki = 0.001f;
-        find_circle_pid.Kd = 5.0f;
+        find_circle_pid.Kp = 60.0f;
+        find_circle_pid.Ki = 0.00f;
+        find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
     }
     else
     {
-        find_circle_pid.Kp = 80.0f;
-        find_circle_pid.Ki = 0.01f;
-        find_circle_pid.Kd = 5.0f;
+        find_circle_pid.Kp = 1.0f;
+        find_circle_pid.Ki = 0.0f;
+        find_circle_pid.Kd = 0.0f;
         clamp_value = 3.5f;
     }
-    // find_circle_pid.Kp = 55.0f;
-    // find_circle_pid.Ki = 0.05f;
-    // find_circle_pid.Kd = 10.0f;
-    find_circle_yaw_pid.Kp = 60.0f;
-    find_circle_yaw_pid.Ki = 0.02f;
+    find_circle_yaw_pid.Kp = 1.0f;
+    find_circle_yaw_pid.Ki = 0.00f;
     find_circle_yaw_pid.Kd = 0.0f;
 
     float error_x, error_y, output_x, output_y;
     float start_yaw = Get_IMU_Yaw();
     float error_yaw, output_yaw;
-    float target_x = 0.65f;
-    float target_y = 0.50f;
+    float target_x = 0.63f;
+    float target_y = 0.47f;
     if (mode == 1)
     {
         target_x = 0.66f;
         target_y = 0.47;
     }
+    set_beep_short_flag();
     osDelay(200);
     for (;;)
     {
@@ -258,48 +256,31 @@ void find_circle(uint8_t mode)
         error_yaw = start_yaw - Get_IMU_Yaw();
         output_x = PID_Control(&find_circle_pid, error_x, 1000);
         output_y = PID_Control(&find_circle_pid, error_y, 1000);
-        output_yaw = PID_Control(&find_circle_yaw_pid, error_yaw, 1000);
-        // find_circle_pid.Ki = (error_x < 0.1f) && (error_y < 0.1f) ? 0.05f : 0.07f;
-        // printf("error_x=%.2f,error_y=%.2f,output_x=%.2f,output_y=%.2f\r\n", error_x, error_y, output_x, output_y);
-        // printf("error_yaw=%.2f,output_yaw=%.2f\r\n", error_yaw, output_yaw);
+        output_yaw = PID_Control(&find_circle_yaw_pid, error_yaw, 20);
         output_x = clamp(output_x, -clamp_value, clamp_value);
         output_y = clamp(output_y, -clamp_value, clamp_value);
+        printf("error_x=%.2f,error_y=%.2f,x=%.2f,y=%.2f,yaw:%.2f,has_circle:%d,color:%d\r\n", error_x, error_y, output_x, output_y, output_yaw, openmv_data.hsa_circle, openmv_data.last_identify_color);
         if (openmv_data.hsa_circle == 1)
         {
+            base_speed_control(output_x, output_y, 0, 200);
             if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
             {
-                for (uint16_t i = 0; i < 200; i++)
-                {
-                    osDelay(1);
-                }
-                if (1)
-                {
-                    error_x = (target_x - openmv_data.object_position_y);
-                    error_y = -(target_y - openmv_data.object_position_x);
-                    if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
-                    {
-                        for (uint16_t i = 0; i < 500; i++)
-                        {
-
-                            osDelay(1);
-                        }
-                        find_circle_pid.integral = 0.0f;
-                        motor_stop_all();
-                        osDelay(1);
-                        break;
-                    }
-                }
-                else
-                {
-                    find_circle_pid.integral = 0.0f;
-                    motor_stop_all();
-                    osDelay(1);
-                    break;
-                }
+                set_beep_short_flag();
+                printf("find circle\r\n");
+                printf("error_x=%.2f,error_y=%.2f,x=%.2f,y=%.2f,yaw:%.2f,has_circle:%d,color:%d\r\n", error_x, error_y, output_x, output_y, output_yaw, openmv_data.hsa_circle, openmv_data.last_identify_color);
+                find_circle_pid.integral = 0.0f;
+                motor_stop_all();
+                osDelay(1);
+                break;
             }
         }
         else
         {
+            printf("no circle\r\n");
+            set_beep_long_flag();
+            find_circle_pid.integral = 0.0f;
+            motor_stop_all();
+            osDelay(10);
         }
 
         osDelay(1);

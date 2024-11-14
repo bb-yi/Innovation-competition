@@ -84,7 +84,7 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
     // Set_Sliding_table_Pos(1); // 滑台舵机
-    Set_Sliding_table_Pos(1); // 滑台舵机
+    Set_Sliding_table_Pos(0); // 滑台舵机
     Set_Table_Pos(0);         // 物料盘舵机
     Release_material();       // 爪子舵机
 }
@@ -117,7 +117,7 @@ void Get_material_floor(uint8_t pos)
     Release_material();
     Set_Sliding_table_Pos(0);
     osDelay(500);
-    set_Slider_position(0, solider_speed);
+    set_Slider_position(5, solider_speed);
     osDelay(100);
     Catch_material();
     osDelay(500);

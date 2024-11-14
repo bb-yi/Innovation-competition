@@ -8,6 +8,7 @@ uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern uint8_t command_success_flag;
 extern uint8_t get_stepper_data_flag;
+uint8_t print_flag = 1;
 
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
@@ -16,7 +17,18 @@ extern ZDTStepperData stepperdata_4;
 /*
 控制小车运动的文件，包括电机控制、编码器读取、PID控制等。
 */
+void State_print(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
 
+    // 使用 vprintf 实现可变参数
+    if (print_flag == 1)
+    {
+        printf(format, args);
+    }
+    va_end(args);
+}
 void stepper_stop(uint8_t id, uint8_t sync_flag)
 {
     command_success_flag = 0;
@@ -24,10 +36,10 @@ void stepper_stop(uint8_t id, uint8_t sync_flag)
     {
         ZDT_Stepper_stop(id, sync_flag); // 立即停止
         osDelay(10);
-        printf("电机停止,等待返回,%d\n", id);
+        State_print("电机停止,等待返回,%d\n", id);
         if (command_success_flag == 1)
         {
-            printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }
@@ -48,10 +60,10 @@ void motor_stop_all(void)
     {
         ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
         osDelay(5);
-        printf("多机同步,等待返回\n");
+        State_print("多机同步,等待返回\n");
         if (command_success_flag == 1)
         {
-            printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }
@@ -101,10 +113,10 @@ void set_Stepper_speed(uint8_t motor_id, uint16_t speed_rate, float target_speed
     {
         ZDT_Stepper_Set_Speed(motor_id, dir, speed_rate, Abs(target_speed), sync_flag);
         osDelay(3);
-        // printf("控制速度,等待返回,%d\n", motor_id);
+        State_print("控制速度,等待返回,%d\n", motor_id);
         if (command_success_flag == 1)
         {
-            // printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }
@@ -123,10 +135,10 @@ void Set_Stepper_run_T_angle(uint8_t motor_id, uint16_t accel_accel, float max_s
     {
         ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), position_mode, sync_flag);
         osDelay(10);
-        // printf("T形运动,等待返回,%d\n", motor_id);
+        State_print("T形运动,等待返回,%d\n", motor_id);
         if (command_success_flag == 1)
         {
-            // printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }
@@ -171,10 +183,10 @@ void Set_all_stepper_angle(float *angles, float max_speed)
 }
 void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
 {
-    set_Stepper_speed(1, accel_accel_max, speeds[0], SYNC_ENABLE);
-    set_Stepper_speed(2, accel_accel_max, speeds[1], SYNC_ENABLE);
-    set_Stepper_speed(3, accel_accel_max, speeds[2], SYNC_ENABLE);
-    set_Stepper_speed(4, accel_accel_max, speeds[3], SYNC_ENABLE);
+    set_Stepper_speed(1, accel_accel, speeds[0], SYNC_ENABLE);
+    set_Stepper_speed(2, accel_accel, speeds[1], SYNC_ENABLE);
+    set_Stepper_speed(3, accel_accel, speeds[2], SYNC_ENABLE);
+    set_Stepper_speed(4, accel_accel, speeds[3], SYNC_ENABLE);
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
 /**
@@ -234,7 +246,7 @@ uint8_t CheckMotorsAtTargetPosition(void)
     ZDT_Stepper_Read_motor_status_flags(2);
     ZDT_Stepper_Read_motor_status_flags(3);
     ZDT_Stepper_Read_motor_status_flags(4);
-    printf("A:%d, B:%d, C:%d, D:%d\r\n", stepperdata_1.motor_position_reached, stepperdata_2.motor_position_reached, stepperdata_3.motor_position_reached, stepperdata_4.motor_position_reached);
+    State_print("A:%d, B:%d, C:%d, D:%d\r\n", stepperdata_1.motor_position_reached, stepperdata_2.motor_position_reached, stepperdata_3.motor_position_reached, stepperdata_4.motor_position_reached);
     if (stepperdata_1.motor_position_reached == 1 && stepperdata_2.motor_position_reached == 1 && stepperdata_3.motor_position_reached == 1 && stepperdata_4.motor_position_reached == 1)
     {
         return 1;
@@ -326,10 +338,10 @@ void Stepper_Read_current_position(uint8_t motor_id)
     {
         ZDT_Stepper_Read_current_position(motor_id);
         osDelay(5);
-        printf("读电机位置,等待返回,%d\n", motor_id);
+        State_print("读电机位置,等待返回,%d\n", motor_id);
         if (get_stepper_data_flag == 1)
         {
-            printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }
@@ -353,10 +365,10 @@ void Set_Stepper_T_pos(uint8_t motor_id, uint16_t accel_accel, float max_speed_f
     {
         ZDT_Stepper_Set_T_position(motor_id, dir, accel_accel, accel_accel, max_speed_f, Abs(angle), ABS_POS_MODE, sync_flag);
         osDelay(10);
-        printf("等待返回,%d\n", motor_id);
+        State_print("等待返回,%d\n", motor_id);
         if (command_success_flag == 1)
         {
-            printf("成功\n");
+            State_print("成功\n");
             break;
         }
     }

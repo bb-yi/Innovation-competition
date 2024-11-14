@@ -52,26 +52,27 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 			break;
 
 		case 'y': // 识别圆中心位置
-			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
+			if (sscanf(buffer, "[y,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color) == 3)
 			{
 				openmv_data.hsa_circle = 1;
+
 				if (openmv_data.identify_color == 1 || openmv_data.identify_color == 2 || openmv_data.identify_color == 3)
 				{
 					openmv_data.last_identify_color = openmv_data.identify_color;
 				}
-				// printf("Object position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.push_color);
+				// printf("Object position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.identify_color);
 			}
 			break;
 
 		case 'c': // 高分辨率识别圆中心位置
-			if (sscanf(buffer, "[y,%f,%f,%d,%hu]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color, &openmv_data.edge_diastance) == 4)
+			if (sscanf(buffer, "[c,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color) == 3)
 			{
 				openmv_data.hsa_circle = 1;
 				if (openmv_data.identify_color == 1 || openmv_data.identify_color == 2 || openmv_data.identify_color == 3)
 				{
 					openmv_data.last_identify_color = openmv_data.identify_color;
 				}
-				// printf("Object high position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.push_color);
+				// printf("Object high position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.identify_color);
 			}
 			break;
 
@@ -142,7 +143,7 @@ void Camera_switch_mode(uint8_t mode)
 		Camera_now_mode = QR_MODE;
 		break;
 	case CENTER_POSITION_MODE:
-		Camera_SendString("c"); // y
+		Camera_SendString("y"); // y
 		Camera_now_mode = CENTER_POSITION_MODE;
 		break;
 	case HIGH_CENTER_POSITION_MODE:

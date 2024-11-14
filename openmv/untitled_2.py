@@ -228,7 +228,7 @@ u = 1
 v = 1
 
 
-command = 'c'
+command = 'y'
 i = 0
 while True:
 
@@ -277,7 +277,7 @@ while True:
             sensor.skip_frames(20)
             u = 0
         ROI2 = calculate_roi(160,120,250,200)
-        get_circles_2(roi=ROI2, threshold=2400, r_min=30, r_max=50)
+        get_circles(roi=ROI2, threshold=2400, r_min=30, r_max=50)
     elif command == 'l':
         if v == 1:
             sensor.reset()
