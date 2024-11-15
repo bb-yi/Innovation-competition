@@ -245,7 +245,7 @@ void rotate_vector(float *vector, float angle, float *result)
  */
 void set_pwm_param(TIM_HandleTypeDef htim, uint32_t Channel, uint32_t freq, float duty)
 {
-    uint16_t prescaler = 0;
+    uint16_t prescaler = 167;
     uint64_t tim_clk_freq = 168000000;
     // 计算PWM频率，所对应的自动重装载值   ---> ARR = 主频 / (预分频+1) / 预期PWM频率(Hz) - 1
     float pwm_freq_arr = (tim_clk_freq * 1.0f) / (prescaler + 1.0f) / freq * 1.0f - 1.0f;

@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -71,9 +71,9 @@ void MX_FREERTOS_Init(void);
 int fputc(int ch, FILE *f)
 {
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+  screen_printf("page1.t0.txt=%s\xff\xff\xff", "Hello, STM32!");
   return ch;
 }
-
 /*
 串口DMA接收中断回调函数
 */
@@ -155,7 +155,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
   }
 }
-
+void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
+{
+  if (htim->Instance == TIM3) // 判断是哪个定时器
+  {
+    // �? PWM 脉冲结束时做�?些操�?
+    Silder_TIM_Callback();
+  }
+}
 /* USER CODE END 0 */
 
 /**
@@ -195,6 +202,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM8_Init();
   MX_USART3_UART_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   MPU_Init();
   OLED_Init();
@@ -209,6 +217,10 @@ int main(void)
   openmv_uart_init();
   HAL_Delay(50);
   uart_screen_init();
+  Slider_position_init();
+  // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 
   HAL_Delay(50);
   calibrateAngleToZero();
@@ -227,7 +239,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  ZDT_Stepper_Set_T_position(1, CW, 200, 200, 200, 120, REL_POS_MODE, SYNC_DISABLE);
 
   // uint8_t send_data[16] = {0x01, 0xFD, 0x01, 0x01, 0xFF, 0x01, 0xFA, 0x27, 0x10, 0x00, 0x00, 0x8C, 0xA0, 0x00, 0x00, 0x6B};
   // HAL_UART_Transmit(&Stepper_Uart_Handle, send_data, 16, HAL_MAX_DELAY);
@@ -236,8 +247,15 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_5);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_2);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
-    HAL_Delay(500);
+    HAL_Delay(20);
   }
   /* USER CODE END 3 */
 }
@@ -309,7 +327,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
+  if (htim->Instance == TIM3)
+  {
+    Silder_TIM_Callback();
+  }
   /* USER CODE END Callback 1 */
 }
 

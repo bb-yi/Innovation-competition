@@ -2,95 +2,123 @@
 #include "tool.h"
 #include "tim.h"
 #include "cmsis_os.h"
-#include "ZDT_Stepper.h"
-#include "beep.h"
-extern ZDTStepperData stepperdata_5;
-float last_position = 0;
-extern uint8_t command_success_flag;
-void set_Slider_position_with_chack(uint8_t id, uint8_t dir, uint16_t accel_accel, uint16_t decel_accel, float max_speed_f, float position_angle_f, uint8_t position_mode, uint8_t sync_flag)
+#define Solid_TIM_Handle htim3
+
+float last_position = 150;
+uint32_t pulse_count;
+uint32_t target_pulse_count;
+uint8_t Finish_flag = 0;
+void Silder_TIM_Callback(void)
 {
-    command_success_flag = 0;
-    for (;;)
+    // 检查是否是更新事件（ARR 重载）
+    if (__HAL_TIM_GET_FLAG(&Solid_TIM_Handle, TIM_FLAG_UPDATE) != RESET)
     {
-        ZDT_Stepper_release_stall_protection(5);
-        ZDT_Stepper_Set_T_position(id, dir, accel_accel, decel_accel, max_speed_f, position_angle_f, position_mode, sync_flag);
-        osDelay(10);
-        printf("T形运动,等待返回,%d\n", id);
-        if (command_success_flag == 1)
+        // 清除中断标志
+        __HAL_TIM_CLEAR_IT(&Solid_TIM_Handle, TIM_IT_UPDATE);
+
+        // 计数 PWM 脉冲周期
+        pulse_count++;
+        // printf("pulse_count:%d\n", pulse_count);
+        if (pulse_count >= target_pulse_count)
         {
-            printf("成功\n");
-            break;
+            Finish_flag = 1;
+            pulse_count = 0;
+            HAL_TIM_PWM_Stop_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
+            printf("已发送目标脉冲%d\n", target_pulse_count);
         }
     }
 }
+void set_solid_enable(uint8_t enable)
+{
+    if (enable)
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+    }
+}
+void set_solid_dir(uint8_t dir) // 0向下 1向上
+{
+    if (dir)
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
+    }
+    else
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+    }
+}
 
+uint32_t arr;
+void set_pwm_HZ(uint32_t hz)
+{
+    uint32_t pl = 2000000;
+    arr = pl / hz;
+    // printf("arr:%d\n", arr);
+    __HAL_TIM_SetAutoreload(&Solid_TIM_Handle, arr - 1);
+}
+// pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
-    position = clamp(position, 4, 145);
-    float d_position = position - last_position;
-    uint8_t dir;
-    dir = (d_position > 0) ? 1 : 0;
-    d_position = Abs(d_position);
-    float angle = d_position * 36.0f / 4.0f;
-    printf("滑块位置：%f,角度：%f\r\n", position, angle);
-    set_beep_short_flag();
-    set_Slider_position_with_chack(5, dir, 1500, 1500, speed, angle, REL_POS_MODE, SYNC_DISABLE);
+    Finish_flag = 0;
+    float delta_position = position - last_position;
+    if (delta_position > 0)
+    {
+        set_solid_dir(1); // 0向下 1向上
+    }
+    else
+    {
+        set_solid_dir(0); // 0向下 1向上
+    }
+    target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
+    set_pwm_HZ(speed * 20);
+    printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
+    HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
     last_position = position;
-    uint32_t start_time = HAL_GetTick();
-    float max_time = ((d_position) / 100.0f);
     for (;;)
     {
-        ZDT_Stepper_Read_motor_status_flags(5);
         osDelay(1);
-        uint32_t current_time = HAL_GetTick();
-        if (stepperdata_5.motor_position_reached == 1)
+        if (Finish_flag == 1)
         {
-            set_beep_short_flag();
-
-            printf("电机到位\r\n");
-            break;
-        }
-        if (current_time - start_time > (uint32_t)(2 * 1000))
-        {
-            set_beep_long_flag();
-            printf("设置滑台位置超时,max_time:%f\n", max_time);
+            printf("目标位置%f\n", position);
             break;
         }
     }
 }
 void set_Slider_position_2(float position, float speed)
 {
-    position = clamp(position, 4, 145);
-    float d_position = position - last_position;
-    uint8_t dir;
-    dir = (d_position > 0) ? 1 : 0;
-    d_position = Abs(d_position);
-    float angle = d_position * 36.0f / 4.0f;
-    printf("滑块位置：%f,角度：%f\r\n", position, angle);
-    ZDT_Stepper_Set_T_position(5, dir, 1500, 1500, speed, angle, REL_POS_MODE, SYNC_DISABLE);
+    Finish_flag = 0;
+    float delta_position = position - last_position;
+    if (delta_position > 0)
+    {
+        set_solid_dir(1); // 0向下 1向上
+    }
+    else
+    {
+        set_solid_dir(0); // 0向下 1向上
+    }
+    target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
+    set_pwm_HZ(speed * 20);
+    printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
+    HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
     last_position = position;
 }
+
 void Slider_position_init(void)
 {
-    ZDT_Stepper_trigger_zero_return(5, 2, SYNC_DISABLE);
-    uint32_t start_time = HAL_GetTick();
 
-    for (;;)
-    {
-        ZDT_Stepper_Read_Zero_Status_flags(5);
-        uint32_t current_time = HAL_GetTick();
-
-        if (stepperdata_5.motor_zeroing_in_progress == 0)
-        {
-            printf("结束回零\r\n");
-            last_position = 150;
-            break;
-        }
-        if (current_time - start_time > 5000)
-        {
-            printf("回零超时\n");
-            break;
-        }
-        osDelay(10);
-    }
+    // set_solid_enable(1);
+    osDelay(1000);
+    // set_solid_dir(1);
+    // 配置PSC预分频值
+    __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 41);
+    // 配置PWM频率 ARR
+    set_pwm_HZ(2000);
+    // __HAL_TIM_SetAutoreload(&htim3, 65535);
+    // 配置PWM占空比
+    // printf("arr/2:%d\n", arr / 2);
+    __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2);
+    // set_pwm_param(htim3, TIM_CHANNEL_1, 1000, 50);
 }

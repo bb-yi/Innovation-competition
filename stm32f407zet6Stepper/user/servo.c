@@ -75,7 +75,7 @@ void Catch_material(void)
 
 void Release_material(void)
 {
-    Set_Servo_angle(catch, 45);
+    Set_Servo_angle(catch, 40);
     printf("张开爪子\n");
 }
 void Servo_Init(void)
@@ -84,11 +84,11 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
     // Set_Sliding_table_Pos(1); // 滑台舵机
-    Set_Sliding_table_Pos(0); // 滑台舵机
+    Set_Sliding_table_Pos(0); // 滑台舵机 0 在外面 1收起来
     Set_Table_Pos(0);         // 物料盘舵机
     Release_material();       // 爪子舵机
 }
-float solider_speed = 500.0f;
+float solider_speed = 120.0f;
 
 void Get_material(uint8_t pos)
 {
@@ -136,23 +136,23 @@ void Get_material_floor(uint8_t pos)
 
 void Put_material(uint8_t pos)
 {
-    set_Slider_position(145, 500);
+    set_Slider_position(145, solider_speed);
     osDelay(100);
     Set_Table_Pos(pos);
     Set_Sliding_table_Pos(1);
     osDelay(800);
-    set_Slider_position(95, 500);
+    set_Slider_position(95, solider_speed);
     osDelay(200);
     Catch_material();
     osDelay(500);
-    set_Slider_position(145, 500);
+    set_Slider_position(145, solider_speed);
     osDelay(100);
     Set_Sliding_table_Pos(0);
     osDelay(800);
-    set_Slider_position(12, 500);
+    set_Slider_position(12, solider_speed);
     osDelay(100);
     Release_material();
     osDelay(1000);
-    set_Slider_position(145, 500);
+    set_Slider_position(145, solider_speed);
     osDelay(200);
 }

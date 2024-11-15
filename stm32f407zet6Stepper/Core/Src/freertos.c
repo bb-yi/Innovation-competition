@@ -1,4 +1,4 @@
-﻿ /* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -36,12 +36,12 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "uart_screen.h"
-    /* USER CODE END Includes */
+/* USER CODE END Includes */
 
-    /* Private typedef -----------------------------------------------------------*/
-    /* USER CODE BEGIN PTD */
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
 
-    extern SYS_STATE_Data sys_state_data;
+extern SYS_STATE_Data sys_state_data;
 extern OPENMV_data openmv_data;
 extern ZDTStepperData stepperdata_1;
 extern ZDTStepperData stepperdata_2;
@@ -75,7 +75,7 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t myTask02Handle;
 const osThreadAttr_t myTask02_attributes = {
     .name = "myTask02",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for myTask03 */
@@ -155,12 +155,12 @@ void MX_FREERTOS_Init(void)
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
-// 检查任务剩余堆栈内存的函数
+// �?查任务剩余堆栈内存的函数
 void CheckTaskMemoryUsage(TaskHandle_t taskHandle)
 {
-  // 获取任务的堆栈高水位标记并转换为字节数
+  // 获取任务的堆栈高水位标记并转换为字节�?
   UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(taskHandle);
-  printf("任务历史剩余最小内存: %lu 字节\r\n", (unsigned long)(stackHighWaterMark * sizeof(StackType_t)));
+  printf("任务历史剩余�?小内�?: %lu 字节\r\n", (unsigned long)(stackHighWaterMark * sizeof(StackType_t)));
 }
 /**
  * @brief 获取当前时间
@@ -207,6 +207,7 @@ void StartDefaultTask(void *argument)
  * @param argument: Not used
  * @retval None
  */
+extern uint32_t pulse_count;
 /* USER CODE END Header_StartTask02 */
 void StartTask02(void *argument)
 {
@@ -216,6 +217,9 @@ void StartTask02(void *argument)
   for (;;)
   {
     OLED_display_task();
+    uasrt_screen_task();
+
+    // printf("pulse_count=%d\r\n", pulse_count);
     osDelay(1);
   }
   /* USER CODE END StartTask02 */
@@ -235,9 +239,17 @@ void StartTask03(void *argument)
   /* USER CODE BEGIN StartTask03 */
 
   init_task();
-  osDelay(1000);
+  // screen_printf_with_quotes("??");
+  // screen_printf("page1.t15.txt=\"C\"\xff\xff\xff");
 
-  // Get_material(0);
+  // osDelay(1000);
+  // set_solid_enable(0);
+  // Release_material();
+  // Catch_material();
+
+  // Get_material_floor(0);
+  // Put_material(0);
+
   // Get_material(1);
   // Get_material(2);
   // Put_material(0);
@@ -266,7 +278,7 @@ void StartTask03(void *argument)
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
 
-  main_task();
+  // main_task();
 
   // base_run_distance(100, 100);
   // osDelay(1000);

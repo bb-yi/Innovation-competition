@@ -52,7 +52,10 @@ void OLED_display_task(void)
     // OLED_ShowString(42, 0, "T2:");
     // OLED_ShowNumber(62, 0, MPU_get_start_time(), 2, 12);
     Display_flag(18, 0, MPU_RX_flag);
+    screen_printf("page1.n4.val=%d\xff\xff\xff", MPU_RX_flag);
     Display_flag(24, 0, openmv_rx_flag);
+    screen_printf("page1.n7.val=%d\xff\xff\xff", openmv_rx_flag);
+
     OLED_ShowString(36, 0, "T:");
     OLED_ShowNumber(48, 0, openmv_data.object_list[0], 3, 12);
     OLED_ShowNumber(72, 0, openmv_data.object_list[1], 3, 12);
@@ -60,15 +63,19 @@ void OLED_display_task(void)
     {
     case QR_MODE:
         OLED_ShowString(96, 0, "E");
+        screen_printf("page1.t15.txt=\"E\"\xff\xff\xff");
         break;
     case CENTER_POSITION_MODE:
         OLED_ShowString(96, 0, "Y");
+        screen_printf("page1.t15.txt=\"Y\"\xff\xff\xff");
         break;
     case HIGH_CENTER_POSITION_MODE:
         OLED_ShowString(96, 0, "C");
+        screen_printf("page1.t15.txt=\"C\"\xff\xff\xff");
         break;
     case FIND_LINE_MODE:
         OLED_ShowString(96, 0, "L");
+        screen_printf("page1.t15.txt\"L\"\xff\xff\xff");
         break;
     default:
         break;
@@ -77,27 +84,39 @@ void OLED_display_task(void)
     {
     case 1:
         OLED_ShowString(96, 12, "R");
+        screen_printf("page1.t6.bco=RED\xff\xff\xff");
         break;
     case 2:
         OLED_ShowString(96, 12, "G");
+        screen_printf("page1.t6.bco=GREEN\xff\xff\xff");
         break;
     case 3:
         OLED_ShowString(96, 12, "B");
+        screen_printf("page1.t6.bco=BLUE\xff\xff\xff");
+
         break;
     default:
+        screen_printf("page1.t6.bco=WHITE\xff\xff\xff");
+
         break;
     }
     OLED_ShowNumber(108, 12, openmv_data.hsa_circle, 1, 12);
+    screen_printf("page1.n0.val=%d\xff\xff\xff", (openmv_data.hsa_circle));
+
     OLED_ShowString(00, 12, "V:");
     OLED_ShowFloatNum(18, 12, battery_voltage, 2, 2, 12);
     OLED_ShowFloatNum(60, 12, openmv_data.object_position_x, 1, 2, 12);
+    screen_printf("page1.x0.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_x * 100));
     OLED_ShowFloatNum(60, 24, openmv_data.object_position_y, 1, 2, 12);
+    screen_printf("page1.x2.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_y * 100));
+
     OLED_ShowFloatNum(0, 24, openmv_data.line_distance, 1, 2, 12);
     OLED_ShowNumber(0, 36, openmv_data.line_angle, 2, 12);
     if (Get_IMU_Is_Working())
     {
         OLED_ShowString(0, 48, "Y:");
         float yaw = radiansToDegrees(sys_state_data.FullYaw) >= 180 ? radiansToDegrees(sys_state_data.FullYaw) - 360 : radiansToDegrees(sys_state_data.FullYaw);
+        screen_printf("page1.x3.val=%d\xff\xff\xff", (int16_t)(yaw * 10));
         OLED_ShowFloatNum(18, 48, yaw, 3, 1, 12);
     }
     else
@@ -112,6 +131,12 @@ void OLED_display_task(void)
         run_time = 0;
     }
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_12);
+}
+void uasrt_screen_task(void)
+{
+    screen_printf("page1.x1.val=%d\xff\xff\xff", (int16_t)(battery_voltage * 100)); // 电压
+    screen_printf("page1.n1.val=%d\xff\xff\xff", openmv_data.object_list[0]);
+    screen_printf("page1.n2.val=%d\xff\xff\xff", openmv_data.object_list[1]);
 }
 uint8_t delay_time = 5;
 void check_stepper_is_working(void)
@@ -170,6 +195,7 @@ extern osThreadId_t myTask03Handle;
 uint8_t start_flag = 0;
 void init_task(void)
 {
+    set_solid_enable(0);
     check_stepper_is_working();
     for (;;)
     {
@@ -197,7 +223,7 @@ void init_task(void)
             break;
         }
     }
-
+    set_solid_enable(1);
     Set_Sliding_table_Pos(0); // 滑台舵机展开
 }
 
@@ -461,7 +487,7 @@ uint8_t main_task(void)
     base_Horizontal_run_distance_fix(15, run_speed);
     osDelay(1000);
 
-    set_Slider_position_2(5, 500);
+    set_Slider_position(5, 500);
     base_run_distance_fix(61, run_speed); // 去往二维码区域
     osDelay(200);
 
@@ -469,7 +495,7 @@ uint8_t main_task(void)
 
     base_rotation_world(0, rot_speed);
     base_run_distance_fix(79, run_speed); // 去往原料区
-    set_Slider_position_2(148, 500);
+    set_Slider_position(148, 500);
     osDelay(1000);
     base_Horizontal_run_distance_fix(-9, run_speed); // 靠近物料
     osDelay(200);

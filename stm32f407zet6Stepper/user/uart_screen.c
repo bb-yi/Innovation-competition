@@ -35,10 +35,23 @@ void screen_printf(const char *format, ...)
     screen_SendString(buffer);
 }
 
+void screen_printf_with_quotes(const char *input_str)
+{
+    // 定义一个缓冲区用于存储格式化后的字符串
+    char formatted_str[256]; // 根据实际需要的长度调整缓冲区大小
+
+    // 格式化字符串，将输入字符串放入双引号中
+    snprintf(formatted_str, sizeof(formatted_str), "page1.t10.txt=\"%s\"\xff\xff\xff", input_str);
+
+    // 调用 screen_printf 输出格式化后的字符串
+    screen_printf(formatted_str);
+}
+
 void Set_display_solid_num(uint16_t num1, uint16_t num2)
 {
     screen_printf("n0.val=%d\xff\xff\xff", num1);
     screen_printf("n1.val=%d\xff\xff\xff", num2);
 }
+
 // screen_print("t0.txt=\"%s\"\xff\xff\xff", Serial_RxPacket);
 // screen_print("n0.val=%d\xff\xff\xff", a);
