@@ -44,6 +44,7 @@ uint8_t run_time = 0;
  * @brief OLED显示任务
  *
  */
+uint8_t is_printf = 0;
 void OLED_display_task(void)
 {
     battery_voltage = get_Average_Battery_Voltage(10);
@@ -52,9 +53,9 @@ void OLED_display_task(void)
     // OLED_ShowString(42, 0, "T2:");
     // OLED_ShowNumber(62, 0, MPU_get_start_time(), 2, 12);
     Display_flag(18, 0, MPU_RX_flag);
-    screen_printf("page1.n4.val=%d\xff\xff\xff", MPU_RX_flag);
+    screen_printf(is_printf, "page1.n4.val=%d\xff\xff\xff", MPU_RX_flag);
     Display_flag(24, 0, openmv_rx_flag);
-    screen_printf("page1.n7.val=%d\xff\xff\xff", openmv_rx_flag);
+    screen_printf(is_printf, "page1.n7.val=%d\xff\xff\xff", openmv_rx_flag);
 
     OLED_ShowString(36, 0, "T:");
     OLED_ShowNumber(48, 0, openmv_data.object_list[0], 3, 12);
@@ -63,19 +64,19 @@ void OLED_display_task(void)
     {
     case QR_MODE:
         OLED_ShowString(96, 0, "E");
-        screen_printf("page1.t15.txt=\"E\"\xff\xff\xff");
+        screen_printf(is_printf, "page1.t15.txt=\"E\"\xff\xff\xff");
         break;
     case CENTER_POSITION_MODE:
         OLED_ShowString(96, 0, "Y");
-        screen_printf("page1.t15.txt=\"Y\"\xff\xff\xff");
+        screen_printf(is_printf, "page1.t15.txt=\"Y\"\xff\xff\xff");
         break;
     case HIGH_CENTER_POSITION_MODE:
         OLED_ShowString(96, 0, "C");
-        screen_printf("page1.t15.txt=\"C\"\xff\xff\xff");
+        screen_printf(is_printf, "page1.t15.txt=\"C\"\xff\xff\xff");
         break;
     case FIND_LINE_MODE:
         OLED_ShowString(96, 0, "L");
-        screen_printf("page1.t15.txt\"L\"\xff\xff\xff");
+        screen_printf(is_printf, "page1.t15.txt\"L\"\xff\xff\xff");
         break;
     default:
         break;
@@ -84,31 +85,31 @@ void OLED_display_task(void)
     {
     case 1:
         OLED_ShowString(96, 12, "R");
-        screen_printf("page1.t6.bco=RED\xff\xff\xff");
+        screen_printf(is_printf, "page1.t6.bco=RED\xff\xff\xff");
         break;
     case 2:
         OLED_ShowString(96, 12, "G");
-        screen_printf("page1.t6.bco=GREEN\xff\xff\xff");
+        screen_printf(is_printf, "page1.t6.bco=GREEN\xff\xff\xff");
         break;
     case 3:
         OLED_ShowString(96, 12, "B");
-        screen_printf("page1.t6.bco=BLUE\xff\xff\xff");
+        screen_printf(is_printf, "page1.t6.bco=BLUE\xff\xff\xff");
 
         break;
     default:
-        screen_printf("page1.t6.bco=WHITE\xff\xff\xff");
+        screen_printf(is_printf, "page1.t6.bco=WHITE\xff\xff\xff");
 
         break;
     }
     OLED_ShowNumber(108, 12, openmv_data.hsa_circle, 1, 12);
-    screen_printf("page1.n0.val=%d\xff\xff\xff", (openmv_data.hsa_circle));
+    screen_printf(is_printf, "page1.n0.val=%d\xff\xff\xff", (openmv_data.hsa_circle));
 
     OLED_ShowString(00, 12, "V:");
     OLED_ShowFloatNum(18, 12, battery_voltage, 2, 2, 12);
     OLED_ShowFloatNum(60, 12, openmv_data.object_position_x, 1, 2, 12);
-    screen_printf("page1.x0.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_x * 100));
+    screen_printf(is_printf, "page1.x0.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_x * 100));
     OLED_ShowFloatNum(60, 24, openmv_data.object_position_y, 1, 2, 12);
-    screen_printf("page1.x2.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_y * 100));
+    screen_printf(is_printf, "page1.x2.val=%d\xff\xff\xff", (int16_t)(openmv_data.object_position_y * 100));
 
     OLED_ShowFloatNum(0, 24, openmv_data.line_distance, 1, 2, 12);
     OLED_ShowNumber(0, 36, openmv_data.line_angle, 2, 12);
@@ -116,7 +117,7 @@ void OLED_display_task(void)
     {
         OLED_ShowString(0, 48, "Y:");
         float yaw = radiansToDegrees(sys_state_data.FullYaw) >= 180 ? radiansToDegrees(sys_state_data.FullYaw) - 360 : radiansToDegrees(sys_state_data.FullYaw);
-        screen_printf("page1.x3.val=%d\xff\xff\xff", (int16_t)(yaw * 10));
+        screen_printf(is_printf, "page1.x3.val=%d\xff\xff\xff", (int16_t)(yaw * 10));
         OLED_ShowFloatNum(18, 48, yaw, 3, 1, 12);
     }
     else
@@ -134,9 +135,9 @@ void OLED_display_task(void)
 }
 void uasrt_screen_task(void)
 {
-    screen_printf("page1.x1.val=%d\xff\xff\xff", (int16_t)(battery_voltage * 100)); // 电压
-    screen_printf("page1.n1.val=%d\xff\xff\xff", openmv_data.object_list[0]);
-    screen_printf("page1.n2.val=%d\xff\xff\xff", openmv_data.object_list[1]);
+    screen_printf(is_printf, "page1.x1.val=%d\xff\xff\xff", (int16_t)(battery_voltage * 100)); // 电压
+    screen_printf(is_printf, "page1.n1.val=%d\xff\xff\xff", openmv_data.object_list[0]);
+    screen_printf(is_printf, "page1.n2.val=%d\xff\xff\xff", openmv_data.object_list[1]);
 }
 uint8_t delay_time = 5;
 void check_stepper_is_working(void)
@@ -196,6 +197,7 @@ uint8_t start_flag = 0;
 void init_task(void)
 {
     set_solid_enable(0);
+    Camera_switch_mode(FIND_LINE_MODE);
     check_stepper_is_working();
     for (;;)
     {
@@ -231,9 +233,13 @@ void init_task(void)
 void QrCode_Task(void)
 {
     uart_screen_init();
+    // set_Slider_position(5, 60);
+
     // Camera_switch_mode(QR_MODE);
     // openmv_data.object_list[0] = 231;
     // openmv_data.object_list[1] = 132;
+    osDelay(1000);
+    // set_Slider_position(148, 60);
 }
 
 pid find_circle_pid;
@@ -319,10 +325,9 @@ void find_circle(uint8_t mode)
 
 void find_line_calibrate_MPU(void)
 {
-    Camera_switch_mode(QR_MODE);
-    osDelay(100);
+
     Camera_switch_mode(FIND_LINE_MODE);
-    osDelay(2000);
+    osDelay(1000);
     for (uint16_t i = 0; i < 3; i++)
     {
 
@@ -337,17 +342,18 @@ void find_line_calibrate_MPU_PID(void)
 {
     fine_line_PID.Kp = 10.0f;
     fine_line_PID.Ki = 0.0f;
-    fine_line_PID.Kd = 10.0f;
-    Camera_switch_mode(QR_MODE);
-    osDelay(100);
+    fine_line_PID.Kd = 0.0f;
+
     Camera_switch_mode(FIND_LINE_MODE);
     float error_angle, output;
     for (;;)
     {
         error_angle = Get_find_line_angle();
         error_angle = clamp(error_angle, -5, 5);
-        output = PID_Control(&fine_line_PID, error_angle, 1000);
+        output = PID_Control(&fine_line_PID, error_angle, 10);
         output = clamp(output, -10, 10);
+        base_speed_control(0, 0, -output, 800);
+
         if (Abs(error_angle) < 1.0f)
         {
             for (uint16_t i = 0; i < 200; i++)
@@ -474,7 +480,7 @@ void TemporaryStorageArea_Task(void)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 100;
+float run_speed = 80;
 float rot_speed = 180;
 
 uint8_t main_task(void)
@@ -487,20 +493,20 @@ uint8_t main_task(void)
     base_Horizontal_run_distance_fix(15, run_speed);
     osDelay(1000);
 
-    set_Slider_position(5, 500);
+    set_Slider_position_2(5, 60);
     base_run_distance_fix(61, run_speed); // 去往二维码区域
     osDelay(200);
 
     QrCode_Task();
 
     base_rotation_world(0, rot_speed);
+    set_Slider_position_2(148, 60);
+
     base_run_distance_fix(79, run_speed); // 去往原料区
-    set_Slider_position(148, 500);
     osDelay(1000);
     base_Horizontal_run_distance_fix(-9, run_speed); // 靠近物料
     osDelay(200);
-    MaterialArea_Task(); // 原料区任务
-    return 1;
+    // MaterialArea_Task(); // 原料区任务
     osDelay(200);
     base_Horizontal_run_distance_fix(9, run_speed);
     osDelay(1000);

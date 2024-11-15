@@ -17,7 +17,7 @@ void screen_SendString(const char *str)
     // HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen(str), HAL_MAX_DELAY);
 }
 // 格式化并发送字符串
-void screen_printf(const char *format, ...)
+void screen_printf(uint8_t enable, const char *format, ...)
 {
     char buffer[128]; // 缓冲区大小可以根据需要调整
     va_list args;
@@ -32,7 +32,10 @@ void screen_printf(const char *format, ...)
     va_end(args);
 
     // 发送格式化后的字符串
-    screen_SendString(buffer);
+    if (enable == 1)
+    {
+        screen_SendString(buffer);
+    }
 }
 
 void screen_printf_with_quotes(const char *input_str)
@@ -44,13 +47,13 @@ void screen_printf_with_quotes(const char *input_str)
     snprintf(formatted_str, sizeof(formatted_str), "page1.t10.txt=\"%s\"\xff\xff\xff", input_str);
 
     // 调用 screen_printf 输出格式化后的字符串
-    screen_printf(formatted_str);
+    screen_printf(1, formatted_str);
 }
 
 void Set_display_solid_num(uint16_t num1, uint16_t num2)
 {
-    screen_printf("n0.val=%d\xff\xff\xff", num1);
-    screen_printf("n1.val=%d\xff\xff\xff", num2);
+    screen_printf(1, "n0.val=%d\xff\xff\xff", num1);
+    screen_printf(1, "n1.val=%d\xff\xff\xff", num2);
 }
 
 // screen_print("t0.txt=\"%s\"\xff\xff\xff", Serial_RxPacket);

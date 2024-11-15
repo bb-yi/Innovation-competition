@@ -48,6 +48,10 @@ extern ZDTStepperData stepperdata_2;
 extern ZDTStepperData stepperdata_3;
 extern ZDTStepperData stepperdata_4;
 extern ZDTStepperData stepperdata_5;
+extern DMA_HandleTypeDef hdma_usart3_rx;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern uint8_t uart_screen_rx_data;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -194,7 +198,15 @@ void StartDefaultTask(void *argument)
     {
       MPU_Init();
     }
-
+    // ??DMA??????????
+    if (!__HAL_DMA_GET_IT_SOURCE(&hdma_usart2_rx, DMA_IT_TC))
+    {
+      uart_screen_init();
+    }
+    if (!__HAL_DMA_GET_IT_SOURCE(&hdma_uart4_rx, DMA_IT_TC))
+    {
+      openmv_uart_init();
+    }
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -239,8 +251,6 @@ void StartTask03(void *argument)
   /* USER CODE BEGIN StartTask03 */
 
   init_task();
-  // screen_printf_with_quotes("??");
-  // screen_printf("page1.t15.txt=\"C\"\xff\xff\xff");
 
   // osDelay(1000);
   // set_solid_enable(0);
@@ -277,8 +287,15 @@ void StartTask03(void *argument)
   // osDelay(3000);
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
+  // set_Slider_position_2(5, 130);
+  // osDelay(3000);
+  // set_Slider_position_2(150, 130);
+  // osDelay(1000);
 
-  // main_task();
+  main_task();
+  // base_run_distance_fix(80, 80); // ??????
+  // osDelay(1000);
+  // base_run_distance_fix(-80, 80); // ????
 
   // base_run_distance(100, 100);
   // osDelay(1000);

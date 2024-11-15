@@ -71,7 +71,6 @@ void MX_FREERTOS_Init(void);
 int fputc(int ch, FILE *f)
 {
   HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
-  screen_printf("page1.t0.txt=%s\xff\xff\xff", "Hello, STM32!");
   return ch;
 }
 /*

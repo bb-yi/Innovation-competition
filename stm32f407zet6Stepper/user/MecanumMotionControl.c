@@ -470,14 +470,14 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed)
         // control_speed = smooth_speed(alpha, run_distance, speed);
         yaw_output = clamp(yaw_output, -2, 2);
         control_speed = smooth_speed(alpha, run_distance, speed, 10.0f);
-        printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, yaw_output);
+        printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,error_yaw=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, error_yaw, yaw_output);
         if (run_mode == 0)
         {
-            base_speed_control(0, dir * control_speed, yaw_output, 200);
+            base_speed_control(0, dir * control_speed, yaw_output * (control_speed / speed), 200);
         }
         else if (run_mode == 1)
         {
-            base_speed_control(dir * control_speed, 0, yaw_output, 200);
+            base_speed_control(dir * control_speed, 0, yaw_output * (control_speed / speed), 200);
         }
         // yaw_output *(control_speed / speed);
         if (alpha < max_error)

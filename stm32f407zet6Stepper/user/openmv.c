@@ -23,7 +23,7 @@ void openmv_uart_init(void)
 
 void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 {
-
+	// printf("Received data: %s\n", openmv_rx_data);
 	char buffer[100]; // 用于存储转换后的字符串
 	if (uart_id == 4)
 	{
@@ -46,8 +46,10 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 			{
 
 				printf("Object list: %d, %d\n", openmv_data.object_list[0], openmv_data.object_list[1]);
-				screen_printf("t0.txt=\"%s\"\xff\xff\xff", "+");
 				Set_display_solid_num(openmv_data.object_list[0], openmv_data.object_list[1]);
+				// screen_printf(1, "page1.n1.val=%d\xff\xff\xff", openmv_data.object_list[0]);
+				// screen_printf(1, "page1.n2.val=%d\xff\xff\xff", openmv_data.object_list[1]);
+				// Set_display_solid_num(openmv_data.object_list[0], openmv_data.object_list[1]);
 			}
 			break;
 
@@ -79,7 +81,7 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 		case 'l':
 			if (sscanf(buffer, "[l,%f,%f]", &openmv_data.line_distance, &openmv_data.line_angle) == 2)
 			{
-				// printf("Line distance: %f, Line angle: %f\n", openmv_data.line_distance, openmv_data.line_angle);
+				printf("Line distance: %f, Line angle: %f\n", openmv_data.line_distance, openmv_data.line_angle);
 			}
 			break;
 		default:
