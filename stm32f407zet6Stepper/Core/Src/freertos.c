@@ -96,6 +96,13 @@ const osThreadAttr_t myTask04_attributes = {
     .stack_size = 128 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
+/* Definitions for myTask05 */
+osThreadId_t myTask05Handle;
+const osThreadAttr_t myTask05_attributes = {
+    .name = "myTask05",
+    .stack_size = 128 * 4,
+    .priority = (osPriority_t)osPriorityLow,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -106,6 +113,7 @@ void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
 void StartTask03(void *argument);
 void StartTask04(void *argument);
+void StartTask05(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -148,6 +156,9 @@ void MX_FREERTOS_Init(void)
 
   /* creation of myTask04 */
   myTask04Handle = osThreadNew(StartTask04, NULL, &myTask04_attributes);
+
+  /* creation of myTask05 */
+  myTask05Handle = osThreadNew(StartTask05, NULL, &myTask05_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -198,15 +209,7 @@ void StartDefaultTask(void *argument)
     {
       MPU_Init();
     }
-    // ??DMA??????????
-    if (!__HAL_DMA_GET_IT_SOURCE(&hdma_usart2_rx, DMA_IT_TC))
-    {
-      uart_screen_init();
-    }
-    if (!__HAL_DMA_GET_IT_SOURCE(&hdma_uart4_rx, DMA_IT_TC))
-    {
-      openmv_uart_init();
-    }
+    check_uart_receive_status();
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
@@ -229,7 +232,7 @@ void StartTask02(void *argument)
   for (;;)
   {
     OLED_display_task();
-    uasrt_screen_task();
+    // uasrt_screen_task();
 
     // printf("pulse_count=%d\r\n", pulse_count);
     osDelay(1);
@@ -259,7 +262,9 @@ void StartTask03(void *argument)
 
   // Get_material_floor(0);
   // Put_material(0);
-
+  // find_line_calibrate_MPU_PID(0);
+  // osDelay(1000);
+  // find_line_distance();
   // Get_material(1);
   // Get_material(2);
   // Put_material(0);
@@ -292,11 +297,11 @@ void StartTask03(void *argument)
   // set_Slider_position_2(150, 130);
   // osDelay(1000);
 
-  main_task();
-  // base_run_distance_fix(80, 80); // ??????
-  // osDelay(1000);
-  // base_run_distance_fix(-80, 80); // ????
-
+  // main_task();
+  base_Horizontal_run_distance_fix(15, 80, 0);
+  base_run_distance_fix(200, 80, 0);  // ??????
+  base_run_distance_fix(-200, 80, 0); // ????
+  base_Horizontal_run_distance_fix(-15, 80, 0);
   // base_run_distance(100, 100);
   // osDelay(1000);
   // base_run_distance(100, 100);
@@ -366,27 +371,15 @@ void StartTask03(void *argument)
   // base_run_distance_base(20, 20, 0, 40);
   //  osDelay(1000);
   //  base_run_distance_base(-20, -20, 0, 40);
-
   /* Infinite loop */
   for (;;)
   {
 
     // motor_stop_all();
-    // ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
-    // Set_Stepper_run_T_angle(1, 200, 200, 360, SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(3, 200, 200, 360, SYNC_ENABLE);
-    // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
 
     // CheckTaskMemoryUsage(myTask03Handle);
-    // for (uint8_t i = 0; i < 128; i++)
-    // {
-    //   Set_display_solid_num(i, i * 2);
-    //   osDelay(10);
-    // }
-
-    osDelay(100);
-    osDelay(delay_time);
+    // osDelay(100);
+    // osDelay(delay_time);
     osDelay(1);
   }
   /* USER CODE END StartTask03 */
@@ -416,6 +409,25 @@ void StartTask04(void *argument)
     osDelay(1);
   }
   /* USER CODE END StartTask04 */
+}
+
+/* USER CODE BEGIN Header_StartTask05 */
+/**
+ * @brief Function implementing the myTask05 thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartTask05 */
+void StartTask05(void *argument)
+{
+  /* USER CODE BEGIN StartTask05 */
+  /* Infinite loop */
+  for (;;)
+  {
+    uasrt_screen_task();
+    osDelay(400);
+  }
+  /* USER CODE END StartTask05 */
 }
 
 /* Private application code --------------------------------------------------*/

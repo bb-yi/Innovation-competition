@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+﻿/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -74,7 +74,7 @@ int fputc(int ch, FILE *f)
   return ch;
 }
 /*
-串口DMA接收中断回调函数
+ä¸˛ĺŁDMAćĽćśä¸­ć­ĺč°ĺ˝ć°
 */
 uint8_t Rx_data[200] = {0};
 char received_string[256];
@@ -90,18 +90,18 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     HAL_UART_Transmit(&huart3, Rx_data, Size, HAL_MAX_DELAY);
     // HAL_UART_Transmit(&huart1, Rx_data, Size, HAL_MAX_DELAY);
 
-    // fprintf(stdout, "%s\r\n", received_string); // 将串?????????????????????1接收到的数据返回到串?????????????????????1
+    // fprintf(stdout, "%s\r\n", received_string); // ĺ°ä¸˛?????????????????????1ćĽćśĺ°çć°ćŽčżĺĺ°ä¸˛?????????????????????1
     // HAL_UART_Transmit(&huart5, Rx_data, Size, HAL_MAX_DELAY);
     memset(Rx_data, 0, sizeof(Rx_data));
     HAL_UARTEx_ReceiveToIdle_DMA(huart, Rx_data, sizeof(Rx_data) - 1);
     __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
   }
-  else if (huart == &huart5) // 接收MPU数据
+  else if (huart == &huart5) // ćĽćśMPUć°ćŽ
   {
     MPU_UARTE_Rx_Callback(Size);
     MPU_RX_flag = 1 - MPU_RX_flag;
   }
-  else if (huart == &huart4) // 接收OpenMV数据
+  else if (huart == &huart4) // ćĽćśOpenMVć°ćŽ
   {
     openmv_uart_rx_callback(Size, 4);
     openmv_rx_flag = 1 - openmv_rx_flag;
@@ -124,21 +124,20 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 extern uint8_t start_flag;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == GPIO_PIN_0) // 用户按键 按下归零???????螺仪和轮子编码器
+  if (GPIO_Pin == GPIO_PIN_0) // ç¨ćˇćéŽ ćä¸ĺ˝éś???????čşäťŞĺč˝Žĺ­çźç ĺ¨
   {
-    calibrateAngleToZero();
+    calibrateAngleToZero(0);
     start_flag = 1;
   }
   else if (GPIO_Pin == GPIO_PIN_3)
   {
     // for (volatile uint32_t i = 0; i < 1000; i++)
     // {
-    //   // 空循环，忙等待以消抖
+    //   // çŠşĺžŞçŻďźĺżç­ĺžäťĽćść
     // }
     // printf("ZDT_Stepper_Enable\r\n");
     if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
     {
-      printf("电机打开\r\n");
       ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
       for (volatile uint32_t i = 0; i < 1000; i++)
       {
@@ -146,7 +145,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
     else
     {
-      printf("电机关闭\r\n");
       ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
       for (volatile uint32_t i = 0; i < 1000; i++)
       {
@@ -156,9 +154,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 }
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 {
-  if (htim->Instance == TIM3) // 判断是哪个定时器
+  if (htim->Instance == TIM3) // ĺ¤ć­ćŻĺŞä¸ŞĺŽćśĺ¨
   {
-    // �? PWM 脉冲结束时做�?些操�?
+    // ĺ? PWM čĺ˛çťććśĺä¸?äşćä˝?
     Silder_TIM_Callback();
   }
 }
@@ -207,8 +205,9 @@ int main(void)
   OLED_Init();
   motor_init();
   Servo_Init();
-  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, Rx_data, 200 - 1); // 启用空闲中断接收
-  __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);        // 关闭DMA传输过半中断
+
+  HAL_UARTEx_ReceiveToIdle_DMA(&huart1, Rx_data, 200 - 1); // ĺŻç¨çŠşé˛ä¸­ć­ćĽćś
+  __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);        // ĺłé­DMAäź čžčżĺä¸­ć­
   ZDT_Stepper_init();
 
   HAL_Delay(50);
@@ -222,7 +221,7 @@ int main(void)
   // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
 
   HAL_Delay(50);
-  calibrateAngleToZero();
+  calibrateAngleToZero(0);
   /* USER CODE END 2 */
 
   /* Init scheduler */

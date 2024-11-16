@@ -81,7 +81,7 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 		case 'l':
 			if (sscanf(buffer, "[l,%f,%f]", &openmv_data.line_distance, &openmv_data.line_angle) == 2)
 			{
-				printf("Line distance: %f, Line angle: %f\n", openmv_data.line_distance, openmv_data.line_angle);
+				// printf("Line distance: %f, Line angle: %f\n", openmv_data.line_distance, openmv_data.line_angle);
 			}
 			break;
 		default:
@@ -96,6 +96,7 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 	{
 
 		openmv_data.hsa_circle = 0;
+		printf("No object detected\n");
 	}
 
 	openmv_uart_init();

@@ -57,7 +57,7 @@ void MPU_Restart(void);
 void MPU_Calibrate(uint8_t mode);
 
 float MPU_get_start_time(void);
-void calibrateAngleToZero(void);
+void calibrateAngleToZero(float now_angle);
 float Get_IMU_Yaw_speed(void);
 float Get_IMU_Yaw(void);
 uint8_t Get_IMU_Is_Working(void);

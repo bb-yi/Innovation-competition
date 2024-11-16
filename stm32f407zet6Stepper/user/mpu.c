@@ -198,11 +198,11 @@ static int yaw_num = 0;
  * @brief 按键中断中将MPU数据置0的函数
  *
  */
-void calibrateAngleToZero(void)
+void calibrateAngleToZero(float now_angle)
 {
     sys_state_data.roll_offset = sys_state_data.real_Roll;
     sys_state_data.pitch_offset = sys_state_data.real_Pitch;
-    sys_state_data.yaw_offset = sys_state_data.real_Yaw;
+    sys_state_data.yaw_offset = sys_state_data.real_Yaw - degreesToRadians(now_angle);
     yaw_num = 0;
 }
 
