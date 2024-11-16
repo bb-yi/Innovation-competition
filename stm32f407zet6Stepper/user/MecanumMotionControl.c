@@ -4,6 +4,7 @@
 #include "beep.h"
 #include "pid.h"
 #include "tool.h"
+#include "openmv.h"
 uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern uint8_t command_success_flag;
@@ -405,9 +406,22 @@ float smooth_speed(float alpha, float run_distance, float speed, float accel)
     target_speed = clamp(target_speed, 1, speed);
     return target_speed;
 }
-pid distance_rotation_pid;
+// 函数定义
+float float_mix(float a, float b, float alpha)
+{
+    // 确保 alpha 在 0 和 1 之间
+    if (alpha < 0.0f)
+        alpha = 0.0f;
+    if (alpha > 1.0f)
+        alpha = 1.0f;
 
-void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float target_angle)
+    // 计算混合值
+    return (1.0f - alpha) * a + alpha * b;
+}
+pid distance_rotation_pid;
+pid offset_pid;
+pid find_line_angle_pid;
+void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha)
 {
     uint8_t run_mode;
     int8_t dir;
@@ -416,16 +430,27 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
     float run_distance = Abs(run_mode == 0 ? distance_y : distance_x);
     set_beep_short_flag();
     pid_base_init(&distance_rotation_pid);
+    pid_base_init(&offset_pid);
+    pid_base_init(&find_line_angle_pid);
+
     distance_rotation_pid.Kp = 0.8f; // 0.2f
     distance_rotation_pid.Ki = 0.0f;
     distance_rotation_pid.Kd = 1.0f;
+    offset_pid.Kp = 0.8f; // 0.2f
+    offset_pid.Ki = 0.0f;
+    offset_pid.Kd = 0.0f;
+    find_line_angle_pid.Kp = 0.2f; // 0.2f
+    find_line_angle_pid.Ki = 0.0f;
+    find_line_angle_pid.Kd = 0.0f;
     float now_yaw, error_yaw, yaw_output;
     float start_angle_1, start_angle_2, start_angle_3, start_angle_4;
     float target_angle_1, target_angle_2, target_angle_3, target_angle_4;
     float error_angle_1, error_angle_2, error_angle_3, error_angle_4;
     float alpha, control_speed = 0;
-    // float start_yaw = radiansToDegrees(Get_IMU_Yaw());
-    float start_yaw = target_angle;
+
+    float error_offset, offset_output, find_line_error_angle, find_line_error_angle_output;
+    float start_yaw = radiansToDegrees(Get_IMU_Yaw());
+    // float start_yaw = target_angle;
     read_all_stepper_position();
     start_angle_1 = stepperdata_1.current_position;
     start_angle_2 = stepperdata_2.current_position;
@@ -454,6 +479,15 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
     printf("d_angle_1:%.2f,d_angle_2:%.2f,d_angle_3:%.2f,d_angle_4:%.2f\n", radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10), radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10));
     for (;;)
     {
+        error_offset = 80 - Get_find_line_distance();
+        offset_output = PID_Control(&offset_pid, error_offset, 20);
+        offset_output = clamp(offset_output, -10, 10);
+        find_line_error_angle = Get_find_line_angle();
+        find_line_error_angle = clamp(find_line_error_angle, -5, 5);
+        find_line_error_angle_output = -PID_Control(&find_line_angle_pid, find_line_error_angle, 20);
+        // find_line_error_angle_output = clamp(find_line_error_angle_output, -3, 3);
+
+        // printf("error_offset:%.2f,offset_output:%.2f\n", error_offset, offset_output);
         read_all_stepper_position();
         now_yaw = radiansToDegrees(Get_IMU_Yaw());
         error_yaw = start_yaw - now_yaw;
@@ -470,11 +504,12 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
         alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
         // control_speed = smooth_speed(alpha, run_distance, speed);
         yaw_output = clamp(yaw_output, -5, 5);
-        control_speed = smooth_speed(alpha, run_distance, speed, 10.0f);
+        yaw_output = yaw_output * (control_speed / speed);
+        control_speed = smooth_speed(alpha, run_distance, speed, 20.0f);
         // printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,error_yaw=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, error_yaw, yaw_output);
         if (run_mode == 0)
         {
-            base_speed_control(0, dir * control_speed, yaw_output, 800);
+            base_speed_control(offset_output, dir * control_speed, float_mix(yaw_output, find_line_error_angle_output, mix_alpha), 800);
         }
         else if (run_mode == 1)
         {
@@ -501,13 +536,13 @@ void Set_all_stepper_angle_ABS(float *angles, float *max_speed)
     Set_Stepper_run_T_angle(4, 100, max_speed[3], angles[3], ABS_POS_MODE, SYNC_ENABLE);
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
-void base_run_distance_fix(float distance, float speed, float target_angle)
+void base_run_distance_fix(float distance, float speed, float mix_alpha)
 {
-    base_run_distance_base_fix(0, distance, speed, target_angle);
+    base_run_distance_base_fix(0, distance, speed, mix_alpha);
 }
-void base_Horizontal_run_distance_fix(float distance, float speed, float target_angle)
+void base_Horizontal_run_distance_fix(float distance, float speed)
 {
-    base_run_distance_base_fix(distance, 0, speed, target_angle);
+    base_run_distance_base_fix(distance, 0, speed, 0);
 }
 
 /**
@@ -565,29 +600,32 @@ void base_rotation_open_loop_world(float angle, float speed)
     float now_error, now_yaw;
     float target_angle = angle;
     uint32_t start_time = HAL_GetTick();
+    now_yaw = radiansToDegrees(Get_IMU_Yaw());
+    now_error = target_angle - now_yaw;
+    base_run_angle_open_loop(now_error, 60);
 
-    for (;;)
-    {
-        now_yaw = radiansToDegrees(Get_IMU_Yaw());
-        now_error = target_angle - now_yaw;
-        printf("now_angle=%f,target_angle=%f,error_angle=%f\n", now_yaw, target_angle, now_error);
-        base_run_angle_open_loop(now_error, 60);
-        if (Abs(now_error) < max_error)
-        {
-            motor_stop_all();
-            printf("到达目标角度,error_angle:%f\n", now_error);
-            break;
-        }
-        float current_time = HAL_GetTick();
-        if (current_time - start_time > (uint32_t)(4000))
-        {
-            set_beep_long_flag();
-            motor_stop_all();
-            printf("机身运动超时!,error_angle:%f\n", now_error);
-            break;
-        }
-        osDelay(1);
-    }
+    // for (;;)
+    // {
+    //     now_yaw = radiansToDegrees(Get_IMU_Yaw());
+    //     now_error = target_angle - now_yaw;
+    //     printf("now_angle=%f,target_angle=%f,error_angle=%f\n", now_yaw, target_angle, now_error);
+    //     base_run_angle_open_loop(now_error, 60);
+    //     if (Abs(now_error) < max_error)
+    //     {
+    //         motor_stop_all();
+    //         printf("到达目标角度,error_angle:%f\n", now_error);
+    //         break;
+    //     }
+    //     float current_time = HAL_GetTick();
+    //     if (current_time - start_time > (uint32_t)(4000))
+    //     {
+    //         set_beep_long_flag();
+    //         motor_stop_all();
+    //         printf("机身运动超时!,error_angle:%f\n", now_error);
+    //         break;
+    //     }
+    //     osDelay(1);
+    // }
 }
 
 pid rotation_pid;

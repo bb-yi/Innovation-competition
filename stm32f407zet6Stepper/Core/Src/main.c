@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+﻿ /* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -35,31 +35,32 @@
 #include "servo.h"
 #include "ZDT_Stepper.h"
 #include "uart_screen.h"
-/* USER CODE END Includes */
+    /* USER CODE END Includes */
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
+    /* Private typedef -----------------------------------------------------------*/
+    /* USER CODE BEGIN PTD */
 
-/* USER CODE END PTD */
+    /* USER CODE END PTD */
 
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
+    /* Private define ------------------------------------------------------------*/
+    /* USER CODE BEGIN PD */
 
-/* USER CODE END PD */
+    /* USER CODE END PD */
 
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
+    /* Private macro -------------------------------------------------------------*/
+    /* USER CODE BEGIN PM */
 
-/* USER CODE END PM */
+    /* USER CODE END PM */
 
-/* Private variables ---------------------------------------------------------*/
+    /* Private variables ---------------------------------------------------------*/
 
-/* USER CODE BEGIN PV */
+    /* USER CODE BEGIN PV */
 
-/* USER CODE END PV */
+    /* USER CODE END PV */
 
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
+    /* Private function prototypes -----------------------------------------------*/
+    void
+    SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -122,6 +123,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 }
 
 extern uint8_t start_flag;
+uint8_t button_fix_flag = 0;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == GPIO_PIN_0) // ç¨ćˇćéŽ ćä¸ĺ˝éś???????čşäťŞĺč˝Žĺ­çźç ĺ¨
@@ -135,19 +137,33 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     // {
     //   // çŠşĺžŞçŻďźĺżç­ĺžäťĽćść
     // }
-    // printf("ZDT_Stepper_Enable\r\n");
-    if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+    if (button_fix_flag == 0)
     {
-      ZDT_Stepper_Enable(0, Enable, SYNC_DISABLE);
-      for (volatile uint32_t i = 0; i < 1000; i++)
-      {
-      }
+      button_fix_flag = 1;
     }
     else
     {
-      ZDT_Stepper_Enable(0, Disable, SYNC_DISABLE);
+      button_fix_flag = 0;
       for (volatile uint32_t i = 0; i < 1000; i++)
       {
+      }
+      if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_3) == GPIO_PIN_SET)
+      {
+        ZDT_Stepper_Enable(0, 1, SYNC_DISABLE);
+        // printf("ZDT_Stepper_Enable\r\n");
+
+        for (volatile uint32_t i = 0; i < 1000; i++)
+        {
+        }
+      }
+      else
+      {
+        ZDT_Stepper_Enable(0, 0, SYNC_DISABLE);
+        // printf("ZDT_Stepper_Disable\r\n");
+
+        for (volatile uint32_t i = 0; i < 1000; i++)
+        {
+        }
       }
     }
   }

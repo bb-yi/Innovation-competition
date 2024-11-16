@@ -296,12 +296,13 @@ void StartTask03(void *argument)
   // osDelay(3000);
   // set_Slider_position_2(150, 130);
   // osDelay(1000);
+  // base_run_angle(-90, 180);
 
-  // main_task();
-  base_Horizontal_run_distance_fix(15, 80, 0);
-  base_run_distance_fix(200, 80, 0);  // ??????
-  base_run_distance_fix(-200, 80, 0); // ????
-  base_Horizontal_run_distance_fix(-15, 80, 0);
+  main_task();
+  // base_Horizontal_run_distance_fix(15, 80, 0);
+  // base_run_distance_fix(200, 80, 0);  // ??????
+  // base_run_distance_fix(-200, 80, 0); // ????
+  // base_Horizontal_run_distance_fix(-15, 80, 0);
   // base_run_distance(100, 100);
   // osDelay(1000);
   // base_run_distance(100, 100);
@@ -346,9 +347,9 @@ void StartTask03(void *argument)
   //   }
   //   osDelay(1000);
   // }
-  // base_run_distance_base_fix(0, 100, 60);
+  // base_run_distance_base_fix(0, 100, 80, 0);
   // osDelay(1000);
-  // base_run_distance_base_fix(0, -100, 60);
+  // base_run_distance_base_fix(0, -100, 80, 0);
   // osDelay(1000);
   // base_run_distance_base_fix(20, 0, 60);
   // osDelay(1000);
