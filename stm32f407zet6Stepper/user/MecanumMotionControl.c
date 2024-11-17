@@ -421,7 +421,7 @@ float float_mix(float a, float b, float alpha)
 pid distance_rotation_pid;
 pid offset_pid;
 pid find_line_angle_pid;
-void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha)
+void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha, float line_distance)
 {
     uint8_t run_mode;
     int8_t dir;
@@ -479,7 +479,7 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
     printf("d_angle_1:%.2f,d_angle_2:%.2f,d_angle_3:%.2f,d_angle_4:%.2f\n", radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10), radiansToDegrees(distance_y / WHEEL_RADIUS * 10), radiansToDegrees(distance_x / WHEEL_RADIUS * 10));
     for (;;)
     {
-        error_offset = 80 - Get_find_line_distance();
+        error_offset = line_distance - Get_find_line_distance();
         offset_output = PID_Control(&offset_pid, error_offset, 20);
         offset_output = clamp(offset_output, -10, 10);
         find_line_error_angle = Get_find_line_angle();
@@ -535,13 +535,13 @@ void Set_all_stepper_angle_ABS(float *angles, float *max_speed)
     Set_Stepper_run_T_angle(4, 100, max_speed[3], angles[3], ABS_POS_MODE, SYNC_ENABLE);
     ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
 }
-void base_run_distance_fix(float distance, float speed, float mix_alpha)
+void base_run_distance_fix(float distance, float speed, float mix_alpha, float line_distance)
 {
-    base_run_distance_base_fix(0, distance, speed, mix_alpha);
+    base_run_distance_base_fix(0, distance, speed, mix_alpha, line_distance);
 }
 void base_Horizontal_run_distance_fix(float distance, float speed)
 {
-    base_run_distance_base_fix(distance, 0, speed, 0);
+    base_run_distance_base_fix(distance, 0, speed, 0, 0);
 }
 
 /**

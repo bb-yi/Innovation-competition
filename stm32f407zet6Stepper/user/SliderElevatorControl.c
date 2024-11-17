@@ -23,6 +23,7 @@ void Silder_TIM_Callback(void)
         {
             Finish_flag = 1;
             pulse_count = 0;
+            // Set_Pwm_duty(0);
             HAL_TIM_PWM_Stop_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
             printf("已发送目标脉冲%d\n", target_pulse_count);
         }
@@ -59,6 +60,18 @@ void set_pwm_HZ(uint32_t hz)
     // printf("arr:%d\n", arr);
     __HAL_TIM_SetAutoreload(&Solid_TIM_Handle, arr - 1);
 }
+
+void Set_Pwm_duty(uint8_t duty)
+{
+    if (duty == 1)
+    {
+        __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2);
+    }
+    else
+    {
+        __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, 0);
+    }
+}
 // pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
@@ -76,6 +89,8 @@ void set_Slider_position(float position, float speed)
     set_pwm_HZ(speed * 20);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
+    // Set_Pwm_duty(1);
+
     last_position = position;
     for (;;)
     {
@@ -103,6 +118,7 @@ void set_Slider_position_2(float position, float speed)
     set_pwm_HZ(speed * 20);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
+
     last_position = position;
 }
 
@@ -119,6 +135,8 @@ void Slider_position_init(void)
     // __HAL_TIM_SetAutoreload(&htim3, 65535);
     // 配置PWM占空比
     // printf("arr/2:%d\n", arr / 2);
+    // HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
+
     __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2);
     // set_pwm_param(htim3, TIM_CHANNEL_1, 1000, 50);
 }

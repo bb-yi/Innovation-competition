@@ -260,6 +260,10 @@ void StartTask03(void *argument)
   // Release_material();
   // Catch_material();
 
+  // QrCode_Task();
+
+  // MaterialArea_Task();
+
   // Get_material_floor(0);
   // Put_material(0);
   // find_line_calibrate_MPU_PID(0);
@@ -275,9 +279,11 @@ void StartTask03(void *argument)
   // printf("finish\r\n");
   // Get_material(openmv_data.last_identify_color - 1);
   // Get_material(openmv_data.last_identify_color - 1);
-  // set_Slider_position(0, 500);
+  // set_Slider_position(0, 100);
   // osDelay(1000);
-  // set_Slider_position(100, 500);
+  // set_Slider_position(100, 100);
+  // osDelay(1000);
+  // set_Slider_position(150, 100);
   // osDelay(1000);
   // Set_Stepper_run_T_angle(1, 200, 200, 360, SYNC_ENABLE);
   // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
@@ -292,13 +298,27 @@ void StartTask03(void *argument)
   // osDelay(3000);
   // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
   // osDelay(3000);
-  // set_Slider_position_2(5, 130);
-  // osDelay(3000);
-  // set_Slider_position_2(150, 130);
-  // osDelay(1000);
+  // set_Slider_position_2(40, 100);
+  //   osDelay(2000);
+  // set_Slider_position_2(150, 100);
+  // osDelay(2000);
   // base_run_angle(-90, 180);
+  // set_Slider_position(20, 60);
+  // set_Slider_position(130, 60);
+  // Put_material(2);
+
+  // find_line_calibrate_MPU_PID(0);
+  // osDelay(500);
+  // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
+  // osDelay(1000);
+  // find_circle(1);
+  // printf("color=%d\r\n", openmv_data.identify_color);
+  // Put_material(openmv_data.identify_color - 1);
+  // openmv_data.object_list[0] = 213;
+  // RoughProcessingArea_Task();
 
   main_task();
+
   // base_Horizontal_run_distance_fix(15, 80, 0);
   // base_run_distance_fix(200, 80, 0);  // ??????
   // base_run_distance_fix(-200, 80, 0); // ????
@@ -328,25 +348,7 @@ void StartTask03(void *argument)
   //   printf("alpha=%.2f, out_speed=%.2f\r\n", alpha, out_speed);
   //   osDelay(10);
   // }
-  // for (uint8_t j = 0; j < 7; j++)
-  // {
-  //   for (uint8_t i = 0; i < 1; i++)
-  //   {
-  //     // base_run_distance_base_fix(0, (j + 1) * 10, 60);
-  //     base_run_distance_base_fix((j + 1) * 10, 0, 60);
 
-  //     osDelay(500);
-  //   }
-  //   osDelay(1000);
-  //   for (uint8_t i = 0; i < 1; i++)
-  //   {
-  //     // base_run_distance_base_fix(0, -(j + 1) * 10, 60);
-  //     base_run_distance_base_fix(-(j + 1) * 10, 0, 60);
-
-  //     osDelay(500);
-  //   }
-  //   osDelay(1000);
-  // }
   // base_run_distance_base_fix(0, 100, 80, 0);
   // osDelay(1000);
   // base_run_distance_base_fix(0, -100, 80, 0);

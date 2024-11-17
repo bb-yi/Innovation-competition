@@ -9,9 +9,9 @@
 #include "cmsis_os.h"
 #include "pid.h"
 
-#define HORIZONTAL_HALF_LENGTH 96.4f // 横向半轴长（L）单位mm
-#define VERTICAL_HALF_LENGTH 85.0f   // 纵向半轴长（W）单位mm
-#define WHEEL_RADIUS 40.0f           // 轮半径（R）单位mm
+#define HORIZONTAL_HALF_LENGTH 101.0f // 横向半轴长（L）单位mm
+#define VERTICAL_HALF_LENGTH 84.5f    // 纵向半轴长（W）单位mm
+#define WHEEL_RADIUS 40.0f            // 轮半径（R）单位mm
 /*
         前
     +---------+
@@ -48,8 +48,8 @@ uint8_t base_rotation_control_world(float target_angle, float speed);
 void base_run_distance_base(float distance_x, float distance_y, float angle, float speed);
 void base_run_distance(float distance, float speed);
 void base_Horizontal_run_distance(float distance, float speed);
-void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha);
-void base_run_distance_fix(float distance, float speed, float mix_alpha);
+void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha, float line_distance);
+void base_run_distance_fix(float distance, float speed, float mix_alpha, float line_distance);
 void base_Horizontal_run_distance_fix(float distance, float speed);
 void base_rotation_world(float angle, float speed);
 void base_run_angle(float angle, float speed);
