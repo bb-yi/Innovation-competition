@@ -502,7 +502,6 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
             error_angle_4 = -error_angle_4;
         }
         alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
-        // control_speed = smooth_speed(alpha, run_distance, speed);
         yaw_output = clamp(yaw_output, -5, 5);
         yaw_output = yaw_output * (control_speed / speed);
         control_speed = smooth_speed(alpha, run_distance, speed, 20.0f);

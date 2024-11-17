@@ -1,9 +1,7 @@
 {
-    "folders": [
-        {
-            "path": "."
-        }
-    ],
+    "folders": [{
+        "path": "."
+    }],
     "settings": {
         "files.autoGuessEncoding": true,
         "C_Cpp.default.configurationProvider": "cl.eide",
@@ -24,7 +22,8 @@
             "editor.insertSpaces": true,
             "editor.tabSize": 4,
             "editor.autoIndent": "advanced"
-        }
+        },
+        "marscode.chatLanguage": "cn"
     },
     "extensions": {
         "recommendations": [
