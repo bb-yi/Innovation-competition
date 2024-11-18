@@ -86,7 +86,7 @@ const osThreadAttr_t myTask02_attributes = {
 osThreadId_t myTask03Handle;
 const osThreadAttr_t myTask03_attributes = {
     .name = "myTask03",
-    .stack_size = 512 * 4,
+    .stack_size = 1024 * 4,
     .priority = (osPriority_t)osPriorityLow2,
 };
 /* Definitions for myTask04 */
@@ -103,6 +103,13 @@ const osThreadAttr_t myTask05_attributes = {
     .stack_size = 128 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
+/* Definitions for myTask06 */
+osThreadId_t myTask06Handle;
+const osThreadAttr_t myTask06_attributes = {
+    .name = "myTask06",
+    .stack_size = 128 * 4,
+    .priority = (osPriority_t)osPriorityLow,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -114,6 +121,7 @@ void StartTask02(void *argument);
 void StartTask03(void *argument);
 void StartTask04(void *argument);
 void StartTask05(void *argument);
+void StartTask06(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -159,6 +167,9 @@ void MX_FREERTOS_Init(void)
 
   /* creation of myTask05 */
   myTask05Handle = osThreadNew(StartTask05, NULL, &myTask05_attributes);
+
+  /* creation of myTask06 */
+  myTask06Handle = osThreadNew(StartTask06, NULL, &myTask06_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -431,6 +442,24 @@ void StartTask05(void *argument)
     osDelay(400);
   }
   /* USER CODE END StartTask05 */
+}
+
+/* USER CODE BEGIN Header_StartTask06 */
+/**
+ * @brief Function implementing the myTask06 thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartTask06 */
+void StartTask06(void *argument)
+{
+  /* USER CODE BEGIN StartTask06 */
+  /* Infinite loop */
+  for (;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartTask06 */
 }
 
 /* Private application code --------------------------------------------------*/

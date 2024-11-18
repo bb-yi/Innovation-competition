@@ -655,8 +655,7 @@ uint8_t main_task(void)
     base_run_angle(-90, rot_speed);
     osDelay(200);
     float d_distance = 15 * (extract_digit(openmv_data.object_list[0], 3) - 2);
-    // move_distance * (2 - third_num)
-    float d_distance2 = 15 * (2 - extract_digit(openmv_data.object_list[0], 1));
+    float d_distance2 = 15 * (extract_digit(openmv_data.object_list[0], 1) - 2);
     base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance);
     osDelay(200);
     base_Horizontal_run_distance_fix(-8, run_speed);
@@ -669,11 +668,11 @@ uint8_t main_task(void)
 
     Camera_switch_mode(FIND_LINE_MODE);
 
-    base_run_distance_fix(-81 - d_distance2, run_speed, 1, line_distance); // 粗加工区到暂存区1
+    base_run_distance_fix(-81 + d_distance2, run_speed, 1, line_distance); // 粗加工区到暂存区1
     osDelay(200);
     base_run_angle(90, rot_speed);
     osDelay(200);
-    base_run_distance_fix(-76 + d_distance, run_speed, 1, line_distance); // 粗加工区到暂存区2
+    base_run_distance_fix(-76 - d_distance, run_speed, 1, line_distance); // 粗加工区到暂存区2
     osDelay(200);
 
     base_Horizontal_run_distance_fix(-3, run_speed);
