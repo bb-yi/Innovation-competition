@@ -55,7 +55,7 @@ void set_solid_dir(uint8_t dir) // 0向下 1向上
 uint32_t arr;
 void set_pwm_HZ(uint32_t hz)
 {
-    uint32_t pl = 2000000;
+    uint32_t pl = 1000000;
     arr = pl / hz;
     // printf("arr:%d\n", arr);
     __HAL_TIM_SetAutoreload(&Solid_TIM_Handle, arr - 1);
@@ -75,6 +75,7 @@ void Set_Pwm_duty(uint8_t duty)
 // pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
+    position = clamp(position, 5, 145);
     Finish_flag = 0;
     float delta_position = position - last_position;
     if (delta_position > 0)
@@ -104,6 +105,8 @@ void set_Slider_position(float position, float speed)
 }
 void set_Slider_position_2(float position, float speed)
 {
+    position = clamp(position, 5, 145);
+
     Finish_flag = 0;
     float delta_position = position - last_position;
     if (delta_position > 0)
@@ -129,7 +132,7 @@ void Slider_position_init(void)
     osDelay(1000);
     // set_solid_dir(1);
     // 配置PSC预分频值
-    __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 41);
+    __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 83);
     // 配置PWM频率 ARR
     set_pwm_HZ(2000);
     // __HAL_TIM_SetAutoreload(&htim3, 65535);

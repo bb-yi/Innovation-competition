@@ -10,11 +10,10 @@ void init_task(void);
 void find_circle(uint8_t mode);
 void find_line_calibrate_MPU_PID(float now_angle);
 void find_line_calibrate_MPU(float now_angle);
-void find_line_distance(void);
-
+void find_line_distance(float distance);
 void QrCode_Task(void);
 
-void MaterialArea_Task(void);
-void RoughProcessingArea_Task(void);
+void MaterialArea_Task(uint8_t part);
+void RoughProcessingArea_Task(uint16_t object_num);
 uint8_t main_task(void);
 #endif

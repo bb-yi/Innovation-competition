@@ -92,7 +92,7 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 	{
 		// printf("Received data: %s\n", buffer);
 	}
-	else if (buffer[0] == 'N' && buffer[1] == 'O' && buffer[2] == 'N' && buffer[3] == 'E')
+	else if (buffer[0] == 'N')
 	{
 
 		openmv_data.hsa_circle = 0;

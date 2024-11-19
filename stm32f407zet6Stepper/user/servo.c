@@ -151,9 +151,9 @@ void Put_material(uint8_t pos)
     Set_Sliding_table_Pos(0);
     osDelay(800);
     set_Slider_position(16, solider_speed);
-    osDelay(100);
+    osDelay(500);
     Release_material();
-    osDelay(120);
+    osDelay(400);
     set_Slider_position(150, solider_speed);
     osDelay(200);
 }

@@ -46,6 +46,21 @@ void stepper_stop(uint8_t id, uint8_t sync_flag)
     }
 }
 
+void Stepper_start_sync_motion_with_check(uint8_t id)
+{
+    command_success_flag = 0;
+    for (;;)
+    {
+        ZDT_Stepper_start_sync_motion(id); // 开启多机同步运动
+        osDelay(10);
+        State_print("多机同步,等待返回,%d\n", id);
+        if (command_success_flag == 1)
+        {
+            State_print("成功\n");
+            break;
+        }
+    }
+}
 /**
  * @brief 停止所有电机
  *
@@ -180,7 +195,7 @@ void Set_all_stepper_angle(float *angles, float max_speed)
     Set_Stepper_run_T_angle(2, accel_accel[1], speed[1], angles[1], REL_POS_MODE, SYNC_ENABLE);
     Set_Stepper_run_T_angle(3, accel_accel[2], speed[2], angles[2], REL_POS_MODE, SYNC_ENABLE);
     Set_Stepper_run_T_angle(4, accel_accel[3], speed[3], angles[3], REL_POS_MODE, SYNC_ENABLE);
-    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+    Stepper_start_sync_motion_with_check(0); // 开启多机同步运动
 }
 void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
 {
@@ -188,7 +203,7 @@ void Set_all_stepper_speed(float *speeds, uint16_t accel_accel)
     set_Stepper_speed(2, accel_accel, speeds[1], SYNC_ENABLE);
     set_Stepper_speed(3, accel_accel, speeds[2], SYNC_ENABLE);
     set_Stepper_speed(4, accel_accel, speeds[3], SYNC_ENABLE);
-    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+    Stepper_start_sync_motion_with_check(0); // 开启多机同步运动
 }
 /**
  * @brief PID控制句柄初始化
@@ -306,6 +321,8 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
     printf("max_time:%f\n", max_time);
     for (;;)
     {
+        osDelay(1);
+
         uint32_t current_time = HAL_GetTick();
         if (CheckMotorsAtTargetPosition() == 1)
         {
@@ -319,7 +336,6 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
             printf("机身运动超时,max_time:%f\n", max_time);
             break;
         }
-        osDelay(1);
     }
 }
 void base_run_distance(float distance, float speed)
@@ -504,7 +520,7 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
         alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
         yaw_output = clamp(yaw_output, -5, 5);
         yaw_output = yaw_output * (control_speed / speed);
-        control_speed = smooth_speed(alpha, run_distance, speed, 20.0f);
+        control_speed = smooth_speed(alpha, run_distance, speed, 10.0f);
         // printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,error_yaw=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, error_yaw, yaw_output);
         if (run_mode == 0)
         {
@@ -533,7 +549,7 @@ void Set_all_stepper_angle_ABS(float *angles, float *max_speed)
     Set_Stepper_run_T_angle(2, 100, max_speed[1], angles[1], ABS_POS_MODE, SYNC_ENABLE);
     Set_Stepper_run_T_angle(3, 100, max_speed[2], angles[2], ABS_POS_MODE, SYNC_ENABLE);
     Set_Stepper_run_T_angle(4, 100, max_speed[3], angles[3], ABS_POS_MODE, SYNC_ENABLE);
-    ZDT_Stepper_start_sync_motion(0); // 开启多机同步运动
+    Stepper_start_sync_motion_with_check(0); // 开启多机同步运动
 }
 void base_run_distance_fix(float distance, float speed, float mix_alpha, float line_distance)
 {
@@ -595,7 +611,7 @@ void base_rotation_open_loop(float angle, float speed)
 }
 void base_rotation_open_loop_world(float angle, float speed)
 {
-    float max_error = 0.05f;
+    // float max_error = 0.05f;
     float now_error, now_yaw;
     float target_angle = angle;
     uint32_t start_time = HAL_GetTick();
@@ -634,9 +650,9 @@ void base_rotation_world_base(float angle, float speed)
     set_beep_short_flag();
     speed = speed * 0.01f;
     pid_base_init(&rotation_pid);
-    rotation_pid.Kp = 1.0;  // 60.0f
+    rotation_pid.Kp = 3.0;  // 60.0f
     rotation_pid.Ki = 0.0f; // 0.18f
-    rotation_pid.Kd = 5.0f; // 40.0f
+    rotation_pid.Kd = 3.0f; // 40.0f
     float clamp_speed = 25.0f;
     float start_yaw = radiansToDegrees(Get_IMU_Yaw());
     float target_angle = angle;
@@ -738,6 +754,7 @@ void base_run_distance_and_rotation(float distance_x, float distance_y, float an
 
     for (;;)
     {
+        osDelay(1);
         uint32_t time_now = HAL_GetTick();
         uint32_t delta_time = time_now - time_start;
         float alpha = delta_time / time / 1000.0f;

@@ -53,6 +53,7 @@ void base_run_distance_fix(float distance, float speed, float mix_alpha, float l
 void base_Horizontal_run_distance_fix(float distance, float speed);
 void base_rotation_world(float angle, float speed);
 void base_run_angle(float angle, float speed);
+void base_rotation_world_base(float angle, float speed);
 void base_run_distance_and_rotation(float distance_x, float distance_y, float angle, float speed);
 void motor_test(void);
 void motor_rotation_test(void);
