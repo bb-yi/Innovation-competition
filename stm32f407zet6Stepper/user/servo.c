@@ -137,6 +137,28 @@ void Get_material_floor(uint8_t pos)
 
 void Put_material(uint8_t pos)
 {
+    set_Slider_position(154, solider_speed);
+    osDelay(100);
+    Set_Table_Pos(pos);
+    Set_Sliding_table_Pos(1);
+    osDelay(800);
+    set_Slider_position(100, solider_speed);
+    osDelay(200);
+    Catch_material();
+    osDelay(500);
+    set_Slider_position(154, solider_speed);
+    osDelay(100);
+    Set_Sliding_table_Pos(0);
+    osDelay(800);
+    set_Slider_position(24, solider_speed);
+    osDelay(500);
+    Release_material();
+    osDelay(400);
+    set_Slider_position(154, solider_speed);
+    osDelay(200);
+}
+void Put_material_in_obj(uint8_t pos)
+{
     set_Slider_position(150, solider_speed);
     osDelay(100);
     Set_Table_Pos(pos);
@@ -150,7 +172,7 @@ void Put_material(uint8_t pos)
     osDelay(100);
     Set_Sliding_table_Pos(0);
     osDelay(800);
-    set_Slider_position(16, solider_speed);
+    set_Slider_position(80, solider_speed);
     osDelay(500);
     Release_material();
     osDelay(400);

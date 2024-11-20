@@ -26,4 +26,5 @@ void Get_material(uint8_t pos);
 void Get_material_floor(uint8_t pos);
 
 void Put_material(uint8_t pos);
+void Put_material_in_obj(uint8_t pos);
 #endif

@@ -86,21 +86,21 @@ const osThreadAttr_t myTask02_attributes = {
 osThreadId_t myTask03Handle;
 const osThreadAttr_t myTask03_attributes = {
     .name = "myTask03",
-    .stack_size = 1024 * 4,
+    .stack_size = 512 * 4,
     .priority = (osPriority_t)osPriorityHigh7,
 };
 /* Definitions for myTask04 */
 osThreadId_t myTask04Handle;
 const osThreadAttr_t myTask04_attributes = {
     .name = "myTask04",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for myTask05 */
 osThreadId_t myTask05Handle;
 const osThreadAttr_t myTask05_attributes = {
     .name = "myTask05",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for myTask06 */
@@ -265,6 +265,7 @@ void StartTask03(void *argument)
   /* USER CODE BEGIN StartTask03 */
 
   init_task();
+  // RoughProcessingArea_Task(0);
 
   // osDelay(1000);
   // set_solid_enable(0);
@@ -320,8 +321,8 @@ void StartTask03(void *argument)
   // find_circle(1);
   // printf("color=%d\r\n", openmv_data.identify_color);
   // Put_material(openmv_data.identify_color - 1);
-  openmv_data.object_list[0] = 213;
-  RoughProcessingArea_Task(0);
+  // openmv_data.object_list[0] = 213;
+  //   RoughProcessingArea_Task(0);
   // base_rotation_world_base(90, 30);
   // osDelay(1000);
   // base_rotation_world_base(-90, 30);
@@ -332,7 +333,7 @@ void StartTask03(void *argument)
   // osDelay(1000);
   // base_rotation_world_base(0, 30);
   // osDelay(1000);
-  // main_task();
+  main_task();
 
   // base_Horizontal_run_distance_fix(15, 80, 0);
   // base_run_distance_fix(200, 80, 0);  // ??????

@@ -75,7 +75,15 @@ void Set_Pwm_duty(uint8_t duty)
 // pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
-    position = clamp(position, 5, 145);
+    position = clamp(position, 0, 150);
+    if (position == 150)
+    {
+        position = 152;
+    }
+    else if (position == 0)
+    {
+        position = -2;
+    }
     Finish_flag = 0;
     float delta_position = position - last_position;
     if (delta_position > 0)
