@@ -1,4 +1,4 @@
-/* USER CODE BEGIN Header */
+﻿/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -36,6 +36,7 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "uart_screen.h"
+#include "camera_led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -181,12 +182,12 @@ void MX_FREERTOS_Init(void)
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
-// �?查任务剩余堆栈内存的函数
+// ��??查任务剩余堆栈内存的函数
 void CheckTaskMemoryUsage(TaskHandle_t taskHandle)
 {
-  // 获取任务的堆栈高水位标记并转换为字节�?
+  // 获取任务的堆栈高水位标记并转换为字节��??
   UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(taskHandle);
-  printf("任务历史剩余�?小内�?: %lu 字节\r\n", (unsigned long)(stackHighWaterMark * sizeof(StackType_t)));
+  printf("任务内存剩余: %lu 字节\r\n", (unsigned long)(stackHighWaterMark * sizeof(StackType_t)));
 }
 /**
  * @brief 获取当前时间
@@ -264,154 +265,18 @@ void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
 
-  init_task();
-  // RoughProcessingArea_Task(0);
+  // init_task();
 
-  // osDelay(1000);
-  // set_solid_enable(0);
-  // Release_material();
-  // Catch_material();
+  // main_task();
 
-  // QrCode_Task();
-
-  // MaterialArea_Task();
-
-  // Get_material_floor(0);
-  // Put_material(0);
-  // find_line_calibrate_MPU_PID(0);
-  // osDelay(1000);
-  // find_line_distance();
-  // Get_material(1);
-  // Get_material(2);
-  // Put_material(0);
-  // Put_material(1);
-  // Put_material(2);
-  // Camera_switch_mode(CENTER_POSITION_MODE);
-  // find_circle(0);
-  // printf("finish\r\n");
-  // Get_material(openmv_data.last_identify_color - 1);
-  // Get_material(openmv_data.last_identify_color - 1);
-
-  // Set_Stepper_run_T_angle(1, 200, 200, 360, SYNC_ENABLE);
-  // Set_Stepper_run_T_angle(2, 200, 200, 360, SYNC_ENABLE);
-  // Set_Stepper_run_T_angle(3, 200, 200, 360, SYNC_ENABLE);
-  // Set_Stepper_run_T_angle(4, 200, 200, 360, SYNC_ENABLE);
-
-  // base_Horizontal_run_distance(300, 100);
-  // osDelay(1000);
-  // base_Horizontal_run_distance(-300, 100);s
-  // osDelay(1000);
-  // ZDT_Stepper_Set_T_position(2, CW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
-  // osDelay(3000);
-  // ZDT_Stepper_Set_T_position(2, CCW, 240, 240, 100, 360 * 2, REL_POS_MODE, SYNC_DISABLE); // ?????????????
-  // osDelay(3000);
-  // set_Slider_position_2(40, 100);
-  //   osDelay(2000);
-  // set_Slider_position_2(150, 100);
-  // osDelay(2000);
-  // base_run_angle(-90, 180);
-  // set_Slider_position(20, 60);
-  // set_Slider_position(130, 60);
-  // Put_material(2);
-
-  // find_line_calibrate_MPU_PID(0);
-  // osDelay(500);
-  // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
-  // osDelay(1000);
-  // find_circle(1);
-  // printf("color=%d\r\n", openmv_data.identify_color);
-  // Put_material(openmv_data.identify_color - 1);
-  // openmv_data.object_list[0] = 213;
-  //   RoughProcessingArea_Task(0);
-  // base_rotation_world_base(90, 30);
-  // osDelay(1000);
-  // base_rotation_world_base(-90, 30);
-  // osDelay(1000);
-  // base_rotation_world_base(180, 30);
-  // osDelay(1000);
-  // base_rotation_world_base(-180, 30);
-  // osDelay(1000);
-  // base_rotation_world_base(0, 30);
-  // osDelay(1000);
-  main_task();
-
-  // base_Horizontal_run_distance_fix(15, 80, 0);
-  // base_run_distance_fix(200, 80, 0);  // ??????
-  // base_run_distance_fix(-200, 80, 0); // ????
-  // base_Horizontal_run_distance_fix(-15, 80, 0);
-  // base_run_distance(100, 100);
-  // osDelay(1000);
-  // base_run_distance(100, 100);
-  // osDelay(1000);
-  // base_run_distance(-100, 100);
-  // osDelay(1000);
-  // base_Horizontal_run_distance(100, 100);
-  // osDelay(1000);
-  // base_Horizontal_run_distance(-100, 100);
-  // osDelay(1000);
-  // float out_speed = 0;
-  // for (uint16_t i = 0; i < 100; i++)
-  // {
-  //   float alpha = (float)i / 100.0f;
-  //   if (alpha > 0.5f)
-  //   {
-  //     out_speed = S_Curve_Smoothing(0, 100, 0.2, 1 - alpha, 0.5f, 0.01);
-  //   }
-  //   else
-  //   {
-  //     out_speed = S_Curve_Smoothing(100, 4, 0.2, 0.5f - alpha, 0.5f, 0.01);
-  //   }
-  //   printf("alpha=%.2f, out_speed=%.2f\r\n", alpha, out_speed);
-  //   osDelay(10);
-  // }
-
-  // base_run_distance_base_fix(0, 100, 80, 0);
-  // osDelay(1000);
-  // base_run_distance_base_fix(0, -100, 80, 0);
-  // osDelay(1000);
-  // base_run_distance_base_fix(20, 0, 60);
-  // osDelay(1000);
-  // base_run_distance_base_fix(0, 180, 60);
-  // osDelay(1000);
-  // base_run_distance_base_fix(0, -180, 60);
-  // osDelay(1000);
-  // base_run_distance_base_fix(-20, 0, 60);
-  // osDelay(1000);
-
-  // base_speed_control(0, 120, 0, 220);
-  // motor_rotation_test();
-  // motor_rotation_test();
-  // motor_rotation_test();
-  // motor_rotation_test();
-
-  // motor_test();
-
-  // base_speed_control(0, 0, 1);
-  // base_run_distance_base(20, 20, 0, 40);
-  //  osDelay(1000);
-  //  base_run_distance_base(-20, -20, 0, 40);
   /* Infinite loop */
   for (;;)
   {
-    // Set_Sliding_table_Pos(0);
-    // osDelay(1000);
-    // Set_Sliding_table_Pos(1);
-    // osDelay(1000);
-
-    // set_Slider_position(5, 100);
-    // osDelay(100);
-    // set_Slider_position(100, 100);
-    // osDelay(100);
-    // set_Slider_position(148, 100);
-    // osDelay(100);
-    // motor_stop_all();
-    // Catch_material();
-    // osDelay(1000);
-    // Release_material();
-    // osDelay(1000);
-    // CheckTaskMemoryUsage(myTask03Handle);
-    // osDelay(100);
-    // osDelay(delay_time);
+    Catch_material();
+    osDelay(2000);
+    Release_material();
+    osDelay(2000);
+    Set_Camera_Led_light(100);
     osDelay(1);
   }
   /* USER CODE END StartTask03 */
