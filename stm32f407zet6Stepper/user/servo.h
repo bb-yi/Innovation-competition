@@ -22,6 +22,7 @@ void Set_Sliding_table_Pos(uint8_t pos);
 void Set_Table_Pos(uint8_t pos);
 void Catch_material(void);
 void Release_material(void);
+void catch_material_in_middle(void);
 void Get_material(uint8_t pos);
 void Get_material_floor(uint8_t pos);
 

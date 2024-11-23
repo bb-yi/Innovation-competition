@@ -1,4 +1,4 @@
-﻿/* USER CODE BEGIN Header */
+/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * File Name          : freertos.c
@@ -108,7 +108,7 @@ const osThreadAttr_t myTask05_attributes = {
 osThreadId_t myTask06Handle;
 const osThreadAttr_t myTask06_attributes = {
     .name = "myTask06",
-    .stack_size = 128 * 4,
+    .stack_size = 256 * 4,
     .priority = (osPriority_t)osPriorityLow,
 };
 
@@ -264,19 +264,48 @@ extern uint8_t delay_time;
 void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
+  // set_solid_enable(0);
 
   init_task();
+  // set_Slider_position(0, 100);
+
+  // Set_Sliding_table_Pos(1);
+  // Set_Table_Pos(2);
+  // Set_Servo_angle(1, 135);
+  // Set_Servo_angle(1, 255);
+  // catch_material_in_middle();
+  // Put_material(0);
+  // Put_material(1);
+  // Put_material(2);
+  // Get_material(0);
+  // Get_material(1);
+  // Get_material(2);
 
   main_task();
+  base_run_distance_base(10, 25, 0, 100); // ?????
 
   /* Infinite loop */
   for (;;)
   {
-    Catch_material();
-    osDelay(2000);
-    Release_material();
-    osDelay(2000);
-    Set_Camera_Led_light(100);
+    // for (uint16_t i = 0; i < 270; i++)
+    // {
+    //   // Set_Servo_angle(1, i);
+    //   osDelay(10);
+    // }
+    osDelay(1000);
+    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+    // osDelay(2000);
+    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+    // osDelay(2000);
+
+    // Catch_material();
+    // osDelay(2000);
+    // Release_material();
+    // osDelay(2000);
+    // Set_Camera_Led_light(100);
+    // camera_led_huxideng();
     osDelay(1);
   }
   /* USER CODE END StartTask03 */

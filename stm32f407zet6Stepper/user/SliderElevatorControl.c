@@ -33,22 +33,27 @@ void set_solid_enable(uint8_t enable)
 {
     if (enable)
     {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
+        // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
     }
     else
     {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
     }
 }
 void set_solid_dir(uint8_t dir) // 0向下 1向上
 {
     if (dir)
     {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
     }
     else
     {
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
     }
 }
 
@@ -75,7 +80,8 @@ void Set_Pwm_duty(uint8_t duty)
 // pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
-    position = clamp(position, 0, 150);
+    // position = 150 - position;
+    // position = clamp(position, 0, 150);
     if (position == 150)
     {
         position = 152;
@@ -100,7 +106,7 @@ void set_Slider_position(float position, float speed)
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
     // Set_Pwm_duty(1);
 
-    last_position = position;
+    last_position = clamp(position, 0, 150);
     for (;;)
     {
         osDelay(1);
