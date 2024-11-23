@@ -265,9 +265,9 @@ void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
 
-  // init_task();
+  init_task();
 
-  // main_task();
+  main_task();
 
   /* Infinite loop */
   for (;;)

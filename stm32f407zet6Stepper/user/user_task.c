@@ -291,12 +291,6 @@ void init_task(void)
 void QrCode_Task(void)
 {
     uart_screen_init();
-    // set_Slider_position(5, 60);
-
-    // Camera_switch_mode(QR_MODE);
-    // openmv_data.object_list[0] = 231;
-    // openmv_data.object_list[1] = 132;
-    // Set_display_solid_num(openmv_data.object_list[0], openmv_data.object_list[1]);
 
     for (;;)
     {
@@ -651,7 +645,6 @@ void TemporaryStorageArea_Task(uint8_t part)
     // printf("放下第一个%d\r\n", first_num);
     osDelay(1000);
     base_run_distance(move_distance * (second_num - first_num), 100);
-
     osDelay(1000);
     find_circle(1, error_mode);
     printf("finish\r\n");
@@ -691,130 +684,136 @@ float run_speed = 100;
 float rot_speed = 180;
 float line_distance = 80;
 uint16_t default_delay = 200;
+float target_cycle_distance = 15;
+/**
+ */
 uint8_t main_task(void)
 {
+    // !开始-----------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
     Camera_switch_mode(FIND_LINE_MODE);
     base_run_distance_base(10, 25, 0, run_speed); // 移出启停区
-    // osDelay(default_delay);
+    set_Slider_position_2(5, 100);                // #提前降低滑台
+    base_run_distance_fix(38, 60, 1, 110);        // 去往二维码区域
 
-    set_Slider_position_2(5, 100);
-    base_run_distance_fix(38, 60, 1, 110); // 去往二维码区域
-    osDelay(1000);
-
+    // $ 二维码任务------------------------------------------------------------------------------------------------------
     QrCode_Task();
-    osDelay(default_delay);
-    // base_rotation_world(0, rot_speed);
-    set_Slider_position_2(150, 60);
+    // $ 二维码任务------------------------------------------------------------------------------------------------------
 
+    osDelay(default_delay);
+    set_Slider_position_2(150, 60);                         // #提前升起
     base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);
-    // find_line_distance(30);
-    base_run_distance_base(-6, 0, 0, 80);
-
-    // base_Horizontal_run_distance_fix(-5, run_speed); // 靠近物料
+    find_line_calibrate_MPU_PID(0);       // 寻线校准
+    base_run_distance_base(-6, 0, 0, 80); // 靠近原料区
     osDelay(default_delay);
+
+    // $ 原料区任务------------------------------------------------------------------------------------------------------------
     MaterialArea_Task(0); // 原料区任务
+    // $ 原料区任务------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    // base_Horizontal_run_distance_fix(7, run_speed);
+    base_Horizontal_run_distance_fix(6, run_speed); // 远离原料区
     osDelay(default_delay);
-    base_run_distance_fix(42, run_speed, 1, line_distance); // 去往粗加工区
+    base_run_distance_fix(42, run_speed, 1, line_distance); // 去往粗加工区1
     osDelay(default_delay);
-
-    base_run_angle(-90, rot_speed);
+    base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(170, run_speed, 1, line_distance);
+    base_run_distance_fix(170, run_speed, 1, line_distance); // 去往粗加工区2
     osDelay(default_delay);
-    base_run_angle(-90, rot_speed);
+    base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
-    float d_distance = 15 * (extract_digit(openmv_data.object_list[0], 3) - 2);
-    float d_distance2 = 15 * (extract_digit(openmv_data.object_list[0], 1) - 2);
-    base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance);
+    float d_distance = target_cycle_distance * (extract_digit(openmv_data.object_list[0], 3) - 2);
+    float d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[0], 1) - 2);
+    base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 去往粗加工区3
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);
-
-    base_Horizontal_run_distance_fix(-6, run_speed);
+    find_line_calibrate_MPU_PID(0);                  // 寻线校准
+    base_Horizontal_run_distance_fix(-6, run_speed); // 靠近粗加工区
     osDelay(default_delay);
 
+    // $ 粗加工区任务------------------------------------------------------------------------------------------------------------
     RoughProcessingArea_Task(0); // 粗加工区任务
+    // $ 粗加工区任务------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
     base_run_distance_fix(-(81 + d_distance2), run_speed, 1, 80); // 粗加工区到暂存区1
     osDelay(default_delay);
-    base_run_angle(90, rot_speed);
+    base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
     base_run_distance_fix(-(76 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-3, run_speed);
+    base_Horizontal_run_distance_fix(-3, run_speed); // 靠近暂存区
     osDelay(default_delay);
 
+    // $ 暂存区任务-------------------------------------------------------------------------------------------------------------
     TemporaryStorageArea_Task(0); // 暂存区任务
+    // $ 暂存区任务-------------------------------------------------------------------------------------------------------------
 
-    base_Horizontal_run_distance_fix(6, run_speed);
+    base_Horizontal_run_distance_fix(6, run_speed); // 远离暂存区
     osDelay(default_delay);
+
+    // ~第二次搬运-----------------------------------------------------------------------------------------------------------
     base_run_distance_fix(-(88 - d_distance2), 60, 1, 80); //  暂存区到原料区1
     osDelay(default_delay);
-    base_run_angle(90, rot_speed);
+    base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    // find_line_calibrate_MPU_PID(0);
-
     base_run_distance_fix(-43, 80, 1, 80); // 暂存区到原料区2
-    find_line_calibrate_MPU_PID(0);
-
-    // find_line_distance(80);
-    base_run_distance_base(-7, 0, 0, 100);
+    find_line_calibrate_MPU_PID(0);        // 寻线校准
+    base_run_distance_base(-7, 0, 0, 100); // 靠近原料区
     osDelay(default_delay);
-    // return 1;
 
+    // $ 第二次原料区任务-------------------------------------------------------------------------------------------------------------------
     MaterialArea_Task(1); // 原料区任务2
+    // $ 第二次原料区任务-------------------------------------------------------------------------------------------------------------------
 
-    base_Horizontal_run_distance_fix(8, run_speed);
+    base_Horizontal_run_distance_fix(8, run_speed); // 第二次 远离原料区
     osDelay(default_delay);
-    base_run_distance_fix(42, run_speed, 1, line_distance); // 去往粗加工区2
+    base_run_distance_fix(42, run_speed, 1, line_distance); // 第二次 去往粗加工区1
     osDelay(default_delay);
-    base_run_angle(-90, rot_speed);
+    base_run_angle(-90, rot_speed); // 转向
 
-    base_run_distance_fix(170, run_speed, 1, line_distance);
+    base_run_distance_fix(170, run_speed, 1, line_distance); // 第二次 去往粗加工区2
     osDelay(default_delay);
-    base_run_angle(-90, rot_speed);
+    base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
-    d_distance = 15 * (extract_digit(openmv_data.object_list[1], 3) - 2);
-    d_distance2 = 15 * (extract_digit(openmv_data.object_list[1], 1) - 2);
-    base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 粗加工区到暂存区1
+    d_distance = target_cycle_distance * (extract_digit(openmv_data.object_list[1], 3) - 2);
+    d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[1], 1) - 2);
+    base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 第二次 去往粗加工区3
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-8, run_speed);
+    base_Horizontal_run_distance_fix(-8, run_speed); // 第二次 靠近粗加工区
     osDelay(default_delay);
 
+    // $ 第二次粗加工区任务-------------------------------------------------------------------------------------------------------------------------
     RoughProcessingArea_Task(1); // 粗加工区任务2
+    // $ 第二次粗加工区任务-------------------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, line_distance); // 粗加工区到暂存区1
+    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, line_distance); // 第二次 粗加工区到暂存区1
     osDelay(default_delay);
-    base_run_angle(90, rot_speed);
+    base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-(80 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
+    base_run_distance_fix(-(80 - d_distance), run_speed, 1, line_distance); // 第二次  粗加工区到暂存区2
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-9, run_speed);
+    base_Horizontal_run_distance_fix(-9, run_speed); // 第二次 靠近暂存区
     osDelay(default_delay);
 
+    // $ 第二次暂存区任务-------------------------------------------------------------------------------------------------------------------------------
     TemporaryStorageArea_Task(1); // 暂存区任务2
+    // $ 第二次暂存区任务-------------------------------------------------------------------------------------------------------------------------------
 
-    base_Horizontal_run_distance_fix(6, run_speed);
+    // ~回到起始点--------------------------------------------------------------------------------------------------------------------------------------
+    base_Horizontal_run_distance_fix(6, run_speed); // 远离暂存区
     osDelay(default_delay);
-    base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); //  暂存区到原料区1
+    base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
     osDelay(default_delay);
-    base_run_angle(90, rot_speed);
+    base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-170, run_speed, 1, line_distance); // 暂存区到原料区2
-
+    base_run_distance_fix(-170, run_speed, 1, line_distance); // 暂存区到起始点2
     osDelay(default_delay);
-
-    // base_run_angle(90, run_speed);
-    base_run_distance_base(-16, -17, 0, run_speed); // 移出启停区
-
+    base_run_distance_base(-16, -17, 0, run_speed); // 移入启停区
     motor_stop_all();
+    // !结束------------------------------------------------------------------------------------------------------------------------------------------------
+
     return 1;
 }
