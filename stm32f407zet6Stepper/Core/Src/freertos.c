@@ -282,7 +282,7 @@ void StartTask03(void *argument)
   // Get_material(2);
 
   main_task();
-  base_run_distance_base(10, 25, 0, 100); // ?????
+  // base_run_distance_base(10, 25, 0, 100); // ?????
 
   /* Infinite loop */
   for (;;)
@@ -292,20 +292,11 @@ void StartTask03(void *argument)
     //   // Set_Servo_angle(1, i);
     //   osDelay(10);
     // }
-    osDelay(1000);
-    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-    // osDelay(2000);
-    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-    // osDelay(2000);
-
-    // Catch_material();
-    // osDelay(2000);
-    // Release_material();
-    // osDelay(2000);
-    // Set_Camera_Led_light(100);
-    // camera_led_huxideng();
+    // osDelay(1000);
+    // Set_Camera_Led_light(20);
+    // osDelay(1000);
+    // Set_Camera_Led_light(80);
+    camera_led_huxideng();
     osDelay(1);
   }
   /* USER CODE END StartTask03 */

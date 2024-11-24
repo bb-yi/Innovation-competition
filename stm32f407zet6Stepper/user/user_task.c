@@ -1,4 +1,4 @@
-#include "user_task.h"
+﻿#include "user_task.h"
 
 #include "cmsis_os.h"
 #include "oled.h"
@@ -12,6 +12,7 @@
 #include "ZDT_Stepper.h"
 #include "beep.h"
 #include "uart_screen.h"
+#include "camera_led.h"
 
 extern SYS_STATE_Data sys_state_data; // 陀螺仪数据
 extern OPENMV_data openmv_data;       // 摄像头OpenMV数据
@@ -256,6 +257,8 @@ void init_task(void)
 {
     set_solid_enable(0);
     Camera_switch_mode(FIND_LINE_MODE);
+    Set_Camera_Led_light(100);
+
     check_stepper_is_working();
     for (;;)
     {
@@ -267,9 +270,8 @@ void init_task(void)
         }
     }
     Set_display_solid_num(0, 0);
-
     enable_stepper_task();
-    printf("enable %d\n", check_motor_is_enable());
+    printf("电机使能状态: %d\n", check_motor_is_enable());
     motor_stop_all();
     osDelay(200);
     Slider_position_init();
@@ -680,41 +682,51 @@ void TemporaryStorageArea_Task(uint8_t part)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 100;
-float rot_speed = 180;
+float run_speed = 150.0f; // 最大速度 150
+float acc_speed = 17.0f;  // 加速度 10.0f
+float rot_speed = 250;
+float Close_speed = 50;
 float line_distance = 80;
-uint16_t default_delay = 200;
-float target_cycle_distance = 15;
-/**
- */
+uint16_t default_delay = 1;
+uint8_t run_task = 0;
+
 uint8_t main_task(void)
 {
+    float target_cycle_distance = run_task == 0 ? 0 : 15;
     // !开始-----------------------------------------------------------------------------------------------------------
-
+    printf("开始\r\n");
     osDelay(default_delay);
     Camera_switch_mode(FIND_LINE_MODE);
-    base_run_distance_base(10, 25, 0, run_speed); // 移出启停区
+    base_run_distance_base(20, 25, 0, run_speed); // 移出启停区
     set_Slider_position_2(5, 100);                // #提前降低滑台
-    base_run_distance_fix(38, 60, 1, 110);        // 去往二维码区域
+    base_run_distance_fix(38, run_speed, 1, 110); // 去往二维码区域
 
     // $ 二维码任务------------------------------------------------------------------------------------------------------
-    // QrCode_Task();
+    printf("二维码任务\r\n");
+    if (run_task == 1)
+    {
+        QrCode_Task();
+    }
     // $ 二维码任务------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    set_Slider_position_2(150, 60);                         // #提前升起
+    set_Slider_position_2(150, 100);                        // #提前升起
     base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);       // 寻线校准
-    base_run_distance_base(-6, 0, 0, 80); // 靠近原料区
+    find_line_calibrate_MPU_PID(0);                // 寻线校准
+    base_run_distance_base(-6, 0, 0, Close_speed); // 靠近原料区
     osDelay(default_delay);
 
+    printf("原料区任务\r\n");
     // $ 原料区任务------------------------------------------------------------------------------------------------------------
-    // MaterialArea_Task(0); // 原料区任务
+    if (run_task == 1)
+    {
+        MaterialArea_Task(0); // 原料区任务
+    }
     // $ 原料区任务------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(6, run_speed); // 远离原料区
+    base_run_distance_base(6, 0, 0, Close_speed); // 远离原料区
     osDelay(default_delay);
     base_run_distance_fix(42, run_speed, 1, line_distance); // 去往粗加工区1
     osDelay(default_delay);
@@ -728,46 +740,63 @@ uint8_t main_task(void)
     float d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[0], 1) - 2);
     base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 去往粗加工区3
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);                  // 寻线校准
-    base_Horizontal_run_distance_fix(-6, run_speed); // 靠近粗加工区
+    find_line_calibrate_MPU_PID(0);                // 寻线校准
+    base_run_distance_base(-6, 0, 0, Close_speed); // 靠近粗加工区
     osDelay(default_delay);
 
+    printf("粗加工区任务\r\n");
     // $ 粗加工区任务------------------------------------------------------------------------------------------------------------
-    // RoughProcessingArea_Task(0); // 粗加工区任务
+    if (run_task == 1)
+    {
+        RoughProcessingArea_Task(0); // 粗加工区任务
+    }
     // $ 粗加工区任务------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, 80); // 粗加工区到暂存区1
+    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, line_distance); // 粗加工区到暂存区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
     base_run_distance_fix(-(76 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-3, run_speed); // 靠近暂存区
+    base_run_distance_base(-3, 0, 0, Close_speed); // 靠近暂存区
     osDelay(default_delay);
 
+    printf("暂存区任务\r\n");
     // $ 暂存区任务-------------------------------------------------------------------------------------------------------------
-    // TemporaryStorageArea_Task(0); // 暂存区任务
+    if (run_task == 1)
+    {
+        TemporaryStorageArea_Task(0); // 暂存区任务
+    }
+    else
+    {
+        osDelay(1000);
+    }
     // $ 暂存区任务-------------------------------------------------------------------------------------------------------------
 
-    base_Horizontal_run_distance_fix(6, run_speed); // 远离暂存区
+    base_run_distance_base(6, 0, 0, Close_speed); // 远离暂存区
     osDelay(default_delay);
 
+    printf("第二次搬运\r\n");
     // ~第二次搬运-----------------------------------------------------------------------------------------------------------
-    base_run_distance_fix(-(88 - d_distance2), 60, 1, 80); //  暂存区到原料区1
+    base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); //  暂存区到原料区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-43, 80, 1, 80); // 暂存区到原料区2
-    find_line_calibrate_MPU_PID(0);        // 寻线校准
-    base_run_distance_base(-7, 0, 0, 100); // 靠近原料区
+    base_run_distance_fix(-43, run_speed, 1, line_distance); // 暂存区到原料区2
+    find_line_calibrate_MPU_PID(0);                          // 寻线校准
+    base_run_distance_base(-7, 0, 0, Close_speed);           // 靠近原料区2
     osDelay(default_delay);
 
+    printf("第二次原料区任务\r\n");
     // $ 第二次原料区任务-------------------------------------------------------------------------------------------------------------------
-    // MaterialArea_Task(1); // 原料区任务2
+    if (run_task == 1)
+    {
+        MaterialArea_Task(1); // 原料区任务2
+    }
     // $ 第二次原料区任务-------------------------------------------------------------------------------------------------------------------
 
-    base_Horizontal_run_distance_fix(8, run_speed); // 第二次 远离原料区
+    base_run_distance_base(8, 0, 0, Close_speed); // 远离原料区2
     osDelay(default_delay);
     base_run_distance_fix(42, run_speed, 1, line_distance); // 第二次 去往粗加工区1
     osDelay(default_delay);
@@ -781,11 +810,15 @@ uint8_t main_task(void)
     d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[1], 1) - 2);
     base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 第二次 去往粗加工区3
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-8, run_speed); // 第二次 靠近粗加工区
+    base_run_distance_base(-8, 0, 0, Close_speed); // 靠近粗加工区2
     osDelay(default_delay);
 
+    printf("第二次粗加工区任务\r\n");
     // $ 第二次粗加工区任务-------------------------------------------------------------------------------------------------------------------------
-    // RoughProcessingArea_Task(1); // 粗加工区任务2
+    if (run_task == 1)
+    {
+        RoughProcessingArea_Task(1); // 粗加工区任务2
+    }
     // $ 第二次粗加工区任务-------------------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
@@ -795,15 +828,23 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_fix(-(80 - d_distance), run_speed, 1, line_distance); // 第二次  粗加工区到暂存区2
     osDelay(default_delay);
-    base_Horizontal_run_distance_fix(-9, run_speed); // 第二次 靠近暂存区
+    base_run_distance_base(-9, 0, 0, Close_speed); // 靠近暂存区2
     osDelay(default_delay);
 
+    printf("第二次暂存区任务\r\n");
     // $ 第二次暂存区任务-------------------------------------------------------------------------------------------------------------------------------
-    // TemporaryStorageArea_Task(1); // 暂存区任务2
+    if (run_task == 1)
+    {
+        TemporaryStorageArea_Task(1); // 暂存区任务2
+    }
+    else
+    {
+        osDelay(1000);
+    }
     // $ 第二次暂存区任务-------------------------------------------------------------------------------------------------------------------------------
 
     // ~回到起始点--------------------------------------------------------------------------------------------------------------------------------------
-    base_Horizontal_run_distance_fix(6, run_speed); // 远离暂存区
+    base_run_distance_base(6, 0, 0, Close_speed); // 原理暂存区2
     osDelay(default_delay);
     base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
     osDelay(default_delay);
@@ -813,6 +854,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_base(-16, -17, 0, run_speed); // 移入启停区
     motor_stop_all();
+    printf("结束\r\n");
     // !结束------------------------------------------------------------------------------------------------------------------------------------------------
 
     return 1;

@@ -5,7 +5,7 @@
 #include "pid.h"
 #include "tool.h"
 #include "openmv.h"
-uint16_t accel_accel_max = 200; // 加速度 单位RPM/s
+uint16_t accel_accel_max = 400; // 加速度 单位RPM/s
 float max_speed_f = 120.0f;     // 最大速度 单位RPM
 extern uint8_t command_success_flag;
 extern uint8_t get_stepper_data_flag;
@@ -317,12 +317,11 @@ void base_run_distance_base(float distance_x, float distance_y, float angle, flo
     MecanumWheelIK(distance_x, distance_y, angle, wheel_angles);
     Set_all_stepper_angle(wheel_angles, speed);
     uint32_t start_time = HAL_GetTick();
-    float max_time = angle == 0 ? (Abs(distance_x) + Abs(distance_y)) / speed : 6;
+    float max_time = angle == 0 ? (Abs(distance_x) + Abs(distance_y)) / 2.0f / speed : 1.2f;
     printf("max_time:%f\n", max_time);
     for (;;)
     {
         osDelay(1);
-
         uint32_t current_time = HAL_GetTick();
         if (CheckMotorsAtTargetPosition() == 1)
         {
@@ -437,6 +436,7 @@ float float_mix(float a, float b, float alpha)
 pid distance_rotation_pid;
 pid offset_pid;
 pid find_line_angle_pid;
+extern float acc_speed;
 void base_run_distance_base_fix(float distance_x, float distance_y, float speed, float mix_alpha, float line_distance)
 {
     uint8_t run_mode;
@@ -455,7 +455,7 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
     offset_pid.Kp = 0.8f; // 0.2f
     offset_pid.Ki = 0.0f;
     offset_pid.Kd = 0.0f;
-    find_line_angle_pid.Kp = 0.2f; // 0.2f
+    find_line_angle_pid.Kp = 0.8f; // 0.2f
     find_line_angle_pid.Ki = 0.0f;
     find_line_angle_pid.Kd = 0.0f;
     float now_yaw, error_yaw, yaw_output;
@@ -520,7 +520,7 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
         alpha = (float)dir * float_Map(error_angle_1 + error_angle_2 + error_angle_3 + error_angle_4, -4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), 4 * Abs(radiansToDegrees(run_distance / WHEEL_RADIUS * 10)), -1.0f, 1.0f);
         yaw_output = clamp(yaw_output, -5, 5);
         yaw_output = yaw_output * (control_speed / speed);
-        control_speed = smooth_speed(alpha, run_distance, speed, 10.0f);
+        control_speed = smooth_speed(alpha, run_distance, speed, acc_speed);
         // printf("alpha=%.2f,distance=%.2f,control_speed=%.2f,error_yaw=%.2f,yaw_output=%.2f\n", alpha, run_distance, control_speed, error_yaw, yaw_output);
         if (run_mode == 0)
         {

@@ -212,7 +212,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             temp = (data[3] << 24) | (data[4] << 16) | (data[5] << 8) | data[6]; // 组合四个字节
             stepperdata_temp->current_position = (data[2] == 0x01) ? -((float)temp) / 10.0f : ((float)temp) / 10.0f;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "实时位置: %.1f °", stepperdata_temp->current_position);
-            printf("%s\n", message);
+            // printf("%s\n", message);
             break;
 
         case 0x37:
@@ -235,7 +235,7 @@ void receive_motor_status(uint8_t *data, uint16_t size)
             stepperdata_temp->motor_stall = (data[2] & 0x04) >> 2;
             stepperdata_temp->motor_stall_protection = (data[2] & 0x08) >> 3;
             snprintf(message + strlen(message), sizeof(message) - strlen(message), "使能 %d, 位置到位 %d, 电机堵转 %d, 堵转保护 %d", stepperdata_temp->motor_enabled, stepperdata_temp->motor_position_reached, stepperdata_temp->motor_stall, stepperdata_temp->motor_stall_protection);
-            printf("%s\n", message);
+            // printf("%s\n", message);
             break;
         case 0x3B:
             stepperdata_temp->motor_Zero_Status_flags = data[2];
