@@ -22,8 +22,8 @@ def calculate_roi(center_x, center_y, width, height):
 # 定义多个颜色的阈值范围
 thresholds = [
     (55, 66, 15, 26, -4, 8),  # 红色
-    (59, 70, -9, -1, -7, 8),  # 绿色
-    (54, 71, 2, 7, -14, -8),  # 蓝色
+    (50, 71, -18, 7, -9, 6),  # 绿色
+    (53, 78, -5, 12, -17, -12),  # 蓝色
 ]
 while True:
     target_blob = None
