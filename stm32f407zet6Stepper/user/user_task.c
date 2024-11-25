@@ -336,7 +336,7 @@ void find_circle(uint8_t mode, uint8_t error_mode)
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
         target_x = 0.468f;
-        target_y = 0.498f;
+        target_y = 0.50f;
     }
     if (error_mode == 1)
     {
