@@ -13,7 +13,7 @@ sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA)
 sensor.set_auto_exposure(False, exposure_us=60000)
 sensor.set_auto_gain(False, gain_db=14)
-sensor.set_auto_whitebal(False, rgb_gain_db=(63.2751, 60.206, 61.5473))
+sensor.set_auto_whitebal(False, rgb_gain_db=(64.4595, 60.206, 62.7027))
 sensor.skip_frames(20)
 # sensor.set_vflip(True)
 # sensor.set_hmirror(True)
@@ -33,7 +33,7 @@ qrcode = []
 def get_qrcode():
     global qrcode
     sensor.set_auto_gain(False)
-    img = sensor.snapshot().lens_corr(1.8)
+    img = sensor.snapshot()#.lens_corr(1.8)
     for code in img.find_qrcodes():
         img.draw_rectangle(code.rect(), color=127)
         msg = code.payload()
