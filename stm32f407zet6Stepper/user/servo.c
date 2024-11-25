@@ -42,7 +42,7 @@ void Set_Sliding_table_Pos(uint8_t pos)
         Set_Servo_angle(0, 53);
         break;
     case 1:
-        Set_Servo_angle(0, 215);
+        Set_Servo_angle(0, 212);
         break;
     default:
         break;
@@ -83,7 +83,7 @@ void Release_material(void)
 }
 void catch_material_in_middle(void)
 {
-    Set_Servo_angle(catch, 114);
+    Set_Servo_angle(catch, 116);
     printf("爪子中间态\n");
 }
 void Servo_Init(void)

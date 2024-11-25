@@ -336,7 +336,7 @@ void find_circle(uint8_t mode, uint8_t error_mode)
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
         target_x = 0.468f;
-        target_y = 0.502f;
+        target_y = 0.498f;
     }
     if (error_mode == 1)
     {
@@ -373,8 +373,9 @@ void find_circle(uint8_t mode, uint8_t error_mode)
                 set_beep_short_flag();
                 printf("find circle,now_x%.4f,now_y%.4f,error_x%.4f,error_y%.4f\r\n", openmv_data.object_position_x, openmv_data.object_position_y, error_x, error_y);
                 find_circle_pid.integral = 0.0f;
-                osDelay(1);
                 break;
+
+                osDelay(1);
             }
         }
         else
@@ -615,8 +616,9 @@ void RoughProcessingArea_Task(uint16_t object_num)
     base_run_distance(move_distance * (third_num - second_num), 100);
     osDelay(200);
     Get_material_floor(third_num - 1);
-    Camera_switch_mode(FIND_LINE_MODE);
     Set_Table_Pos(3);
+    Camera_switch_mode(FIND_LINE_MODE);
+
     osDelay(200);
 }
 
@@ -800,7 +802,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_fix(-43, run_speed, 1, line_distance); // 暂存区到原料区2
     find_line_calibrate_MPU_PID(0);                          // 寻线校准
-    base_run_distance_base(-7, 0, 0, Close_speed);           // 靠近原料区2
+    base_run_distance_base(-5, 0, 0, Close_speed);           // 靠近原料区2
     osDelay(default_delay);
 
     printf("第二次原料区任务\r\n");
@@ -865,7 +867,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-170, run_speed, 1, line_distance); // 暂存区到起始点2
+    base_run_distance_fix(-175, run_speed, 1, line_distance); // 暂存区到起始点2
     osDelay(default_delay);
     base_run_distance_base(-16, -17, 0, run_speed); // 移入启停区
     motor_stop_all();
