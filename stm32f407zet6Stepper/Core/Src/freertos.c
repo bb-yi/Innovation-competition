@@ -74,14 +74,14 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
     .name = "defaultTask",
     .stack_size = 256 * 4,
-    .priority = (osPriority_t)osPriorityNormal,
+    .priority = (osPriority_t)osPriorityLow3,
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
 const osThreadAttr_t myTask02_attributes = {
     .name = "myTask02",
     .stack_size = 256 * 4,
-    .priority = (osPriority_t)osPriorityLow,
+    .priority = (osPriority_t)osPriorityLow7,
 };
 /* Definitions for myTask03 */
 osThreadId_t myTask03Handle;
@@ -101,15 +101,8 @@ const osThreadAttr_t myTask04_attributes = {
 osThreadId_t myTask05Handle;
 const osThreadAttr_t myTask05_attributes = {
     .name = "myTask05",
-    .stack_size = 256 * 4,
-    .priority = (osPriority_t)osPriorityLow,
-};
-/* Definitions for myTask06 */
-osThreadId_t myTask06Handle;
-const osThreadAttr_t myTask06_attributes = {
-    .name = "myTask06",
-    .stack_size = 256 * 4,
-    .priority = (osPriority_t)osPriorityLow,
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityBelowNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -122,7 +115,6 @@ void StartTask02(void *argument);
 void StartTask03(void *argument);
 void StartTask04(void *argument);
 void StartTask05(void *argument);
-void StartTask06(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -168,9 +160,6 @@ void MX_FREERTOS_Init(void)
 
   /* creation of myTask05 */
   myTask05Handle = osThreadNew(StartTask05, NULL, &myTask05_attributes);
-
-  /* creation of myTask06 */
-  myTask06Handle = osThreadNew(StartTask06, NULL, &myTask06_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -267,10 +256,25 @@ void StartTask03(void *argument)
   // set_solid_enable(0);
 
   init_task();
+  main_task();
+
+  // openmv_data.object_list[0] = 312;
+  // openmv_data.object_list[1] = 312;
+  // MaterialArea_Task(0);
+  // RoughProcessingArea_Task(0); // 粗加工区任务
+  // TemporaryStorageArea_Task(1);
   // set_Slider_position(0, 100);
 
-  // Set_Sliding_table_Pos(1);
+  // Set_Sliding_table_Pos(0);
+  // Set_Servo_angle(0, 210);
+
+  // Set_Table_Pos(0);
+  // osDelay(2000);
+  // Set_Table_Pos(1);
+  // osDelay(2000);
   // Set_Table_Pos(2);
+  // osDelay(2000);
+
   // Set_Servo_angle(1, 135);
   // Set_Servo_angle(1, 255);
   // catch_material_in_middle();
@@ -281,7 +285,6 @@ void StartTask03(void *argument)
   // Get_material(1);
   // Get_material(2);
 
-  main_task();
   // base_run_distance_base(10, 25, 0, 100); // ?????
 
   /* Infinite loop */
@@ -323,7 +326,7 @@ void StartTask04(void *argument)
     {
       beep_long();
     }
-    osDelay(1);
+    osDelay(5);
   }
   /* USER CODE END StartTask04 */
 }
@@ -342,27 +345,9 @@ void StartTask05(void *argument)
   for (;;)
   {
     uasrt_screen_task();
-    osDelay(400);
+    osDelay(800);
   }
   /* USER CODE END StartTask05 */
-}
-
-/* USER CODE BEGIN Header_StartTask06 */
-/**
- * @brief Function implementing the myTask06 thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_StartTask06 */
-void StartTask06(void *argument)
-{
-  /* USER CODE BEGIN StartTask06 */
-  /* Infinite loop */
-  for (;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartTask06 */
 }
 
 /* Private application code --------------------------------------------------*/

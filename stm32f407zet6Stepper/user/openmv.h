@@ -22,6 +22,7 @@ R  G  B
 #define CENTER_POSITION_MODE 1
 #define HIGH_CENTER_POSITION_MODE 2
 #define FIND_LINE_MODE 3
+#define Stacking_MODE 4
 
 typedef struct
 {
