@@ -285,6 +285,8 @@ void init_task(void)
             break;
         }
     }
+    Set_Table_Pos(3);
+
     set_solid_enable(1);
     Set_Sliding_table_Pos(0); // 滑台舵机展开
 }
@@ -315,28 +317,33 @@ void find_circle(uint8_t mode, uint8_t error_mode)
     float PositionThreshold;
     float target_x, target_y;
     float default_error_threshold = 0.01f;
-    default_error_threshold = (error_mode == 0 ? 0.01f : 0.05f);
+    default_error_threshold = (error_mode == 0 ? 0.002f : 0.01f);
     PositionThreshold = (mode == 0 ? 0.01f : default_error_threshold);
     float clamp_value = 10.0f;
     if (mode == 0)
     {
-        find_circle_pid.Kp = 25.0f;
+        find_circle_pid.Kp = 35.0f;
         find_circle_pid.Ki = 0.00f;
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
-        target_x = 0.56f;
-        target_y = 0.49f;
+        target_x = 0.540f;
+        target_y = 0.505f;
     }
     else
     {
-        find_circle_pid.Kp = 25.0f;
+        find_circle_pid.Kp = 50.0f;
         find_circle_pid.Ki = 0.0f;
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
-        target_x = 0.629f;
-        target_y = 0.470f;
+        target_x = 0.468f;
+        target_y = 0.502f;
     }
-    find_circle_yaw_pid.Kp = 1.0f;
+    if (error_mode == 1)
+    {
+        target_x = 0.46f;
+        target_y = 0.5f;
+    }
+    find_circle_yaw_pid.Kp = 0.0f;
     find_circle_yaw_pid.Ki = 0.00f;
     find_circle_yaw_pid.Kd = 0.0f;
 
@@ -356,18 +363,16 @@ void find_circle(uint8_t mode, uint8_t error_mode)
         output_yaw = PID_Control(&find_circle_yaw_pid, error_yaw, 20);
         output_x = clamp(output_x, -clamp_value, clamp_value);
         output_y = clamp(output_y, -clamp_value, clamp_value);
-        printf("error_x=%.2f,error_y=%.2f,x=%.2f,y=%.2f,yaw:%.2f,has_circle:%d,color:%d\r\n", error_x, error_y, output_x, output_y, output_yaw, openmv_data.hsa_circle, openmv_data.last_identify_color);
+        // printf("error_x=%.2f,error_y=%.2f,x=%.2f,y=%.2f,yaw:%.2f,has_circle:%d,color:%d\r\n", error_x, error_y, output_x, output_y, output_yaw, openmv_data.hsa_circle, openmv_data.last_identify_color);
         if (openmv_data.hsa_circle == 1)
         {
-            base_speed_control(output_x, output_y, 0, 200);
+            base_speed_control(output_x, output_y, output_yaw, 200);
             if (Abs(error_x) < PositionThreshold && Abs(error_y) < PositionThreshold)
             {
-                set_beep_short_flag();
-                printf("find circle\r\n");
-                printf("now_x%.2f,now_y%.2f\r\n", openmv_data.object_position_x, openmv_data.object_position_y);
-                find_circle_pid.integral = 0.0f;
-                osDelay(100);
                 motor_stop_all();
+                set_beep_short_flag();
+                printf("find circle,now_x%.4f,now_y%.4f,error_x%.4f,error_y%.4f\r\n", openmv_data.object_position_x, openmv_data.object_position_y, error_x, error_y);
+                find_circle_pid.integral = 0.0f;
                 osDelay(1);
                 break;
             }
@@ -530,6 +535,8 @@ void MaterialArea_Task(uint8_t part)
     }
     printf("找到第三个\r\n");
     Get_material(openmv_data.last_identify_color - 1);
+    Set_Table_Pos(3);
+
     Camera_switch_mode(FIND_LINE_MODE);
 }
 // 粗加工区任务
@@ -567,7 +574,7 @@ void RoughProcessingArea_Task(uint16_t object_num)
     Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
     base_run_distance(move_distance * (second_num - first_num), 100);
 
-    osDelay(1000);
+    osDelay(200);
     find_circle(1, 0);
     printf("finish\r\n");
     osDelay(500);
@@ -591,7 +598,7 @@ void RoughProcessingArea_Task(uint16_t object_num)
     // base_rotation_world_base(180, 30);
 
     osDelay(100);
-    base_Horizontal_run_distance_fix(1, 60);
+    // base_run_distance_base(1, 0, 0, Close_speed); // 远离原料区
 
     // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
     find_line_calibrate_MPU_PID(0);
@@ -599,25 +606,32 @@ void RoughProcessingArea_Task(uint16_t object_num)
     base_run_distance(move_distance * (first_num - third_num), 100);
 
     Get_material_floor(first_num - 1);
-    osDelay(1000);
+    osDelay(200);
     base_run_distance(move_distance * (second_num - first_num), 100);
-    osDelay(1000);
+    osDelay(200);
 
     Get_material_floor(second_num - 1);
-    osDelay(1000);
+    osDelay(200);
     base_run_distance(move_distance * (third_num - second_num), 100);
-    osDelay(1000);
+    osDelay(200);
     Get_material_floor(third_num - 1);
     Camera_switch_mode(FIND_LINE_MODE);
-
-    osDelay(1000);
+    Set_Table_Pos(3);
+    osDelay(200);
 }
 
 void TemporaryStorageArea_Task(uint8_t part)
 {
     find_line_calibrate_MPU_PID(0);
     osDelay(500);
-    Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
+    if (part == 0)
+    {
+        Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
+    }
+    else
+    {
+        Camera_switch_mode(Stacking_MODE);
+    }
     uint16_t object_list_num = openmv_data.object_list[part];
     float move_distance = 15;
     int8_t first_num = extract_digit(object_list_num, 3);
@@ -645,9 +659,9 @@ void TemporaryStorageArea_Task(uint8_t part)
         Put_material_in_obj(first_num - 1);
     }
     // printf("放下第一个%d\r\n", first_num);
-    osDelay(1000);
+    osDelay(200);
     base_run_distance(move_distance * (second_num - first_num), 100);
-    osDelay(1000);
+    osDelay(200);
     find_circle(1, error_mode);
     printf("finish\r\n");
     osDelay(500);
@@ -660,10 +674,10 @@ void TemporaryStorageArea_Task(uint8_t part)
         Put_material_in_obj(second_num - 1);
     }
     // printf("放下第二个%d\r\n", second_num);
-    osDelay(1000);
+    osDelay(200);
     base_run_distance(move_distance * (third_num - second_num), 100);
 
-    osDelay(1000);
+    osDelay(200);
     find_circle(1, error_mode);
     printf("finish\r\n");
     osDelay(500);
@@ -677,8 +691,9 @@ void TemporaryStorageArea_Task(uint8_t part)
     }
     // printf("放下第三个%d\r\n", third_num);
     Camera_switch_mode(FIND_LINE_MODE);
+    Set_Table_Pos(3);
 
-    osDelay(1000);
+    osDelay(200);
 }
 
 extern uint8_t Slider_is_OK;
@@ -688,7 +703,7 @@ float rot_speed = 250;
 float Close_speed = 50;
 float line_distance = 80;
 uint16_t default_delay = 1;
-uint8_t run_task = 0;
+uint8_t run_task = 1;
 
 uint8_t main_task(void)
 {
@@ -714,7 +729,7 @@ uint8_t main_task(void)
     base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
     osDelay(default_delay);
     find_line_calibrate_MPU_PID(0);                // 寻线校准
-    base_run_distance_base(-6, 0, 0, Close_speed); // 靠近原料区
+    base_run_distance_base(-5, 0, 0, Close_speed); // 靠近原料区
     osDelay(default_delay);
 
     printf("原料区任务\r\n");
@@ -759,7 +774,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_fix(-(76 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
     osDelay(default_delay);
-    base_run_distance_base(-3, 0, 0, Close_speed); // 靠近暂存区
+    base_run_distance_base(-4, 0, 0, Close_speed); // 靠近暂存区
     osDelay(default_delay);
 
     printf("暂存区任务\r\n");
@@ -774,7 +789,7 @@ uint8_t main_task(void)
     }
     // $ 暂存区任务-------------------------------------------------------------------------------------------------------------
 
-    base_run_distance_base(6, 0, 0, Close_speed); // 远离暂存区
+    base_run_distance_base(4, 0, 0, Close_speed); // 远离暂存区
     osDelay(default_delay);
 
     printf("第二次搬运\r\n");
@@ -810,7 +825,7 @@ uint8_t main_task(void)
     d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[1], 1) - 2);
     base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 第二次 去往粗加工区3
     osDelay(default_delay);
-    base_run_distance_base(-8, 0, 0, Close_speed); // 靠近粗加工区2
+    base_run_distance_base(-6, 0, 0, Close_speed); // 靠近粗加工区2
     osDelay(default_delay);
 
     printf("第二次粗加工区任务\r\n");
@@ -828,7 +843,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_fix(-(80 - d_distance), run_speed, 1, line_distance); // 第二次  粗加工区到暂存区2
     osDelay(default_delay);
-    base_run_distance_base(-9, 0, 0, Close_speed); // 靠近暂存区2
+    base_run_distance_base(-4, 0, 0, Close_speed); // 靠近暂存区2
     osDelay(default_delay);
 
     printf("第二次暂存区任务\r\n");
@@ -844,7 +859,7 @@ uint8_t main_task(void)
     // $ 第二次暂存区任务-------------------------------------------------------------------------------------------------------------------------------
 
     // ~回到起始点--------------------------------------------------------------------------------------------------------------------------------------
-    base_run_distance_base(6, 0, 0, Close_speed); // 原理暂存区2
+    base_run_distance_base(4, 0, 0, Close_speed); // 原理暂存区2
     osDelay(default_delay);
     base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
     osDelay(default_delay);

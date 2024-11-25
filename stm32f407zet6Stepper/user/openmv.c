@@ -53,7 +53,7 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 			}
 			break;
 
-		case 'y': // 识别圆中心位置
+		case 'y': // 抓取物块
 			if (sscanf(buffer, "[y,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color) == 3)
 			{
 				openmv_data.hsa_circle = 1;
@@ -77,7 +77,17 @@ void openmv_uart_rx_callback(uint16_t Size, uint8_t uart_id)
 				// printf("Object high position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.identify_color);
 			}
 			break;
-
+		case 'd': // 叠放时识别中心
+			if (sscanf(buffer, "[d,%f,%f,%d]", &openmv_data.object_position_x, &openmv_data.object_position_y, &openmv_data.identify_color) == 3)
+			{
+				openmv_data.hsa_circle = 1;
+				if (openmv_data.identify_color == 1 || openmv_data.identify_color == 2 || openmv_data.identify_color == 3)
+				{
+					openmv_data.last_identify_color = openmv_data.identify_color;
+				}
+				// printf("Object high position: %f, %f,%d\n", openmv_data.object_position_x, openmv_data.object_position_y, openmv_data.identify_color);
+			}
+			break;
 		case 'l':
 			if (sscanf(buffer, "[l,%f,%f]", &openmv_data.line_distance, &openmv_data.line_angle) == 2)
 			{
@@ -156,6 +166,10 @@ void Camera_switch_mode(uint8_t mode)
 	case FIND_LINE_MODE:
 		Camera_SendString("l");
 		Camera_now_mode = FIND_LINE_MODE;
+		break;
+	case Stacking_MODE:
+		Camera_SendString("d");
+		Camera_now_mode = Stacking_MODE;
 		break;
 	default:
 		break;
