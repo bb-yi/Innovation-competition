@@ -34,36 +34,37 @@ void set_solid_enable(uint8_t enable)
     if (enable)
     {
         // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
     }
     else
     {
         // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
     }
 }
 void set_solid_dir(uint8_t dir) // 0向下 1向上
 {
     if (dir)
     {
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
 
         // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_SET);
     }
     else
     {
         // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
     }
 }
 
 uint32_t arr;
 void set_pwm_HZ(uint32_t hz)
 {
-    uint32_t pl = 1000000;
-    arr = pl / hz;
+    arr = 1000000 / hz;
+    __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 83);
     // printf("arr:%d\n", arr);
     __HAL_TIM_SetAutoreload(&Solid_TIM_Handle, arr - 1);
+    __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2 - 1);
 }
 
 void Set_Pwm_duty(uint8_t duty)
@@ -100,6 +101,7 @@ void set_Slider_position(float position, float speed)
     {
         set_solid_dir(0); // 0向下 1向上
     }
+    // 80 脉冲1mm 对应16细分
     target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
     set_pwm_HZ(speed * 20);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
@@ -119,8 +121,14 @@ void set_Slider_position(float position, float speed)
 }
 void set_Slider_position_2(float position, float speed)
 {
-    position = clamp(position, 5, 145);
-
+    if (position == 150)
+    {
+        position = 152;
+    }
+    else if (position == 0)
+    {
+        position = -2;
+    }
     Finish_flag = 0;
     float delta_position = position - last_position;
     if (delta_position > 0)
@@ -131,12 +139,13 @@ void set_Slider_position_2(float position, float speed)
     {
         set_solid_dir(0); // 0向下 1向上
     }
+    // 80 脉冲1mm 对应16细分
     target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
-    set_pwm_HZ(speed * 20);
+    set_pwm_HZ(speed * 30);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
-
-    last_position = position;
+    // Set_Pwm_duty(1);
+    last_position = clamp(position, 0, 150);
 }
 
 void Slider_position_init(void)
@@ -146,14 +155,13 @@ void Slider_position_init(void)
     osDelay(1000);
     // set_solid_dir(1);
     // 配置PSC预分频值
-    __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 83);
+    // __HAL_TIM_SET_PRESCALER(&Solid_TIM_Handle, 83);
     // 配置PWM频率 ARR
-    set_pwm_HZ(2000);
+    set_pwm_HZ(200);
     // __HAL_TIM_SetAutoreload(&htim3, 65535);
     // 配置PWM占空比
     // printf("arr/2:%d\n", arr / 2);
     // HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
 
-    __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2);
     // set_pwm_param(htim3, TIM_CHANNEL_1, 1000, 50);
 }

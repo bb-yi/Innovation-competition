@@ -336,7 +336,7 @@ void find_circle(uint8_t mode, uint8_t error_mode)
         find_circle_pid.Kd = 0.0f;
         clamp_value = 10.0f;
         target_x = 0.468f;
-        target_y = 0.50f;
+        target_y = 0.492f;
     }
     if (error_mode == 1)
     {
@@ -539,6 +539,7 @@ void MaterialArea_Task(uint8_t part)
     Set_Table_Pos(3);
 
     Camera_switch_mode(FIND_LINE_MODE);
+    osDelay(1000);
 }
 // 粗加工区任务
 void RoughProcessingArea_Task(uint16_t object_num)
@@ -550,9 +551,9 @@ void RoughProcessingArea_Task(uint16_t object_num)
     object_num = openmv_data.object_list[object_num];
 
     float move_distance = 15;
-    int8_t first_num = extract_digit(object_num, 3);
-    int8_t second_num = extract_digit(object_num, 2);
-    int8_t third_num = extract_digit(object_num, 1);
+    int16_t first_num = extract_digit(object_num, 3);
+    int16_t second_num = extract_digit(object_num, 2);
+    int16_t third_num = extract_digit(object_num, 1);
 
     find_circle(1, 0);
     printf("finish\r\n");
@@ -571,7 +572,6 @@ void RoughProcessingArea_Task(uint16_t object_num)
     // find_line_calibrate_MPU_PID(0);
     // base_rotation_world_base(180, 30);
 
-    osDelay(100);
     Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
     base_run_distance(move_distance * (second_num - first_num), 100);
 
@@ -598,33 +598,32 @@ void RoughProcessingArea_Task(uint16_t object_num)
     // find_line_calibrate_MPU_PID(0);
     // base_rotation_world_base(180, 30);
 
-    osDelay(100);
     // base_run_distance_base(1, 0, 0, Close_speed); // 远离原料区
 
     // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
-    find_line_calibrate_MPU_PID(0);
 
-    base_run_distance(move_distance * (first_num - third_num), 100);
+    base_run_distance(move_distance * (first_num - third_num), 150);
 
     Get_material_floor(first_num - 1);
     osDelay(200);
-    base_run_distance(move_distance * (second_num - first_num), 100);
+    base_run_distance(move_distance * (second_num - first_num), 150);
     osDelay(200);
 
     Get_material_floor(second_num - 1);
     osDelay(200);
-    base_run_distance(move_distance * (third_num - second_num), 100);
+    base_run_distance(move_distance * (third_num - second_num), 150);
     osDelay(200);
-    Get_material_floor(third_num - 1);
-    Set_Table_Pos(3);
     Camera_switch_mode(FIND_LINE_MODE);
 
-    osDelay(200);
+    Get_material_floor(third_num - 1);
+    Set_Table_Pos(3);
+
+    osDelay(1000);
 }
 
 void TemporaryStorageArea_Task(uint8_t part)
 {
-    find_line_calibrate_MPU_PID(0);
+    // find_line_calibrate_MPU_PID(0);
     osDelay(500);
     if (part == 0)
     {
@@ -636,9 +635,9 @@ void TemporaryStorageArea_Task(uint8_t part)
     }
     uint16_t object_list_num = openmv_data.object_list[part];
     float move_distance = 15;
-    int8_t first_num = extract_digit(object_list_num, 3);
-    int8_t second_num = extract_digit(object_list_num, 2);
-    int8_t third_num = extract_digit(object_list_num, 1);
+    int16_t first_num = extract_digit(object_list_num, 3);
+    int16_t second_num = extract_digit(object_list_num, 2);
+    int16_t third_num = extract_digit(object_list_num, 1);
     uint8_t error_mode = 0;
     error_mode = (part == 0 ? 0 : 1);
     find_circle(1, error_mode);
@@ -662,7 +661,7 @@ void TemporaryStorageArea_Task(uint8_t part)
     }
     // printf("放下第一个%d\r\n", first_num);
     osDelay(200);
-    base_run_distance(move_distance * (second_num - first_num), 100);
+    base_run_distance(move_distance * (second_num - first_num), 150);
     osDelay(200);
     find_circle(1, error_mode);
     printf("finish\r\n");
@@ -677,7 +676,7 @@ void TemporaryStorageArea_Task(uint8_t part)
     }
     // printf("放下第二个%d\r\n", second_num);
     osDelay(200);
-    base_run_distance(move_distance * (third_num - second_num), 100);
+    base_run_distance(move_distance * (third_num - second_num), 150);
 
     osDelay(200);
     find_circle(1, error_mode);
@@ -695,12 +694,12 @@ void TemporaryStorageArea_Task(uint8_t part)
     Camera_switch_mode(FIND_LINE_MODE);
     Set_Table_Pos(3);
 
-    osDelay(200);
+    osDelay(1000);
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 150.0f; // 最大速度 150
-float acc_speed = 17.0f;  // 加速度 10.0f
+float run_speed = 145.0f; // 最大速度 150
+float acc_speed = 25.0f;  // 加速度 10.0f
 float rot_speed = 250;
 float Close_speed = 50;
 float line_distance = 80;
@@ -714,9 +713,11 @@ uint8_t main_task(void)
     printf("开始\r\n");
     osDelay(default_delay);
     Camera_switch_mode(FIND_LINE_MODE);
-    base_run_distance_base(20, 25, 0, run_speed); // 移出启停区
-    set_Slider_position_2(5, 100);                // #提前降低滑台
-    base_run_distance_fix(38, run_speed, 1, 110); // 去往二维码区域
+    base_run_distance_base(15, 25, 0, run_speed); // 移出启停区
+    set_Slider_position_2(0, 60);                 // #提前降低滑台
+    osDelay(10);
+
+    base_run_distance_fix(38, run_speed, 1, 90); // 去往二维码区域
 
     // $ 二维码任务------------------------------------------------------------------------------------------------------
     printf("二维码任务\r\n");
@@ -726,8 +727,9 @@ uint8_t main_task(void)
     }
     // $ 二维码任务------------------------------------------------------------------------------------------------------
 
-    osDelay(default_delay);
-    set_Slider_position_2(150, 100);                        // #提前升起
+    osDelay(200);
+    set_Slider_position_2(150, 60); // #提前升起
+    osDelay(200);
     base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
     osDelay(default_delay);
     find_line_calibrate_MPU_PID(0);                // 寻线校准
@@ -757,7 +759,7 @@ uint8_t main_task(void)
     float d_distance2 = target_cycle_distance * (extract_digit(openmv_data.object_list[0], 1) - 2);
     base_run_distance_fix(81 + d_distance, run_speed, 1, line_distance); // 去往粗加工区3
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);                // 寻线校准
+    // find_line_calibrate_MPU_PID(0);                // 寻线校准
     base_run_distance_base(-6, 0, 0, Close_speed); // 靠近粗加工区
     osDelay(default_delay);
 
@@ -774,7 +776,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-(76 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
+    base_run_distance_fix(-(79 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
     osDelay(default_delay);
     base_run_distance_base(-4, 0, 0, Close_speed); // 靠近暂存区
     osDelay(default_delay);
@@ -796,13 +798,13 @@ uint8_t main_task(void)
 
     printf("第二次搬运\r\n");
     // ~第二次搬运-----------------------------------------------------------------------------------------------------------
-    base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); //  暂存区到原料区1
+    base_run_distance_fix(-(86 + d_distance2), run_speed, 1, line_distance); //  暂存区到原料区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
     base_run_distance_fix(-43, run_speed, 1, line_distance); // 暂存区到原料区2
-    find_line_calibrate_MPU_PID(0);                          // 寻线校准
-    base_run_distance_base(-5, 0, 0, Close_speed);           // 靠近原料区2
+    // find_line_calibrate_MPU_PID(0);                          // 寻线校准
+    base_run_distance_base(-5, 0, 0, Close_speed); // 靠近原料区2
     osDelay(default_delay);
 
     printf("第二次原料区任务\r\n");
@@ -863,11 +865,11 @@ uint8_t main_task(void)
     // ~回到起始点--------------------------------------------------------------------------------------------------------------------------------------
     base_run_distance_base(4, 0, 0, Close_speed); // 原理暂存区2
     osDelay(default_delay);
-    base_run_distance_fix(-(88 - d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
+    base_run_distance_fix(-(90 + d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-175, run_speed, 1, line_distance); // 暂存区到起始点2
+    base_run_distance_fix(-172, run_speed, 1, line_distance); // 暂存区到起始点2
     osDelay(default_delay);
     base_run_distance_base(-16, -17, 0, run_speed); // 移入启停区
     motor_stop_all();

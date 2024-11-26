@@ -253,7 +253,7 @@ extern uint8_t delay_time;
 void StartTask03(void *argument)
 {
   /* USER CODE BEGIN StartTask03 */
-  // set_solid_enable(0);
+  // set_solid_enable(1);
 
   init_task();
   main_task();
@@ -263,7 +263,17 @@ void StartTask03(void *argument)
   // MaterialArea_Task(0);
   // RoughProcessingArea_Task(0); // 粗加工区任务
   // TemporaryStorageArea_Task(1);
-  // set_Slider_position(0, 100);
+  // set_Slider_position(0, 130);
+  // osDelay(1000);
+  // set_Slider_position(150, 130);
+  // osDelay(1000);
+  // set_Slider_position(75, 130);
+  // osDelay(1000);
+  // set_Slider_position_2(0, 100);
+  // osDelay(2000);
+  // set_Slider_position_2(75, 100);
+  // osDelay(2000);
+  // set_Slider_position_2(150, 100);
 
   // Set_Sliding_table_Pos(0);
   // Set_Servo_angle(0, 210);
@@ -296,10 +306,31 @@ void StartTask03(void *argument)
     //   osDelay(10);
     // }
     // osDelay(1000);
+    // Camera_switch_mode(CENTER_POSITION_MODE);
+    // osDelay(2000);
+    // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
+    // osDelay(2000);
+    // Camera_switch_mode(FIND_LINE_MODE);
+    // osDelay(2000);
+    // Camera_switch_mode(Stacking_MODE);
+    // osDelay(2000);
     // Set_Camera_Led_light(20);
     // osDelay(1000);
     // Set_Camera_Led_light(80);
-    camera_led_huxideng();
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_2);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
+    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_5);
+    // HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_12);
+    // HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+    // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+    // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+    osDelay(1000);
+    // camera_led_huxideng();
     osDelay(1);
   }
   /* USER CODE END StartTask03 */

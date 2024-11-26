@@ -95,7 +95,7 @@ void Servo_Init(void)
     Set_Servo_angle(0, 225);
 
     // Set_Sliding_table_Pos(0); // 滑台舵机 0 在外面 1收起来
-    Set_Table_Pos(3);
+    // Set_Table_Pos(3);
     // Set_Table_Pos(0);   // 物料盘舵机
     Release_material(); // 爪子舵机
 }
@@ -150,13 +150,12 @@ void Get_material_floor(uint8_t pos)
 
 void Put_material(uint8_t pos)
 {
+
     set_Slider_position(150, solider_speed);
-    osDelay(100);
     Set_Table_Pos(pos);
     catch_material_in_middle();
-
     Set_Sliding_table_Pos(1);
-    osDelay(800);
+    osDelay(500);
     set_Slider_position(100, solider_speed);
     osDelay(200);
     Catch_material();
@@ -164,13 +163,13 @@ void Put_material(uint8_t pos)
     set_Slider_position(150, solider_speed);
     osDelay(100);
     Set_Sliding_table_Pos(0);
-    osDelay(800);
-    set_Slider_position(12, solider_speed);
     osDelay(500);
+    set_Slider_position(12, solider_speed);
+    osDelay(200);
     Release_material();
     osDelay(400);
     set_Slider_position(155, solider_speed);
-    osDelay(200);
+    osDelay(100);
 }
 void Put_material_in_obj(uint8_t pos)
 {
@@ -179,7 +178,7 @@ void Put_material_in_obj(uint8_t pos)
     Set_Table_Pos(pos);
     catch_material_in_middle();
     Set_Sliding_table_Pos(1);
-    osDelay(800);
+    osDelay(500);
     set_Slider_position(100, solider_speed);
     osDelay(200);
     Catch_material();
@@ -187,11 +186,11 @@ void Put_material_in_obj(uint8_t pos)
     set_Slider_position(145, solider_speed);
     osDelay(100);
     Set_Sliding_table_Pos(0);
-    osDelay(800);
-    set_Slider_position(80, solider_speed);
     osDelay(500);
+    set_Slider_position(80, solider_speed);
+    osDelay(10);
     Release_material();
     osDelay(400);
     set_Slider_position(150, solider_speed);
-    osDelay(200);
+    osDelay(100);
 }
