@@ -67,29 +67,14 @@ void set_pwm_HZ(uint32_t hz)
     __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2 - 1);
 }
 
-void Set_Pwm_duty(uint8_t duty)
-{
-    if (duty == 1)
-    {
-        __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, arr / 2);
-    }
-    else
-    {
-        __HAL_TIM_SetCompare(&Solid_TIM_Handle, TIM_CHANNEL_1, 0);
-    }
-}
 // pos 单位 mm   speed 单位 mm/s 120合适
 void set_Slider_position(float position, float speed)
 {
     // position = 150 - position;
     // position = clamp(position, 0, 150);
-    if (position == 150)
+    if (position == 0)
     {
-        position = 152;
-    }
-    else if (position == 0)
-    {
-        position = -2;
+        position = 8;
     }
     Finish_flag = 0;
     float delta_position = position - last_position;
@@ -102,8 +87,8 @@ void set_Slider_position(float position, float speed)
         set_solid_dir(0); // 0向下 1向上
     }
     // 80 脉冲1mm 对应16细分
-    target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
-    set_pwm_HZ(speed * 20);
+    target_pulse_count = (uint32_t)(Abs(delta_position) * 80);
+    set_pwm_HZ(speed * 40);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
     // Set_Pwm_duty(1);
@@ -121,13 +106,9 @@ void set_Slider_position(float position, float speed)
 }
 void set_Slider_position_2(float position, float speed)
 {
-    if (position == 150)
+    if (position == 0)
     {
-        position = 152;
-    }
-    else if (position == 0)
-    {
-        position = -2;
+        position = 8;
     }
     Finish_flag = 0;
     float delta_position = position - last_position;
@@ -140,8 +121,8 @@ void set_Slider_position_2(float position, float speed)
         set_solid_dir(0); // 0向下 1向上
     }
     // 80 脉冲1mm 对应16细分
-    target_pulse_count = (uint32_t)(Abs(delta_position) * 20);
-    set_pwm_HZ(speed * 30);
+    target_pulse_count = (uint32_t)(Abs(delta_position) * 80);
+    set_pwm_HZ(speed * 40);
     printf("delta_position:%f,target_pulse_count:%d\n", delta_position, target_pulse_count);
     HAL_TIM_PWM_Start_IT(&Solid_TIM_Handle, TIM_CHANNEL_1);
     // Set_Pwm_duty(1);

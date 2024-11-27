@@ -95,11 +95,11 @@ void Servo_Init(void)
     Set_Servo_angle(0, 225);
 
     // Set_Sliding_table_Pos(0); // 滑台舵机 0 在外面 1收起来
-    // Set_Table_Pos(3);
+    Set_Table_Pos(3);
     // Set_Table_Pos(0);   // 物料盘舵机
     Release_material(); // 爪子舵机
 }
-float solider_speed = 100.0f;
+float solider_speed = 800.0f;
 
 void Get_material(uint8_t pos)
 {
@@ -107,13 +107,13 @@ void Get_material(uint8_t pos)
     Set_Sliding_table_Pos(0);
     Set_Table_Pos(pos);
     osDelay(500);
-    set_Slider_position(110, solider_speed);
+    set_Slider_position(100, solider_speed);
     osDelay(100);
     Catch_material();
     osDelay(500);
     set_Slider_position(150, solider_speed);
     Set_Sliding_table_Pos(1);
-    osDelay(1200);
+    osDelay(1000);
     set_Slider_position(100, solider_speed);
     osDelay(200);
     catch_material_in_middle();
@@ -137,8 +137,8 @@ void Get_material_floor(uint8_t pos)
     osDelay(500);
     set_Slider_position(150, solider_speed);
     Set_Sliding_table_Pos(1);
-    osDelay(1200);
-    set_Slider_position(100, solider_speed);
+    osDelay(1000);
+    set_Slider_position(95, solider_speed);
     osDelay(200);
     catch_material_in_middle();
     osDelay(500);
@@ -155,20 +155,20 @@ void Put_material(uint8_t pos)
     Set_Table_Pos(pos);
     catch_material_in_middle();
     Set_Sliding_table_Pos(1);
-    osDelay(500);
-    set_Slider_position(100, solider_speed);
-    osDelay(200);
+    osDelay(800);
+    set_Slider_position(90, solider_speed);
+    osDelay(100);
     Catch_material();
     osDelay(500);
     set_Slider_position(150, solider_speed);
     osDelay(100);
     Set_Sliding_table_Pos(0);
     osDelay(500);
-    set_Slider_position(12, solider_speed);
+    set_Slider_position(10, solider_speed - 200);
     osDelay(200);
     Release_material();
     osDelay(400);
-    set_Slider_position(155, solider_speed);
+    set_Slider_position(150, solider_speed);
     osDelay(100);
 }
 void Put_material_in_obj(uint8_t pos)
@@ -178,17 +178,17 @@ void Put_material_in_obj(uint8_t pos)
     Set_Table_Pos(pos);
     catch_material_in_middle();
     Set_Sliding_table_Pos(1);
-    osDelay(500);
-    set_Slider_position(100, solider_speed);
-    osDelay(200);
+    osDelay(800);
+    set_Slider_position(98, solider_speed);
+    osDelay(100);
     Catch_material();
     osDelay(500);
-    set_Slider_position(145, solider_speed);
+    set_Slider_position(150, solider_speed);
     osDelay(100);
     Set_Sliding_table_Pos(0);
     osDelay(500);
-    set_Slider_position(80, solider_speed);
-    osDelay(10);
+    set_Slider_position(80, solider_speed - 300);
+    osDelay(200);
     Release_material();
     osDelay(400);
     set_Slider_position(150, solider_speed);
