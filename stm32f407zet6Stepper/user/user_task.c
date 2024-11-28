@@ -726,7 +726,7 @@ uint8_t main_task(void)
     set_Slider_position_2(0, 500);                // #提前降低滑台 二维码高度
     osDelay(10);
 
-    base_run_distance_fix(38, run_speed, 1, 90); // 去往二维码区域
+    base_run_distance_fix(38, run_speed, 1, 80); // 去往二维码区域
 
     // $ 二维码任务------------------------------------------------------------------------------------------------------
     printf("二维码任务\r\n");
@@ -741,8 +741,8 @@ uint8_t main_task(void)
     osDelay(10);
     base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);                // 寻线校准
-    base_run_distance_base(-5, 0, 0, Close_speed); // 靠近原料区
+    find_line_calibrate_MPU_PID(0);                  // 寻线校准
+    base_run_distance_base(-7, 0, 0, Close_speed); // 靠近原料区
     osDelay(default_delay);
 
     printf("原料区任务\r\n");
@@ -811,7 +811,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-43, run_speed, 1, line_distance); // 暂存区到原料区2
+    base_run_distance_fix(-41, run_speed, 1, line_distance); // 暂存区到原料区2
     // find_line_calibrate_MPU_PID(0);                          // 寻线校准
     base_run_distance_base(-5, 0, 0, Close_speed); // 靠近原料区2
     osDelay(default_delay);

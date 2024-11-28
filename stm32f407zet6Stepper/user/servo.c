@@ -63,7 +63,7 @@ void Set_Table_Pos(uint8_t pos)
         Set_Servo_angle(1, 15 - 5);
         break;
     case 3:
-        Set_Servo_angle(1, 95);
+        Set_Servo_angle(1, 90);
         break;
     default:
         break;
@@ -92,9 +92,14 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
     // Set_Sliding_table_Pos(1); // 滑台舵机
-    // Set_Servo_angle(0, 225); // 滑台1收起来
-
+    if(1)
+    {   
+    Set_Servo_angle(0, 225); // 滑台1收起来
+    }
+    else
+    {
     Set_Sliding_table_Pos(0); // 滑台舵机 0 在外面 1收起来
+    }
     Set_Table_Pos(3);
     // Set_Table_Pos(0);   // 物料盘舵机
     Release_material(); // 爪子舵机

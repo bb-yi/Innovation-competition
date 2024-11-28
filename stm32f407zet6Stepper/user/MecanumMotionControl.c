@@ -452,7 +452,7 @@ void base_run_distance_base_fix(float distance_x, float distance_y, float speed,
     distance_rotation_pid.Kp = 0.8f; // 0.2f
     distance_rotation_pid.Ki = 0.0f;
     distance_rotation_pid.Kd = 1.0f;
-    offset_pid.Kp = 1.6f; // 0.2f
+    offset_pid.Kp = 1.0f; // 0.2f
     offset_pid.Ki = 0.0f;
     offset_pid.Kd = 0.0f;
     find_line_angle_pid.Kp = 0.8f; // 0.2f
