@@ -126,17 +126,13 @@ extern uint8_t start_flag;
 uint8_t button_fix_flag = 0;
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_15) // ç¨ćˇćéŽ ćä¸ĺ˝éś???????čşäťŞĺč˝Žĺ­çźç ĺ¨
+  if (GPIO_Pin == GPIO_PIN_0 || GPIO_Pin == GPIO_PIN_15)
   {
     calibrateAngleToZero(0);
     start_flag = 1;
   }
   else if (GPIO_Pin == GPIO_PIN_3)
   {
-    // for (volatile uint32_t i = 0; i < 1000; i++)
-    // {
-    //   // çŠşĺžŞçŻďźĺżç­ĺžäťĽćść
-    // }
     if (button_fix_flag == 0)
     {
       button_fix_flag = 1;

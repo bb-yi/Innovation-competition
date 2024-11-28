@@ -295,7 +295,8 @@ void init_task(void)
 void QrCode_Task(void)
 {
     uart_screen_init();
-
+    uint32_t start_time = HAL_GetTick();
+    uint32_t now_time;
     for (;;)
     {
         osDelay(1);
@@ -303,6 +304,13 @@ void QrCode_Task(void)
         {
             printf("扫到二维码\r\n");
             break;
+        }
+        now_time = HAL_GetTick();
+        if (now_time - start_time > 4000)
+        {
+            base_run_distance(15, 20);
+            base_run_distance(-30, 20);
+            base_run_distance(15, 20);
         }
     }
     // set_Slider_position(148, 60);
@@ -406,11 +414,12 @@ void find_line_calibrate_MPU(float now_angle)
 pid fine_line_angle_PID;
 void find_line_calibrate_MPU_PID(float now_angle)
 {
-    fine_line_angle_PID.Kp = 0.5f; // 1.0f
+    Camera_switch_mode(FIND_LINE_MODE);
+
+    fine_line_angle_PID.Kp = 2.0f; // 0.5f
     fine_line_angle_PID.Ki = 0.0f;
     fine_line_angle_PID.Kd = 0.0f;
 
-    Camera_switch_mode(FIND_LINE_MODE);
     osDelay(200);
     float error_angle, output;
     for (;;)
@@ -418,12 +427,13 @@ void find_line_calibrate_MPU_PID(float now_angle)
         error_angle = Get_find_line_angle();
         error_angle = clamp(error_angle, -5, 5);
         output = PID_Control(&fine_line_angle_PID, error_angle, 10);
-        output = clamp(output, -1, 1);
+        output = clamp(output, -3, 3);
         // printf("error_angle=%.2f,output=%.2f\r\n", error_angle, output);
         base_speed_control(0, 0, -output, 800);
         calibrateAngleToZero(now_angle);
         if (Abs(error_angle) < 0.2f)
         {
+            motor_stop_all();
             for (uint16_t i = 0; i < 200; i++)
             {
                 osDelay(1);
@@ -713,7 +723,7 @@ uint8_t main_task(void)
     osDelay(default_delay);
     Camera_switch_mode(FIND_LINE_MODE);
     base_run_distance_base(15, 25, 0, run_speed); // 移出启停区
-    set_Slider_position_2(0, 500);                // #提前降低滑台
+    set_Slider_position_2(0, 500);                // #提前降低滑台 二维码高度
     osDelay(10);
 
     base_run_distance_fix(38, run_speed, 1, 90); // 去往二维码区域

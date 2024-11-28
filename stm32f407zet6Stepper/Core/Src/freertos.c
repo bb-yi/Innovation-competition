@@ -72,37 +72,37 @@ extern uint8_t uart_screen_rx_data;
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityLow3,
+    .name = "defaultTask",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t)osPriorityLow3,
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
 const osThreadAttr_t myTask02_attributes = {
-  .name = "myTask02",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityLow7,
+    .name = "myTask02",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t)osPriorityLow7,
 };
 /* Definitions for myTask03 */
 osThreadId_t myTask03Handle;
 const osThreadAttr_t myTask03_attributes = {
-  .name = "myTask03",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityHigh7,
+    .name = "myTask03",
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityHigh7,
 };
 /* Definitions for myTask04 */
 osThreadId_t myTask04Handle;
 const osThreadAttr_t myTask04_attributes = {
-  .name = "myTask04",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+    .name = "myTask04",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t)osPriorityLow,
 };
 /* Definitions for myTask05 */
 osThreadId_t myTask05Handle;
 const osThreadAttr_t myTask05_attributes = {
-  .name = "myTask05",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityBelowNormal,
+    .name = "myTask05",
+    .stack_size = 512 * 4,
+    .priority = (osPriority_t)osPriorityBelowNormal,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,11 +119,12 @@ void StartTask05(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -167,7 +168,6 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
-
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -256,11 +256,11 @@ void StartTask03(void *argument)
   // set_solid_enable(1);
 
   init_task();
-
+  // osDelay(1000);
   main_task();
-
-  openmv_data.object_list[0] = 312;
-  openmv_data.object_list[1] = 312;
+  // find_line_calibrate_MPU_PID(0);
+  // openmv_data.object_list[0] = 312;
+  // openmv_data.object_list[1] = 312;
   // MaterialArea_Task(0);
   // RoughProcessingArea_Task(0); // 粗加工区任务
   // TemporaryStorageArea_Task(1);
@@ -271,16 +271,16 @@ void StartTask03(void *argument)
   // set_Slider_position(150, 800);
   // osDelay(1000);
   // set_Slider_position(0, 800);
-  // osDelay(1000);
-
-  // set_Slider_position_2(0, 100);s
+  // osDelay(1000);s
+  // set_Slider_position_2(0, 100);
   // osDelay(2000);
   // set_Slider_position_2(75, 100);
   // osDelay(2000);
   // set_Slider_position_2(150, 100);
 
-  // Set_Sliding_table_Pos(0);
+  // Set_Sliding_table_Pos(1);
   // Set_Servo_angle(0, 210);
+  // Set_Servo_angle(1, 130);
 
   // Set_Table_Pos(0);
   // osDelay(2000);
@@ -317,9 +317,15 @@ void StartTask03(void *argument)
     // osDelay(1000);
     // Camera_switch_mode(CENTER_POSITION_MODE);
     // osDelay(2000);
+    // Camera_switch_mode(CENTER_POSITION_MODE);
+    // osDelay(2000);
+    // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
+    // osDelay(2000);
     // Camera_switch_mode(HIGH_CENTER_POSITION_MODE);
     // osDelay(2000);
     // Camera_switch_mode(FIND_LINE_MODE);
+    // osDelay(2000);
+    // Camera_switch_mode(Stacking_MODE);
     // osDelay(2000);
     // Camera_switch_mode(Stacking_MODE);
     // osDelay(2000);
@@ -394,4 +400,3 @@ void StartTask05(void *argument)
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
-
