@@ -301,7 +301,7 @@ uint8_t base_rotation_control_world(float target_angle, float speed)
 }
 
 /**
- * @brief 小车底盘控制
+ * @brief 小车底盘控制 直接写入运行的距离 未进行校准 阻塞函数
  *
  * @param distance_x x 方向距离
  * @param distance_y y 方向距离

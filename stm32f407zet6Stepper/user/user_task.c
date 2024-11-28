@@ -707,14 +707,14 @@ void TemporaryStorageArea_Task(uint8_t part)
 }
 
 extern uint8_t Slider_is_OK;
-float run_speed = 145.0f; // 最大速度 150
-float acc_speed = 25.0f;  // 加速度 10.0f
-float rot_speed = 250;
-float Close_speed = 50;
-float line_distance = 80;
-uint16_t default_delay = 1;
-uint8_t run_task = 1;
-
+float run_speed = 145.0f;          // 最大速度 150
+float acc_speed = 25.0f;           // 加速度 10.0f
+float rot_speed = 250;             // 旋转速度
+float Close_speed = 50;            // 靠近边缘速度
+float line_distance = 80;          // 寻线边缘距离
+uint16_t default_delay = 1;        // 任务默认延时
+uint8_t run_task = 1;              // 是否运行任务 1 运行 0 不运行
+float MPU_Find_Line_mix_alpha = 1; // 运动使用矫正方式 0 陀螺仪 1 寻线
 uint8_t main_task(void)
 {
     float target_cycle_distance = run_task == 0 ? 0 : 15;
@@ -726,7 +726,7 @@ uint8_t main_task(void)
     set_Slider_position_2(0, 500);                // #提前降低滑台 二维码高度
     osDelay(10);
 
-    base_run_distance_fix(38, run_speed, 1, 80); // 去往二维码区域
+    base_run_distance_fix(38, run_speed, MPU_Find_Line_mix_alpha, 80); // 去往二维码区域
 
     // $ 二维码任务------------------------------------------------------------------------------------------------------
     printf("二维码任务\r\n");
@@ -739,9 +739,9 @@ uint8_t main_task(void)
     osDelay(10);
     set_Slider_position_2(150, 500); // #提前升起
     osDelay(10);
-    base_run_distance_fix(79, run_speed, 1, line_distance); // 去往原料区
+    base_run_distance_fix(79, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 去往原料区
     osDelay(default_delay);
-    find_line_calibrate_MPU_PID(0);                  // 寻线校准
+    find_line_calibrate_MPU_PID(0);                // 寻线校准
     base_run_distance_base(-7, 0, 0, Close_speed); // 靠近原料区
     osDelay(default_delay);
 
@@ -756,11 +756,11 @@ uint8_t main_task(void)
     osDelay(default_delay);
     base_run_distance_base(6, 0, 0, Close_speed); // 远离原料区
     osDelay(default_delay);
-    base_run_distance_fix(42, run_speed, 1, line_distance); // 去往粗加工区1
+    base_run_distance_fix(42, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 去往粗加工区1
     osDelay(default_delay);
     base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(170, run_speed, 1, line_distance); // 去往粗加工区2
+    base_run_distance_fix(170, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 去往粗加工区2
     osDelay(default_delay);
     base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
@@ -781,11 +781,11 @@ uint8_t main_task(void)
     // $ 粗加工区任务------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, line_distance); // 粗加工区到暂存区1
+    base_run_distance_fix(-(81 + d_distance2), run_speed, MPU_Find_Line_mix_alpha, line_distance); // 粗加工区到暂存区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-(79 - d_distance), run_speed, 1, line_distance); // 粗加工区到暂存区2
+    base_run_distance_fix(-(79 - d_distance), run_speed, MPU_Find_Line_mix_alpha, line_distance); // 粗加工区到暂存区2
     osDelay(default_delay);
     base_run_distance_base(-4, 0, 0, Close_speed); // 靠近暂存区
     osDelay(default_delay);
@@ -807,11 +807,11 @@ uint8_t main_task(void)
 
     printf("第二次搬运\r\n");
     // ~第二次搬运-----------------------------------------------------------------------------------------------------------
-    base_run_distance_fix(-(86 + d_distance2), run_speed, 1, line_distance); //  暂存区到原料区1
+    base_run_distance_fix(-(86 + d_distance2), run_speed, MPU_Find_Line_mix_alpha, line_distance); //  暂存区到原料区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-41, run_speed, 1, line_distance); // 暂存区到原料区2
+    base_run_distance_fix(-41, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 暂存区到原料区2
     // find_line_calibrate_MPU_PID(0);                          // 寻线校准
     base_run_distance_base(-5, 0, 0, Close_speed); // 靠近原料区2
     osDelay(default_delay);
@@ -826,11 +826,11 @@ uint8_t main_task(void)
 
     base_run_distance_base(8, 0, 0, Close_speed); // 远离原料区2
     osDelay(default_delay);
-    base_run_distance_fix(42, run_speed, 1, line_distance); // 第二次 去往粗加工区1
+    base_run_distance_fix(42, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 第二次 去往粗加工区1
     osDelay(default_delay);
     base_run_angle(-90, rot_speed); // 转向
 
-    base_run_distance_fix(170, run_speed, 1, line_distance); // 第二次 去往粗加工区2
+    base_run_distance_fix(170, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 第二次 去往粗加工区2
     osDelay(default_delay);
     base_run_angle(-90, rot_speed); // 转向
     osDelay(default_delay);
@@ -850,11 +850,11 @@ uint8_t main_task(void)
     // $ 第二次粗加工区任务-------------------------------------------------------------------------------------------------------------------------
 
     osDelay(default_delay);
-    base_run_distance_fix(-(81 + d_distance2), run_speed, 1, line_distance); // 第二次 粗加工区到暂存区1
+    base_run_distance_fix(-(81 + d_distance2), run_speed, MPU_Find_Line_mix_alpha, line_distance); // 第二次 粗加工区到暂存区1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-(80 - d_distance), run_speed, 1, line_distance); // 第二次  粗加工区到暂存区2
+    base_run_distance_fix(-(80 - d_distance), run_speed, MPU_Find_Line_mix_alpha, line_distance); // 第二次  粗加工区到暂存区2
     osDelay(default_delay);
     base_run_distance_base(-4, 0, 0, Close_speed); // 靠近暂存区2
     osDelay(default_delay);
@@ -874,11 +874,11 @@ uint8_t main_task(void)
     // ~回到起始点--------------------------------------------------------------------------------------------------------------------------------------
     base_run_distance_base(4, 0, 0, Close_speed); // 原理暂存区2
     osDelay(default_delay);
-    base_run_distance_fix(-(90 + d_distance2), run_speed, 1, line_distance); // 暂存区到起始点1
+    base_run_distance_fix(-(90 + d_distance2), run_speed, MPU_Find_Line_mix_alpha, line_distance); // 暂存区到起始点1
     osDelay(default_delay);
     base_run_angle(90, rot_speed); // 转向
     osDelay(default_delay);
-    base_run_distance_fix(-172, run_speed, 1, line_distance); // 暂存区到起始点2
+    base_run_distance_fix(-172, run_speed, MPU_Find_Line_mix_alpha, line_distance); // 暂存区到起始点2
     osDelay(default_delay);
     base_run_distance_base(-16, -17, 0, run_speed); // 移入启停区
     motor_stop_all();
