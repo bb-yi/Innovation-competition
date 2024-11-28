@@ -52,10 +52,8 @@ void screen_printf_with_quotes(const char *input_str)
 
 void Set_display_solid_num(uint16_t num1, uint16_t num2)
 {
-    screen_printf(1, "page0.n0.val=%d\xff\xff\xff", num1);
-    screen_printf(1, "page0.n1.val=%d\xff\xff\xff", num2);
-    screen_printf(1, "page1.n1.val=%d\xff\xff\xff", num1);
-    screen_printf(1, "page1.n2.val=%d\xff\xff\xff", num2);
+    screen_printf(1, "obj_list1=%d\xff\xff\xff", num1);
+    screen_printf(1, "obj_list2=%d\xff\xff\xff", num2);
 }
 
 // screen_print("t0.txt=\"%s\"\xff\xff\xff", Serial_RxPacket);
