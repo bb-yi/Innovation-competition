@@ -271,7 +271,7 @@ void StartTask03(void *argument)
   // set_Slider_position(150, 800);
   // osDelay(1000);
   // set_Slider_position(0, 800);
-  // osDelay(1000);s
+  // osDelay(1000);
   // set_Slider_position_2(0, 100);
   // osDelay(2000);
   // set_Slider_position_2(75, 100);
@@ -334,8 +334,8 @@ void StartTask03(void *argument)
     // Set_Camera_Led_light(80);
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_6);
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
-    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
-    // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_0);
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_1);
     // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_2);
     // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_3);
     // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_5);
@@ -345,7 +345,7 @@ void StartTask03(void *argument)
     // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
     // HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
     osDelay(1000);
-    camera_led_huxideng();
+    // camera_led_huxideng();
     osDelay(1);
   }
   /* USER CODE END StartTask03 */

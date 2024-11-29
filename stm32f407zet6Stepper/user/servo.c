@@ -92,7 +92,7 @@ void Servo_Init(void)
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim8, TIM_CHANNEL_3);
     // Set_Sliding_table_Pos(1); // 滑台舵机
-    if(1)
+    if(0)
     {   
     Set_Servo_angle(0, 225); // 滑台1收起来
     }
